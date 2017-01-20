@@ -30,6 +30,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Synapse.Common, Version=0.0.0.5, Culture=neutral, PublicKeyToken=a6de1cc56b73f982, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\synapse.core.net\Synapse.Common\bin\Debug\Synapse.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Synapse.Core, Version=0.0.0.5, Culture=neutral, PublicKeyToken=a6de1cc56b73f982, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\synapse.core.net\Synapse.Core\bin\Debug\Synapse.Core.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -42,16 +50,6 @@
   <ItemGroup>
     <Compile Include="ControllerServiceHttpApiClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Synapse.Common\Synapse.Common.csproj">
-      <Project>{683170de-f380-4f2e-8b91-91c7c9180b2b}</Project>
-      <Name>Synapse.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Synapse.Core\Synapse.Core.csproj">
-      <Project>{4464700A-50BA-4B62-BD7E-16628FDA8B94}</Project>
-      <Name>Synapse.Core</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

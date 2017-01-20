@@ -57,6 +57,18 @@
       <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Synapse.Common, Version=0.0.0.5, Culture=neutral, PublicKeyToken=a6de1cc56b73f982, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\synapse.core.net\Synapse.Common\bin\Debug\Synapse.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Synapse.Core, Version=0.0.0.5, Culture=neutral, PublicKeyToken=a6de1cc56b73f982, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\synapse.core.net\Synapse.Core\bin\Debug\Synapse.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Synapse.Node.HttpClient, Version=0.0.0.5, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\synapse.node.net\Synapse.NodeService.HttpClient\bin\Debug\Synapse.Node.HttpClient.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Core" />
@@ -104,20 +116,6 @@
     <EmbeddedResource Include="Synapse.ControllerService.resx">
       <DependentUpon>Synapse.ControllerService.cs</DependentUpon>
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Synapse.Common\Synapse.Common.csproj">
-      <Project>{683170de-f380-4f2e-8b91-91c7c9180b2b}</Project>
-      <Name>Synapse.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Synapse.Core\Synapse.Core.csproj">
-      <Project>{4464700a-50ba-4b62-bd7e-16628fda8b94}</Project>
-      <Name>Synapse.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Synapse.NodeService.HttpClient\Synapse.NodeService.HttpClient.csproj">
-      <Project>{67051fa7-2226-4411-b150-7c61b7c88233}</Project>
-      <Name>Synapse.NodeService.HttpClient</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
