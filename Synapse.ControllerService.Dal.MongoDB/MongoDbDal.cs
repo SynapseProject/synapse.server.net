@@ -20,6 +20,73 @@ namespace Synapse.ControllerService.Dal
 
         static void Main(string[] args)
         {
+            MongoDBDal dal = new MongoDBDal();
+
+            long ticks = DateTime.Now.Ticks;
+            List<Tuple<Plan, ActionItem>> msgs = new List<Tuple<Plan, ActionItem>>();
+            for( int i = 0; i < 100; i++ )
+            {
+                ActionItem a1 = new ActionItem() { Name = "1", InstanceId = 1, ParentInstanceId = 0, Result = new ExecuteResult() { Status = StatusType.New } };
+                ActionItem a2 = new ActionItem() { Name = "2", InstanceId = 2, ParentInstanceId = 1, Result = new ExecuteResult() { Status = StatusType.New } };
+                ActionItem a3 = new ActionItem() { Name = "3", InstanceId = 3, ParentInstanceId = 2, Result = new ExecuteResult() { Status = StatusType.New } };
+                ActionItem a4 = new ActionItem() { Name = "4", InstanceId = 4, ParentInstanceId = 2, Result = new ExecuteResult() { Status = StatusType.New } };
+                ActionItem a5 = new ActionItem() { Name = "5", InstanceId = 5, ParentInstanceId = 4, Result = new ExecuteResult() { Status = StatusType.New } };
+                //a1.Actions.Add( a2 );
+                //a2.Actions.Add( a3 );
+                //a2.Actions.Add( a4 );
+                //a4.Actions.Add( a5 );
+
+                Plan plan = new Plan()
+                {
+                    Name = $"Plan_{ticks}",
+                    UniqueName = $"Plan_{ticks}",
+                    InstanceId = ticks++
+                };
+                plan.Actions.Add( a1 );
+
+                Tuple<Plan, ActionItem> t1 = new Tuple<Plan, ActionItem>( plan, a1 );
+                Tuple<Plan, ActionItem> t2 = new Tuple<Plan, ActionItem>( plan, a2 );
+                Tuple<Plan, ActionItem> t3 = new Tuple<Plan, ActionItem>( plan, a3 );
+                Tuple<Plan, ActionItem> t4 = new Tuple<Plan, ActionItem>( plan, a4 );
+                Tuple<Plan, ActionItem> t5 = new Tuple<Plan, ActionItem>( plan, a5 );
+
+                msgs.Add( t5 );
+                msgs.Add( t4 );
+                msgs.Add( t3 );
+                msgs.Add( t2 );
+                msgs.Add( t1 );
+            }
+
+            Parallel.ForEach( msgs, m =>
+            {
+                dal.UpdatePlanStatus( m.Item1 );
+            } );
+
+            ActionItemSingletonProcessor.Instance.StartQueueWatcher();
+
+            //foreach( Tuple<Plan, ActionItem> m in msgs )
+            //    dal.UpdatePlanActionStatus( m.Item1.UniqueName, m.Item1.InstanceId, m.Item2 );
+
+            Parallel.ForEach( msgs, m =>
+            {
+                dal.UpdatePlanActionStatus( m.Item1.UniqueName, m.Item1.InstanceId, m.Item2 );
+            } );
+
+            while( !ActionItemSingletonProcessor.Instance.ReadyToExit )
+                Thread.Sleep( 500 );
+            Environment.Exit( 0 );
+        }
+
+
+        IMongoDatabase _db = null;
+        internal static readonly string _plans = "plans";
+        internal static readonly string _paths = "paths";
+        internal static readonly string _hist = "history";
+
+        public MongoDBDal()
+        {
+            _db = new MongoClient().GetDatabase( "synapse" );
+
             BsonClassMap.RegisterClassMap<Plan>( x =>
             {
                 x.AutoMap();
@@ -37,69 +104,6 @@ namespace Synapse.ControllerService.Dal
                 x.AutoMap();
                 x.GetMemberMap( m => m._id ).SetIgnoreIfDefault( true );
             } );
-
-            MongoDBDal dal = new MongoDBDal();
-
-            long ticks = DateTime.Now.Ticks;
-            List<Tuple<Plan, ActionItem>> msgs = new List<Tuple<Plan, ActionItem>>();
-            for( int i = 0; i < 10; i++ )
-            {
-                ActionItem a1 = new ActionItem() { Name = "1", InstanceId = 1, ParentInstanceId = 0, Result = new ExecuteResult() { Status = StatusType.New } };
-                ActionItem a2 = new ActionItem() { Name = "2", InstanceId = 2, ParentInstanceId = 1, Result = new ExecuteResult() { Status = StatusType.New } };
-                ActionItem a3 = new ActionItem() { Name = "3", InstanceId = 3, ParentInstanceId = 2, Result = new ExecuteResult() { Status = StatusType.New } };
-                ActionItem a4 = new ActionItem() { Name = "4", InstanceId = 4, ParentInstanceId = 2, Result = new ExecuteResult() { Status = StatusType.New } };
-                ActionItem a5 = new ActionItem() { Name = "5", InstanceId = 5, ParentInstanceId = 4, Result = new ExecuteResult() { Status = StatusType.New } };
-                //a1.Actions.Add( a2 ); //a2.Actions.Add( a3 ); //a2.Actions.Add( a4 ); //a4.Actions.Add( a5 );
-
-                Plan plan = new Plan()
-                {
-                    Name = $"Plan_{ticks}",
-                    UniqueName = $"Plan_{ticks}",
-                    InstanceId = ticks++
-                };
-                plan.Actions.Add( a1 );
-
-                Tuple<Plan, ActionItem> t1 = new Tuple<Plan, ActionItem>( plan, a1 );
-                Tuple<Plan, ActionItem> t2 = new Tuple<Plan, ActionItem>( plan, a2 );
-                Tuple<Plan, ActionItem> t3 = new Tuple<Plan, ActionItem>( plan, a3 );
-                Tuple<Plan, ActionItem> t4 = new Tuple<Plan, ActionItem>( plan, a4 );
-                Tuple<Plan, ActionItem> t5 = new Tuple<Plan, ActionItem>( plan, a5 );
-
-                msgs.Add( t1 );
-                msgs.Add( t2 );
-                msgs.Add( t3 );
-                msgs.Add( t4 );
-                msgs.Add( t5 );
-            }
-
-            Parallel.ForEach( msgs, m => {
-                dal.UpdatePlanStatus( m.Item1 );
-            } );
-
-            ActionItemSingletonProcessor.Instance.StartQueueWatcher();
-
-            dal.UpdatePlanActionStatus( msgs[0].Item1.UniqueName, msgs[0].Item1.InstanceId, msgs[0].Item2 );
-            dal.UpdatePlanActionStatus( msgs[1].Item1.UniqueName, msgs[1].Item1.InstanceId, msgs[1].Item2 );
-            dal.UpdatePlanActionStatus( msgs[2].Item1.UniqueName, msgs[2].Item1.InstanceId, msgs[2].Item2 );
-            dal.UpdatePlanActionStatus( msgs[3].Item1.UniqueName, msgs[3].Item1.InstanceId, msgs[3].Item2 );
-            dal.UpdatePlanActionStatus( msgs[4].Item1.UniqueName, msgs[4].Item1.InstanceId, msgs[4].Item2 );
-
-            //Parallel.ForEach( msgs, m => {
-            //    dal.UpdatePlanActionStatus( m.Item1.UniqueName, m.Item1.InstanceId, m.Item2 );
-            //} );
-
-            Thread.Sleep( Timeout.Infinite );
-        }
-
-
-        IMongoDatabase _db = null;
-        internal static readonly string _plans = "plans";
-        internal static readonly string _paths = "paths";
-        internal static readonly string _hist = "history";
-
-        public MongoDBDal()
-        {
-            _db = new MongoClient().GetDatabase( "synapse" );
         }
 
         public Plan GetPlan(string planUniqueName)
@@ -157,6 +161,7 @@ namespace Synapse.ControllerService.Dal
         public string PlanUniqueName { get; set; }
         public long PlanInstanceId { get; set; }
         public ActionItem ActionItem { get; set; }
+        public int UpdateAttempts { get; set; }
     }
 
     public sealed class ActionItemSingletonProcessor
@@ -169,9 +174,13 @@ namespace Synapse.ControllerService.Dal
         private ActionItemSingletonProcessor()
         {
             Queue = new ConcurrentQueue<QueuedActionItem>();
+            Exceptions = new ConcurrentQueue<Exception>();
+            Fatal = new ConcurrentQueue<Exception>();
         }
 
         public ConcurrentQueue<QueuedActionItem> Queue { get; }
+        public ConcurrentQueue<Exception> Exceptions { get; }
+        public ConcurrentQueue<Exception> Fatal { get; }
 
         public void StartQueueWatcher()
         {
@@ -181,7 +190,8 @@ namespace Synapse.ControllerService.Dal
             thread.Start();
         }
 
-
+        bool _allowExit = false;
+        public bool ReadyToExit = false;
         void DrainQueue()
         {
             while( true )
@@ -189,24 +199,27 @@ namespace Synapse.ControllerService.Dal
                 if( Instance.Queue.Count == 0 )
                 {
                     Thread.Sleep( 500 ); //no pending actions available, pause
+                    if( _allowExit )
+                        ReadyToExit = true;
                     continue;
                 }
+                _allowExit = true;
 
                 QueuedActionItem item = null;
                 while( Instance.Queue.TryDequeue( out item ) )
-                {
-                    UpdatePlanActionStatusInternal( item.PlanUniqueName, item.PlanInstanceId, item.ActionItem );
-                    item = null;
-                }
+                    UpdatePlanActionStatusInternal( item );
             }
         }
 
-        void UpdatePlanActionStatusInternal(string planUniqueName, long planInstanceId, ActionItem actionItem)
+        void UpdatePlanActionStatusInternal(QueuedActionItem item)
         {
             IMongoDatabase db = new MongoClient().GetDatabase( "synapse" );
             IMongoCollection<Plan> hist = db.GetCollection<Plan>( MongoDBDal._hist );
             IMongoCollection<ActionPath> paths = db.GetCollection<ActionPath>( MongoDBDal._paths );
 
+            string planUniqueName = item.PlanUniqueName;
+            long planInstanceId = item.PlanInstanceId;
+            ActionItem actionItem = item.ActionItem;
             long actionInstanceId = actionItem.InstanceId;
             long actionParentInstanceId = actionItem.ParentInstanceId;
             string key = $"{planInstanceId}_{actionInstanceId}";
@@ -229,7 +242,10 @@ namespace Synapse.ControllerService.Dal
                             Builders<ActionPath>.Filter.Where( p => p.Key == $"{planInstanceId}_{actionParentInstanceId}" );
                         List<ActionPath> parList = paths.Find( parFilter ).ToList();
 
-                        updatePath = parList[0].Path + ".Actions";
+                        if( parList.Count > 0 )
+                            updatePath = parList[0].Path + ".Actions";
+                        else
+                            throw new Exception( $"Could not find Plan.InstanceId = [{planInstanceId}], Action:{actionItem.Name}.ParentInstanceId = [{actionItem.ParentInstanceId}] in paths table." );
                     }
 
                     FilterDefinition<Plan> pf = Builders<Plan>.Filter.Where( p => p.InstanceId == planInstanceId );
@@ -237,9 +253,14 @@ namespace Synapse.ControllerService.Dal
                         Builders<Plan>.Update.Push( updatePath, actionItem ),
                         new FindOneAndUpdateOptions<Plan, object>() { IsUpsert = true } );
 
-                    Plan thisPlan = hist.Find( pf ).ToList()[0];
+                    Plan plan = null;
+                    List<Plan> plans = hist.Find( pf ).ToList();
+                    if( plans.Count > 0 )
+                        plan = plans[0];
+                    else
+                        throw new Exception( $"Could not find Plan.InstanceId = [{planInstanceId}] in history table." );
 
-                    string path = GetMaterialzedPath( actionInstanceId, thisPlan.Actions, "" );
+                    string path = GetMaterialzedPath( actionInstanceId, plan.Actions, "" );
                     paths.InsertOne( new ActionPath() { Key = key, Path = path } );
                 }
                 else
@@ -253,16 +274,16 @@ namespace Synapse.ControllerService.Dal
                         new FindOneAndUpdateOptions<Plan, object>() { IsUpsert = false } );
                 }
             }
-            catch(Exception ex)
+            catch( Exception ex )
             {
-                QueuedActionItem item = new QueuedActionItem()
-                {
-                    PlanUniqueName = planUniqueName,
-                    PlanInstanceId = planInstanceId,
-                    ActionItem = actionItem
-                };
                 Exception e = ex;
-                //Instance.Queue.Enqueue( item );
+                Instance.Exceptions.Enqueue( ex );
+
+                item.UpdateAttempts++;
+                if( item.UpdateAttempts < 5 )
+                    Instance.Queue.Enqueue( item );
+                else
+                    Instance.Fatal.Enqueue( ex );
             }
         }
 
