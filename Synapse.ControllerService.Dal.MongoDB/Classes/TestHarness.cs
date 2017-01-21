@@ -34,7 +34,7 @@ namespace Synapse.ControllerService.Dal
                     UniqueName = $"Plan_{ticks}",
                     InstanceId = ticks++
                 };
-                plan.Actions.Add( a1 );
+                //plan.Actions.Add( a1 );
 
                 Tuple<Plan, ActionItem> t01 = new Tuple<Plan, ActionItem>( plan, a1 );
                 Tuple<Plan, ActionItem> t02 = new Tuple<Plan, ActionItem>( plan, a2 );
@@ -78,6 +78,13 @@ namespace Synapse.ControllerService.Dal
 
             if( ActionItemSingletonProcessor.Instance.Fatal.Count > 0 )
                 Console.WriteLine( $"Fatal errors: {ActionItemSingletonProcessor.Instance.Fatal.Count}" );
+
+            Plan p = dal.GetPlanStatus( msgs[0].Item1.UniqueName, msgs[0].Item1.InstanceId );
+            p.Actions[0].Result.Status = StatusType.Failed;
+            p.Actions[0].Result.BranchStatus = StatusType.Cancelled;
+            dal.UpdatePlanStatus( p );
+
+            p = dal.GetPlanStatus( msgs[0].Item1.UniqueName, msgs[0].Item1.InstanceId );
 
             Environment.Exit( 0 );
         }

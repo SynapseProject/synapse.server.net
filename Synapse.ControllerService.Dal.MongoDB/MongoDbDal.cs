@@ -63,11 +63,19 @@ namespace Synapse.ControllerService.Dal
         public void UpdatePlanStatus(Plan plan)
         {
             //_db.GetCollection<Plan>( _hist ).InsertOne( plan );
-
             FilterDefinition<Plan> pf = GetPlanInstanceFilter( plan.UniqueName, plan.InstanceId );
-            _db.GetCollection<Plan>( _hist ).FindOneAndUpdate( pf,
-                Builders<Plan>.Update.CurrentDate( "LastModified" ),
-                new FindOneAndUpdateOptions<Plan, object>() { IsUpsert = true } );
+
+            //_db.GetCollection<Plan>( _hist ).FindOneAndUpdate( pf,
+            //    Builders<Plan>.Update.CurrentDate( "LastModified" ),
+            //    new FindOneAndUpdateOptions<Plan, object>() { IsUpsert = true } );
+
+            plan.LastModified = DateTime.Now;
+            _db.GetCollection<Plan>( _hist ).FindOneAndReplace( pf, plan,
+                new FindOneAndReplaceOptions<Plan, object>() { IsUpsert = true } );
+
+            //_db.GetCollection<Plan>( _hist ).UpdateOne( pf,
+            //    Builders<Plan>.Update.CurrentDate( "LastModified" ),
+            //    new UpdateOptions() { IsUpsert = true } );
         }
 
         public void UpdatePlanActionStatus(string planUniqueName, long planInstanceId, ActionItem actionItem)
