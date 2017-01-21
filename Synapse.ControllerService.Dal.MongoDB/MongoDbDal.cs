@@ -125,9 +125,9 @@ namespace Synapse.ControllerService.Dal
 
         void UpdatePlanActionStatusInternal(string planUniqueName, long planInstanceId, ActionItem actionItem)
         {
-            IMongoDatabase _db = new MongoClient().GetDatabase( "synapse" );
-            IMongoCollection<Plan> hist = _db.GetCollection<Plan>( MongoDBDal._hist );
-            IMongoCollection<ActionPath> paths = _db.GetCollection<ActionPath>( MongoDBDal._paths );
+            IMongoDatabase db = new MongoClient().GetDatabase( "synapse" );
+            IMongoCollection<Plan> hist = db.GetCollection<Plan>( MongoDBDal._hist );
+            IMongoCollection<ActionPath> paths = db.GetCollection<ActionPath>( MongoDBDal._paths );
 
             long actionInstanceId = actionItem.InstanceId;
             long actionParentInstanceId = actionItem.ParentInstanceId;
