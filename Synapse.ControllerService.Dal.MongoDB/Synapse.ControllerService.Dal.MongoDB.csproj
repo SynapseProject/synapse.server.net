@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{EC38BC80-6F04-4508-A83D-19667135BD84}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Synapse.ControllerService.Dal</RootNamespace>
     <AssemblyName>Synapse.ControllerService.Dal.MongoDB</AssemblyName>
