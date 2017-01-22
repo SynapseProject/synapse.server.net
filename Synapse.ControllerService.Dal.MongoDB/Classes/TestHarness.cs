@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Synapse.Core;
-using Synapse.ControllerService.Common;
 
 namespace Synapse.ControllerService.Dal
 {
@@ -12,7 +11,7 @@ namespace Synapse.ControllerService.Dal
     {
         static void Main(string[] args)
         {
-            MongoDBDal dal = new MongoDBDal();
+            MongoDBDal dal = new MongoDBDal( processActionsOnSingleton: true );
 
             long ticks = DateTime.Now.Ticks;
             List<Tuple<Plan, ActionItem>> msgs = new List<Tuple<Plan, ActionItem>>();
@@ -63,7 +62,7 @@ namespace Synapse.ControllerService.Dal
                 dal.UpdatePlanStatus( m.Item1 );
             } );
 
-            ActionItemSingletonProcessor.Instance.StartQueueWatcher();
+            ActionItemSingletonProcessor.Instance.StartQueueWatcher( dal );
 
             //foreach( Tuple<Plan, ActionItem> m in msgs )
             //    dal.UpdatePlanActionStatus( m.Item1.UniqueName, m.Item1.InstanceId, m.Item2 );

@@ -7,7 +7,6 @@ using MongoDB.Bson.Serialization;
 
 using Synapse.Core;
 using Synapse.Core.Utilities;
-using Synapse.ControllerService.Common;
 
 namespace Synapse.ControllerService.Dal
 {
@@ -44,7 +43,21 @@ namespace Synapse.ControllerService.Dal
                     x.GetMemberMap( m => m._id ).SetIgnoreIfDefault( true );
                 } );
             }
+
+            ProcessPlansOnSingleton = false;
+            ProcessActionsOnSingleton = true;
         }
+
+        public MongoDBDal(bool processPlansOnSingleton = false, bool processActionsOnSingleton = true) : this()
+        {
+            ProcessPlansOnSingleton = processPlansOnSingleton;
+            ProcessActionsOnSingleton = processActionsOnSingleton;
+        }
+
+
+        public bool ProcessPlansOnSingleton { get; set; }
+        public bool ProcessActionsOnSingleton { get; set; }
+
 
         public Plan GetPlan(string planUniqueName)
         {
@@ -62,20 +75,33 @@ namespace Synapse.ControllerService.Dal
 
         public void UpdatePlanStatus(Plan plan)
         {
-            //_db.GetCollection<Plan>( _hist ).InsertOne( plan );
-            FilterDefinition<Plan> pf = GetPlanInstanceFilter( plan.UniqueName, plan.InstanceId );
+            PlanUpdateItem item = new PlanUpdateItem() { Plan = plan };
 
-            //_db.GetCollection<Plan>( _hist ).FindOneAndUpdate( pf,
-            //    Builders<Plan>.Update.CurrentDate( "LastModified" ),
-            //    new FindOneAndUpdateOptions<Plan, object>() { IsUpsert = true } );
+            if( ProcessActionsOnSingleton )
+                PlanItemSingletonProcessor.Instance.Queue.Enqueue( item );
+            else
+                UpdatePlanStatus( item );
+        }
 
-            plan.LastModified = DateTime.Now;
-            _db.GetCollection<Plan>( _hist ).FindOneAndReplace( pf, plan,
-                new FindOneAndReplaceOptions<Plan, object>() { IsUpsert = true } );
+        public void UpdatePlanStatus(PlanUpdateItem item)
+        {
+            try
+            {
+                FilterDefinition<Plan> pf = GetPlanInstanceFilter( item.Plan.UniqueName, item.Plan.InstanceId );
 
-            //_db.GetCollection<Plan>( _hist ).UpdateOne( pf,
-            //    Builders<Plan>.Update.CurrentDate( "LastModified" ),
-            //    new UpdateOptions() { IsUpsert = true } );
+                item.Plan.LastModified = DateTime.Now;
+                _db.GetCollection<Plan>( _hist ).FindOneAndReplace( pf, item.Plan,
+                    new FindOneAndReplaceOptions<Plan, object>() { IsUpsert = true } );
+            }
+            catch( Exception ex )
+            {
+                PlanItemSingletonProcessor.Instance.Exceptions.Enqueue( ex );
+
+                if( item.RetryAttempts++ < 5 )
+                    PlanItemSingletonProcessor.Instance.Queue.Enqueue( item );
+                else
+                    PlanItemSingletonProcessor.Instance.Fatal.Enqueue( ex );
+            }
         }
 
         public void UpdatePlanActionStatus(string planUniqueName, long planInstanceId, ActionItem actionItem)
@@ -87,11 +113,13 @@ namespace Synapse.ControllerService.Dal
                 ActionItem = actionItem
             };
 
-            //UpdatePlanActionStatusInternal( item );
-            ActionItemSingletonProcessor.Instance.Queue.Enqueue( item );
+            if( ProcessActionsOnSingleton )
+                ActionItemSingletonProcessor.Instance.Queue.Enqueue( item );
+            else
+                UpdatePlanActionStatus( item );
         }
 
-        internal void UpdatePlanActionStatusInternal(ActionUpdateItem item)
+        public void UpdatePlanActionStatus(ActionUpdateItem item)
         {
             IMongoCollection<Plan> hist = _db.GetCollection<Plan>( _hist );
             IMongoCollection<ActionPath> paths = _db.GetCollection<ActionPath>( _paths );
@@ -138,7 +166,7 @@ namespace Synapse.ControllerService.Dal
                     else
                         throw new Exception( $"Could not find Plan.InstanceId = [{planInstanceId}] in history table." );
 
-                    string path = GetMaterialzedPath( actionInstanceId, plan.Actions, "" );
+                    string path = Utilities.GetActionInstanceMaterialzedPath( actionInstanceId, plan.Actions );
                     paths.InsertOne( new ActionPath() { Key = key, Path = path } );
                 }
                 else
@@ -154,44 +182,13 @@ namespace Synapse.ControllerService.Dal
             }
             catch( Exception ex )
             {
-                Exception e = ex;
                 ActionItemSingletonProcessor.Instance.Exceptions.Enqueue( ex );
 
-                item.RetryAttempts++;
-                if( item.RetryAttempts < 5 )
+                if( item.RetryAttempts++ < 5 )
                     ActionItemSingletonProcessor.Instance.Queue.Enqueue( item );
                 else
                     ActionItemSingletonProcessor.Instance.Fatal.Enqueue( ex );
             }
-        }
-
-        string GetMaterialzedPath(long id, List<ActionItem> actions, string path)
-        {
-            int i = 0;
-            foreach( ActionItem a in actions )
-            {
-                if( a.InstanceId == id )
-                {
-                    path = $"{path}.Actions.{i}";
-                }
-                else
-                {
-                    if( a.HasActionGroup )
-                    {
-                        if( a.ActionGroup.InstanceId == id )
-                            path += "ActionGroup";
-                        else if( a.ActionGroup.HasActions )
-                            path = GetMaterialzedPath( id, a.ActionGroup.Actions, path );
-                    }
-
-                    if( a.HasActions )
-                        path = GetMaterialzedPath( id, a.Actions, $"{path}.Actions.{i}" );
-                }
-
-                i++;
-            }
-
-            return path.TrimStart( '.' );
         }
 
         FilterDefinition<Plan> GetPlanInstanceFilter(string planUniqueName, long planInstanceId)

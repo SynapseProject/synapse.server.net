@@ -66,9 +66,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Classes\ActionItemSingletonProcessor.cs" />
     <Compile Include="Classes\ActionPath.cs" />
-    <Compile Include="Classes\ActionUpdateItem.cs" />
     <Compile Include="Classes\TestHarness.cs" />
     <Compile Include="MongoDBDal.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

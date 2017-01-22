@@ -43,6 +43,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Utilities\PlanItemSingletonProcessor.cs" />
+    <Compile Include="Utilities\ActionItemSingletonProcessor.cs" />
+    <Compile Include="Classes\PlanUpdateItem.cs" />
+    <Compile Include="Classes\ActionUpdateItem.cs" />
+    <Compile Include="Utilities\Utilities.cs" />
     <Compile Include="IControllerDal.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

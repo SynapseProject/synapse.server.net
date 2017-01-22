@@ -1,11 +1,6 @@
 ﻿using Synapse.Core;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Synapse.ControllerService.Common
+namespace Synapse.ControllerService.Dal
 {
     public interface IControllerDal
     {
@@ -15,6 +10,10 @@ namespace Synapse.ControllerService.Common
 
         void UpdatePlanStatus(Plan plan);
 
+        void UpdatePlanStatus(PlanUpdateItem item);
+
         void UpdatePlanActionStatus(string planUniqueName, long planInstanceId, ActionItem actionItem);
+
+        void UpdatePlanActionStatus(ActionUpdateItem item);
     }
 }
