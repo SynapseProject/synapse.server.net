@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,6 +12,8 @@ namespace Synapse.ControllerService.Dal
     {
         static void Main(string[] args)
         {
+            Stopwatch timer = Stopwatch.StartNew();
+
             FileSystemDal dal = new FileSystemDal( null, processPlansOnSingleton: false, processActionsOnSingleton: true );
 
             long ticks = DateTime.Now.Ticks;
@@ -80,6 +83,8 @@ namespace Synapse.ControllerService.Dal
             while( !ActionItemSingletonProcessor.Instance.ReadyToExit )
                 Thread.Sleep( 500 );
 
+            timer.Stop();
+
             int pe = PlanItemSingletonProcessor.Instance.Queue.Count;
 
             if( ActionItemSingletonProcessor.Instance.Fatal.Count > 0 )
@@ -93,7 +98,8 @@ namespace Synapse.ControllerService.Dal
 
             p = dal.GetPlanStatus( msgs[0].Item1.UniqueName, msgs[0].Item1.InstanceId );
 
-            Console.Write( $"{msgs[0].Item1.UniqueName}: {ps}/{p.Actions[0].Result.Status}" );
+            Console.WriteLine( $"{msgs[0].Item1.UniqueName}: {ps}/{p.Actions[0].Result.Status}" );
+            Console.WriteLine( $"Elapsed seconds: {timer.ElapsedMilliseconds/1000}" );
 
             Environment.Exit( 0 );
         }
