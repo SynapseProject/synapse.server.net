@@ -57,8 +57,10 @@ namespace Synapse.ControllerService.Dal
 
         public Plan GetPlanStatus(string planUniqueName, long planInstanceId)
         {
-            string planFile = $"{_histPath}{planUniqueName}_{planInstanceId}.yaml";
-            return YamlHelpers.DeserializeFile<Plan>( planFile );
+            //string planFile = $"{_histPath}{planUniqueName}_{planInstanceId}.yaml";
+            //return YamlHelpers.DeserializeFile<Plan>( planFile );
+            string file = File.ReadAllText( $"{_histPath}out.txt" );
+            return YamlHelpers.Deserialize<Plan>( file );
         }
 
         public void UpdatePlanStatus(Plan plan)
@@ -75,8 +77,10 @@ namespace Synapse.ControllerService.Dal
         {
             try
             {
-                YamlHelpers.SerializeFile( $"{_histPath}{item.Plan.UniqueName}_{item.Plan.InstanceId}.yaml",
-                    item.Plan, emitDefaultValues: true );
+                //YamlHelpers.SerializeFile( $"{_histPath}{item.Plan.UniqueName}_{item.Plan.InstanceId}.yaml",
+                //    item.Plan, emitDefaultValues: true );
+                string file = YamlHelpers.Serialize( item.Plan, emitDefaultValues: true );
+                File.WriteAllText( $"{_histPath}out.txt", file ); //$"{_histPath}{plan.UniqueName}_{plan.InstanceId}.yaml"
             }
             catch( Exception ex )
             {
@@ -111,7 +115,17 @@ namespace Synapse.ControllerService.Dal
                 Plan plan = GetPlanStatus( item.PlanUniqueName, item.PlanInstanceId );
                 bool ok = Utilities.FindActionAndReplace( plan.Actions, item.ActionItem );
                 if( ok )
-                    UpdatePlanStatus( plan );
+                {
+                    try
+                    {
+                        string file = YamlHelpers.Serialize( plan, emitDefaultValues: true );
+                        File.WriteAllText( $"{_histPath}out.txt", file ); //$"{_histPath}{plan.UniqueName}_{plan.InstanceId}.yaml"
+                    }
+                    catch( Exception ex )
+                    {
+                        throw;
+                    }
+                }
                 else
                     throw new Exception( $"Could not find Plan.InstanceId = [{item.PlanInstanceId}], Action:{item.ActionItem.Name}.ParentInstanceId = [{item.ActionItem.ParentInstanceId}] in Plan outfile." );
             }
