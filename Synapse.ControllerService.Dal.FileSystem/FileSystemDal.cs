@@ -6,7 +6,7 @@ using Synapse.Core.Utilities;
 
 namespace Synapse.ControllerService.Dal
 {
-    public class FileSystemDal : IControllerDal
+    public partial class FileSystemDal : IControllerDal
     {
         static readonly string CurrentPath = $"{Path.GetDirectoryName( typeof( FileSystemDal ).Assembly.Location )}";
 
@@ -26,6 +26,9 @@ namespace Synapse.ControllerService.Dal
 
         public FileSystemDal(string basePath, bool processPlansOnSingleton = false, bool processActionsOnSingleton = true) : this()
         {
+            if( string.IsNullOrWhiteSpace( basePath ) )
+                basePath = CurrentPath;
+
             _planPath = $"{basePath}\\Plans\\";
             _histPath = $"{basePath}\\History\\";
 
@@ -62,7 +65,7 @@ namespace Synapse.ControllerService.Dal
         {
             PlanUpdateItem item = new PlanUpdateItem() { Plan = plan };
 
-            if( ProcessActionsOnSingleton )
+            if( ProcessPlansOnSingleton )
                 PlanItemSingletonProcessor.Instance.Queue.Enqueue( item );
             else
                 UpdatePlanStatus( item );
@@ -106,8 +109,11 @@ namespace Synapse.ControllerService.Dal
             try
             {
                 Plan plan = GetPlanStatus( item.PlanUniqueName, item.PlanInstanceId );
-                Utilities.FindActionAndReplace( plan.Actions, item.ActionItem );
-                UpdatePlanStatus( plan );
+                bool ok = Utilities.FindActionAndReplace( plan.Actions, item.ActionItem );
+                if( ok )
+                    UpdatePlanStatus( plan );
+                else
+                    throw new Exception( $"Could not find Plan.InstanceId = [{item.PlanInstanceId}], Action:{item.ActionItem.Name}.ParentInstanceId = [{item.ActionItem.ParentInstanceId}] in Plan outfile." );
             }
             catch( Exception ex )
             {

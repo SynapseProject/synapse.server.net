@@ -77,7 +77,7 @@ namespace Synapse.ControllerService.Dal
         {
             PlanUpdateItem item = new PlanUpdateItem() { Plan = plan };
 
-            if( ProcessActionsOnSingleton )
+            if( ProcessPlansOnSingleton )
                 PlanItemSingletonProcessor.Instance.Queue.Enqueue( item );
             else
                 UpdatePlanStatus( item );

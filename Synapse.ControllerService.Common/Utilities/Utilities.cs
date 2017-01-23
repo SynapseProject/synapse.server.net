@@ -38,17 +38,59 @@ namespace Synapse.ControllerService.Dal
 
         public static bool FindActionAndReplace(List<ActionItem> actions, ActionItem item)
         {
+            Console.Write( $"Starting {item.Name}/{item.Result.Status}" );
+            ActionItem parentItem = null;
+            bool found = FindActionAndReplace( actions, item, item.ParentInstanceId, ref parentItem );
+            if( !found )
+            {
+                Console.Write( " --> Not found: " );
+                if( parentItem != null )
+                {
+                    parentItem.Actions.Add( item );
+                    found = true;
+                    Console.WriteLine( $"Adding {item.Name}/{item.Result.Status} to parentItem {parentItem.Name}" );
+                }
+                else if( item.ParentInstanceId == 0 )
+                {
+                    actions.Add( item );
+                    found = true;
+                    Console.WriteLine( $"Adding {item.Name}/{item.Result.Status} to Plan Actions" );
+                }
+                else
+                {
+                    Console.WriteLine( " --> Not added" );
+                }
+            }
+            else
+            {
+                Console.WriteLine( " --> Updated collection" );
+            }
+            return found;
+        }
+        //todo: added code around parent stuff to fix a bug, now can make this more efficient by using parent info to go directly to child Actions collection
+        internal static bool FindActionAndReplace(List<ActionItem> actions, ActionItem item, long actionItemParentInstanceId, ref ActionItem actionItemParent)
+        {
             bool found = false;
 
             for( int i = 0; i < actions.Count; i++ )
             {
                 ActionItem a = actions[i];
 
+                if( a.InstanceId == actionItemParentInstanceId )
+                    actionItemParent = a;
+
                 if( a.InstanceId == item.InstanceId )
                 {
                     //only replace if item has higher Result.Status
                     if( a.Result.Status < item.Result.Status )
+                    {
+                        Console.Write( $" **** Found: {a.Result.Status} < {item.Result.Status}" );
                         actions[i] = item;
+                    }
+                    else
+                    {
+                        Console.Write( $" ---- No Action: {a.Result.Status} < {item.Result.Status}" );
+                    }
 
                     found = true;
                     break;
@@ -56,6 +98,9 @@ namespace Synapse.ControllerService.Dal
 
                 if( a.HasActionGroup )
                 {
+                    if( a.ActionGroup.InstanceId == actionItemParentInstanceId )
+                        actionItemParent = a;
+
                     if( a.ActionGroup.InstanceId == item.InstanceId )
                     {
                         //only replace if item has higher Result.Status
@@ -67,13 +112,13 @@ namespace Synapse.ControllerService.Dal
                     }
 
                     if( a.ActionGroup.HasActions )
-                        found = FindActionAndReplace( a.ActionGroup.Actions, item );
+                        found = FindActionAndReplace( a.ActionGroup.Actions, item, actionItemParentInstanceId, ref actionItemParent );
                 }
 
                 if( found ) break;
 
                 if( a.HasActions )
-                    found = FindActionAndReplace( a.Actions, item );
+                    found = FindActionAndReplace( a.Actions, item, actionItemParentInstanceId, ref actionItemParent );
 
                 if( found ) break;
             }
