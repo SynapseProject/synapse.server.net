@@ -85,6 +85,7 @@ namespace Synapse.ControllerService.Dal
                     if( a.Result.Status < item.Result.Status )
                     {
                         Console.Write( $" **** Found: {a.Result.Status} < {item.Result.Status}" );
+                        item.Actions = actions[i].Actions;
                         actions[i] = item;
                     }
                     else

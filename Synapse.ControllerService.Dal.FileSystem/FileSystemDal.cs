@@ -59,7 +59,7 @@ namespace Synapse.ControllerService.Dal
         {
             //string planFile = $"{_histPath}{planUniqueName}_{planInstanceId}.yaml";
             //return YamlHelpers.DeserializeFile<Plan>( planFile );
-            string file = File.ReadAllText( $"{_histPath}out.txt" );
+            string file = File.ReadAllText( $"{_histPath}out.yaml" );
             return YamlHelpers.Deserialize<Plan>( file );
         }
 
@@ -80,7 +80,7 @@ namespace Synapse.ControllerService.Dal
                 //YamlHelpers.SerializeFile( $"{_histPath}{item.Plan.UniqueName}_{item.Plan.InstanceId}.yaml",
                 //    item.Plan, emitDefaultValues: true );
                 string file = YamlHelpers.Serialize( item.Plan, emitDefaultValues: true );
-                File.WriteAllText( $"{_histPath}out.txt", file ); //$"{_histPath}{plan.UniqueName}_{plan.InstanceId}.yaml"
+                File.WriteAllText( $"{_histPath}out.yaml", file ); //$"{_histPath}{plan.UniqueName}_{plan.InstanceId}.yaml"
             }
             catch( Exception ex )
             {
@@ -119,7 +119,7 @@ namespace Synapse.ControllerService.Dal
                     try
                     {
                         string file = YamlHelpers.Serialize( plan, emitDefaultValues: true );
-                        File.WriteAllText( $"{_histPath}out.txt", file ); //$"{_histPath}{plan.UniqueName}_{plan.InstanceId}.yaml"
+                        File.WriteAllText( $"{_histPath}out.yaml", file ); //$"{_histPath}{plan.UniqueName}_{plan.InstanceId}.yaml"
                     }
                     catch( Exception ex )
                     {
