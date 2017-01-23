@@ -38,33 +38,22 @@ namespace Synapse.ControllerService.Dal
 
         public static bool FindActionAndReplace(List<ActionItem> actions, ActionItem item)
         {
-            Console.Write( $"Starting {item.Name}/{item.Result.Status}" );
             ActionItem parentItem = null;
             bool found = FindActionAndReplace( actions, item, item.ParentInstanceId, ref parentItem );
             if( !found )
             {
-                Console.Write( " --> Not found: " );
                 if( parentItem != null )
                 {
                     parentItem.Actions.Add( item );
                     found = true;
-                    Console.WriteLine( $"Adding {item.Name}/{item.Result.Status} to parentItem {parentItem.Name}" );
                 }
                 else if( item.ParentInstanceId == 0 )
                 {
                     actions.Add( item );
                     found = true;
-                    Console.WriteLine( $"Adding {item.Name}/{item.Result.Status} to Plan Actions" );
-                }
-                else
-                {
-                    Console.WriteLine( " --> Not added" );
                 }
             }
-            else
-            {
-                Console.WriteLine( " --> Updated collection" );
-            }
+
             return found;
         }
         //todo: added code around parent stuff to fix a bug, now can make this more efficient by using parent info to go directly to child Actions collection
@@ -84,13 +73,8 @@ namespace Synapse.ControllerService.Dal
                     //only replace if item has higher Result.Status
                     if( a.Result.Status < item.Result.Status )
                     {
-                        Console.Write( $" **** Found: {a.Result.Status} < {item.Result.Status}" );
-                        item.Actions = actions[i].Actions;
+                        item.Actions = a.Actions;
                         actions[i] = item;
-                    }
-                    else
-                    {
-                        Console.Write( $" ---- No Action: {a.Result.Status} < {item.Result.Status}" );
                     }
 
                     found = true;
@@ -106,7 +90,10 @@ namespace Synapse.ControllerService.Dal
                     {
                         //only replace if item has higher Result.Status
                         if( a.ActionGroup.Result.Status < item.Result.Status )
+                        {
+                            item.Actions = a.ActionGroup.Actions;
                             a.ActionGroup = item;
+                        }
 
                         found = true;
                         break;

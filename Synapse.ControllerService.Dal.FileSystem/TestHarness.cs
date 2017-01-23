@@ -11,11 +11,11 @@ namespace Synapse.ControllerService.Dal
     {
         static void Main(string[] args)
         {
-            FileSystemDal dal = new FileSystemDal( null, processPlansOnSingleton: true, processActionsOnSingleton: true );
+            FileSystemDal dal = new FileSystemDal( null, processPlansOnSingleton: false, processActionsOnSingleton: true );
 
             long ticks = DateTime.Now.Ticks;
             List<Tuple<Plan, ActionItem>> msgs = new List<Tuple<Plan, ActionItem>>();
-            for( int i = 0; i < 1; i++ )
+            for( int i = 0; i < 100; i++ )
             {
                 ActionItem a1 = new ActionItem() { Name = "01", InstanceId = 1, ParentInstanceId = 0, Result = new ExecuteResult() { Status = StatusType.New } };
                 ActionItem a2 = new ActionItem() { Name = "02", InstanceId = 2, ParentInstanceId = 1, Result = new ExecuteResult() { Status = StatusType.New } };
@@ -89,8 +89,11 @@ namespace Synapse.ControllerService.Dal
             p.Actions[0].Result.Status = StatusType.Failed;
             p.Actions[0].Result.BranchStatus = StatusType.Cancelled;
             dal.UpdatePlanStatus( p );
+            StatusType ps = p.Actions[0].Result.Status;
 
             p = dal.GetPlanStatus( msgs[0].Item1.UniqueName, msgs[0].Item1.InstanceId );
+
+            Console.Write( $"{msgs[0].Item1.UniqueName}: {ps}/{p.Actions[0].Result.Status}" );
 
             Environment.Exit( 0 );
         }
