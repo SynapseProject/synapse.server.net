@@ -69,7 +69,7 @@ namespace Synapse.ControllerService.Dal
 
         public Plan GetPlan(string planUniqueName)
         {
-            _splxDal?.TrySecurityOrException( planUniqueName, AceType.FileSystem, FileSystemRight.Execute );
+            _splxDal?.TrySecurityOrException( planUniqueName, AceType.FileSystem, FileSystemRight.Execute, "Plan" );
 
             string planFile = $"{_planPath}{planUniqueName}.yaml";
             return YamlHelpers.DeserializeFile<Plan>( planFile );
@@ -129,7 +129,7 @@ namespace Synapse.ControllerService.Dal
             try
             {
                 Plan plan = GetPlanStatus( item.PlanUniqueName, item.PlanInstanceId );
-                bool ok = Utilities.FindActionAndReplace( plan.Actions, item.ActionItem );
+                bool ok = DalUtilities.FindActionAndReplace( plan.Actions, item.ActionItem );
                 if( ok )
                     YamlHelpers.SerializeFile( $"{_histPath}{plan.UniqueName}_{plan.InstanceId}.yaml", plan, emitDefaultValues: true );
                 else

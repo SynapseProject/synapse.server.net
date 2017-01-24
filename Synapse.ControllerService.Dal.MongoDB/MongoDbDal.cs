@@ -166,7 +166,7 @@ namespace Synapse.ControllerService.Dal
                     else
                         throw new Exception( $"Could not find Plan.InstanceId = [{planInstanceId}] in history table." );
 
-                    string path = Utilities.GetActionInstanceMaterialzedPath( actionInstanceId, plan.Actions );
+                    string path = DalUtilities.GetActionInstanceMaterialzedPath( actionInstanceId, plan.Actions );
                     paths.InsertOne( new ActionPath() { Key = key, Path = path } );
                 }
                 else
