@@ -51,7 +51,7 @@ namespace Synapse.ControllerService.Dal
         public bool IsFileStore { get; internal set; }
 
 
-        public string ContainerRootUniqueName { get; set; }
+        public string ContainerRootUniqueName { get; set; } = "SynapseRoot";
         public string ContainerUniqueNamePrefix { get; set; }
         public string LdapRoot { get; set; }
         public string GlobalExternalGroupsCsv { get; set; }
@@ -214,34 +214,48 @@ namespace Synapse.ControllerService.Dal
 			string rootUniqueName = ContainerRootUniqueName;
 			SecureContainer root = new SecureContainer() { UniqueName = rootUniqueName };
 
-			if( slp == null )
-			{
-				slp = new SecurityLoadParameters()
-				{
-					ExternalGroupInfo = new ExternalGroupInfo( LdapRoot, true, GlobalExternalGroupsCsv ),
-					User = this.GetSuplexUser( false )
-				};
-			}
+            #region setup SecurityLoadParameters, load ExternalGroupInfo
+            if( slp == null )
+                slp = new SecurityLoadParameters()
+                {
+                    ExternalGroupInfo = new ExternalGroupInfo( LdapRoot, true, GlobalExternalGroupsCsv ),
+                    User = this.GetSuplexUser( false )
+                };
 
             ExternalGroupInfo egi =
                 new ExternalGroupInfo( LdapRoot, true, GlobalExternalGroupsCsv );
             egi.BuildGroupsList( slp.User.Name );
+            #endregion
 
             SecureContainer ctrl = root;
             SplxSecureManagerBase context = null;
 
+            #region IsFileStore = true
             if( IsFileStore )
             {
-                splxApi.UIElement uie = _splxStore.UIElements.GetByUniqueNameRecursive( uniqueName );
-                IObjectModel parent = uie.ParentObject;
-                while( parent != null )
-                    parent = parent.ParentObject;
-                uniqueName = ((splxApi.UIElement)parent).UniqueName;
-                context = new SplxRecordManager() { UniqueName = uniqueName };
+                ISecureControl c = new SplxRecordManager() { UniqueName = uniqueName };
                 if( aceType == AceType.FileSystem )
-                    context = new SplxFileSystemManager() { UniqueName = uniqueName };
-                context.Security.Load( _splxStore, slp );
+                    c = new SplxFileSystemManager() { UniqueName = uniqueName };
+
+                splxApi.UIElement uie = _splxStore.UIElements.GetByUniqueNameRecursive( uniqueName );
+
+
+                SecureContainer parent = null;
+                IObjectModel parentObj = uie.ParentObject;
+                while( parentObj != null )
+                {
+                    uniqueName = ((splxApi.UIElement)parentObj).UniqueName;
+                    parent = new SecureContainer() { UniqueName = uniqueName };
+                    parent.Children.Add( c );
+                    c = parent;
+
+                    parentObj = parentObj.ParentObject;
+                }
+
+                parent.Security.Load( _splxStore, slp );
             }
+            #endregion
+            #region IsFileStore = false
             else
             {
                 DataSet ds = _da.GetDataSet( "splx.splx_dal_sel_security_byuserbyuie_up",
@@ -269,9 +283,7 @@ namespace Synapse.ControllerService.Dal
                     {
                         context = new SplxRecordManager() { UniqueName = un };
                         if( aceType == AceType.FileSystem )
-                        {
                             context = new SplxFileSystemManager() { UniqueName = un };
-                        }
 
                         ctrl.Children.Add( context );
                     }
@@ -287,6 +299,7 @@ namespace Synapse.ControllerService.Dal
 
                 root.Security.Load( ds, slp );
             }
+            #endregion
 
 
             return context;

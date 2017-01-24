@@ -20,7 +20,7 @@ namespace Synapse.ControllerService.Dal
             {
                 try
                 {
-                    Plan uie000 = dal.GetPlan( "container" );
+                    Plan uie000 = dal.GetPlan( "uie000" );
                 }
                 catch( Exception ex )
                 {
