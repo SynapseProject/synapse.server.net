@@ -16,6 +16,8 @@ namespace Synapse.ControllerService.Dal
 
             FileSystemDal dal = new FileSystemDal( null, processPlansOnSingleton: false, processActionsOnSingleton: true );
 
+            Plan uie000 = dal.GetPlan( "uie000" );
+
             long ticks = DateTime.Now.Ticks;
             List<Tuple<Plan, ActionItem>> msgs = new List<Tuple<Plan, ActionItem>>();
             for( int i = 0; i < 100; i++ )

@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Data;
 using System.IO;
 
 using Synapse.Core;
 using Synapse.Core.Utilities;
+using Suplex.Security;
 
 namespace Synapse.ControllerService.Dal
 {
@@ -12,16 +14,22 @@ namespace Synapse.ControllerService.Dal
 
         string _planPath = null;
         string _histPath = null;
+        string _splxPath = null;
+
+        SuplexDal _splxDal = new SuplexDal();
 
         public FileSystemDal()
         {
             _planPath = $"{CurrentPath}\\Plans\\";
             _histPath = $"{CurrentPath}\\History\\";
+            _splxPath = $"{CurrentPath}\\Security\\";
 
             EnsurePaths();
 
             ProcessPlansOnSingleton = false;
             ProcessActionsOnSingleton = true;
+
+            _splxDal.LoadSuplexSecurity( $"{_splxPath}\\security.splx" );
         }
 
         public FileSystemDal(string basePath, bool processPlansOnSingleton = false, bool processActionsOnSingleton = true) : this()
@@ -31,11 +39,14 @@ namespace Synapse.ControllerService.Dal
 
             _planPath = $"{basePath}\\Plans\\";
             _histPath = $"{basePath}\\History\\";
+            _splxPath = $"{basePath}\\Security\\";
 
             EnsurePaths();
 
             ProcessPlansOnSingleton = processPlansOnSingleton;
             ProcessActionsOnSingleton = processActionsOnSingleton;
+
+            _splxDal.LoadSuplexSecurity( $"{_splxPath}\\security.splx" );
         }
 
         void EnsurePaths()
@@ -51,6 +62,8 @@ namespace Synapse.ControllerService.Dal
 
         public Plan GetPlan(string planUniqueName)
         {
+            _splxDal.TrySecurityOrException( planUniqueName, AceType.FileSystem, FileSystemRight.Execute );
+
             string planFile = $"{_planPath}{planUniqueName}.yaml";
             return YamlHelpers.DeserializeFile<Plan>( planFile );
         }
