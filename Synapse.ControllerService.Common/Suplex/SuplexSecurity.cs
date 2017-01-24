@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Data.SqlClient;
+using io = System.IO;
 
 using Suplex.Forms;
 using Suplex.Forms.ObjectModel.Api;
@@ -14,15 +15,42 @@ namespace Synapse.ControllerService.Dal
     public partial class SuplexDal
     {
         SuplexApiClient _splxApi = new SuplexApiClient();
+        SuplexStore _splxStore = null;
+        io.FileSystemWatcher filestoreWatcher;
+
+
+        public SuplexDal(string filestorePath)
+        {
+            string folder = io.Path.GetDirectoryName( filestorePath );
+            string file = io.Path.GetFileName( filestorePath );
+            filestoreWatcher = new io.FileSystemWatcher( folder, file );
+            filestoreWatcher.Changed += FilestoreWatcher_Changed;
+            filestoreWatcher.EnableRaisingEvents = true;
+
+            _splxStore = _splxApi.LoadFile( filestorePath );
+            IsFileStore = true;
+        }
+
+        private void FilestoreWatcher_Changed(object sender, io.FileSystemEventArgs e)
+        {
+            int attempts = 0;
+            while( attempts++ < 5 )
+            {
+                try
+                {
+                    _splxStore = _splxApi.LoadFile( e.FullPath );
+                }
+                catch { System.Threading.Thread.Sleep( 100 ); }
+            }
+        }
+
+        public bool IsFileStore { get; internal set; }
+
+
         public string LdapRoot { get; set; }
         public string GlobalExternalGroupsCsv { get; set; }
 
-        public SuplexStore _splxStore;
 
-        public void LoadSuplexSecurity(string path)
-        {
-            _splxStore = _splxApi.LoadFile( path );
-        }
 
 
         //public string GetSuplexSecurity(string uniqueName)
@@ -77,7 +105,9 @@ namespace Synapse.ControllerService.Dal
                 };
             }
 
-            DataSet securityCache = sm.Security.Load( _splxStore, slp );
+            DataSet securityCache = IsFileStore ?
+                sm.Security.Load( _splxStore, slp ) :
+                sm.Security.Load( _splxApi, slp );
 
             return sm;
         }

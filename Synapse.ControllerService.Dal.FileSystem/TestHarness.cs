@@ -16,7 +16,19 @@ namespace Synapse.ControllerService.Dal
 
             FileSystemDal dal = new FileSystemDal( null, processPlansOnSingleton: false, processActionsOnSingleton: true );
 
-            Plan uie000 = dal.GetPlan( "uie000" );
+            while( true )
+            {
+                try
+                {
+                    Plan uie000 = dal.GetPlan( "container" );
+                }
+                catch( Exception ex )
+                {
+                    Console.WriteLine( ex.Message );
+                }
+                Thread.Sleep( 1000 );
+            }
+
 
             long ticks = DateTime.Now.Ticks;
             List<Tuple<Plan, ActionItem>> msgs = new List<Tuple<Plan, ActionItem>>();
@@ -101,7 +113,7 @@ namespace Synapse.ControllerService.Dal
             p = dal.GetPlanStatus( msgs[0].Item1.UniqueName, msgs[0].Item1.InstanceId );
 
             Console.WriteLine( $"{msgs[0].Item1.UniqueName}: {ps}/{p.Actions[0].Result.Status}" );
-            Console.WriteLine( $"Elapsed seconds: {timer.ElapsedMilliseconds/1000}" );
+            Console.WriteLine( $"Elapsed seconds: {timer.ElapsedMilliseconds / 1000}" );
 
             Environment.Exit( 0 );
         }
