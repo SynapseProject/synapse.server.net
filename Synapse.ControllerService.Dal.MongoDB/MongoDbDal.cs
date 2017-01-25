@@ -8,7 +8,7 @@ using MongoDB.Bson.Serialization;
 using Synapse.Core;
 using Synapse.Core.Utilities;
 
-namespace Synapse.ControllerService.Dal
+namespace Synapse.Services.Controller.Dal
 {
     public partial class MongoDBDal : IControllerDal
     {

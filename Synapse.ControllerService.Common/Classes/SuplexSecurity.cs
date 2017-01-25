@@ -6,7 +6,7 @@ using System.ComponentModel;
 
 //SecurityPrincipal/User/Group/Ace are copycats for Suplex objects, the intent being not to have a dependency on Suplex.Core.dll
 //see extension methods in Api
-namespace Synapse.ControllerService.Dal
+namespace Synapse.Services.Controller.Dal
 {
 	public class SuplexSecurityPrincipal : INotifyPropertyChanged
 	{

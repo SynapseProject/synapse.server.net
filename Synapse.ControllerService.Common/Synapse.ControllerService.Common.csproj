@@ -7,8 +7,8 @@
     <ProjectGuid>{C2D081EF-8454-4D63-8D36-EA67BB9183EA}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Synapse.ControllerService.Common</RootNamespace>
-    <AssemblyName>Synapse.ControllerService.Common</AssemblyName>
+    <RootNamespace>Synapse.Services.Controller.Common</RootNamespace>
+    <AssemblyName>Synapse.Controller.Common</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

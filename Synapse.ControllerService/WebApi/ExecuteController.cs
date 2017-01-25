@@ -18,7 +18,8 @@ namespace Synapse.Services
         [Route( "" )]
         public IEnumerable<string> GetPlanList()
         {
-            return new string[] { "Hello", "World", CurrentUser };
+            Console.WriteLine( "at hello" );
+            return new string[] { "Hello", "World", CurrentUser, DateTime.Now.ToString() };
         }
 
         [Route( "{planName}/" )]

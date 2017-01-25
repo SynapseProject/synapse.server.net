@@ -2,7 +2,7 @@
 
 using Suplex.Security;
 
-namespace Synapse.ControllerService.Dal
+namespace Synapse.Services.Controller.Dal
 {
     public enum RecordState
     {

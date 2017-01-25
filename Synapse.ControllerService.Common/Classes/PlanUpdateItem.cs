@@ -2,7 +2,7 @@
 
 using Synapse.Core;
 
-namespace Synapse.ControllerService.Dal
+namespace Synapse.Services.Controller.Dal
 {
     public class PlanUpdateItem
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Synapse.ControllerService.Dal
+namespace Synapse.Services.Controller.Dal
 {
     class ActionPath
     {

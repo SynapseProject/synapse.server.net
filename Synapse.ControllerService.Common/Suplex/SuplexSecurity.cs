@@ -12,7 +12,7 @@ using sg = Suplex.General;
 using ss = Suplex.Security.Standard;
 using Suplex.Data;
 
-namespace Synapse.ControllerService.Dal
+namespace Synapse.Services.Controller.Dal
 {
     public partial class SuplexDal
 	{

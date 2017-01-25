@@ -7,8 +7,8 @@
     <ProjectGuid>{EC38BC80-6F04-4508-A83D-19667135BD84}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Synapse.ControllerService.Dal</RootNamespace>
-    <AssemblyName>Synapse.ControllerService.Dal.MongoDB</AssemblyName>
+    <RootNamespace>Synapse.Services.Controller.Dal</RootNamespace>
+    <AssemblyName>Synapse.Controller.Dal.MongoDB</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

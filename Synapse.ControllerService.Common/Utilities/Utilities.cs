@@ -4,7 +4,7 @@ using System.Data;
 using Suplex.Forms.SecureManager;
 using Suplex.Security;
 
-namespace Synapse.ControllerService.Dal
+namespace Synapse.Services.Controller.Dal
 {
 	public static class Utilities
 	{

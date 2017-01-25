@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.ControllerService.D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.ControllerService.Dal.FileSystem", "Synapse.ControllerService.Dal.FileSystem\Synapse.ControllerService.Dal.FileSystem.csproj", "{241A483D-5450-43DC-8E0D-ECAE92DA1138}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.ControllerService.Cli", "Synapse.ControllerService.Cli\Synapse.ControllerService.Cli.csproj", "{8FB2EBE2-EDBF-4CB9-8F85-3771F59E8A51}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{241A483D-5450-43DC-8E0D-ECAE92DA1138}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{241A483D-5450-43DC-8E0D-ECAE92DA1138}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{241A483D-5450-43DC-8E0D-ECAE92DA1138}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8FB2EBE2-EDBF-4CB9-8F85-3771F59E8A51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8FB2EBE2-EDBF-4CB9-8F85-3771F59E8A51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8FB2EBE2-EDBF-4CB9-8F85-3771F59E8A51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8FB2EBE2-EDBF-4CB9-8F85-3771F59E8A51}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

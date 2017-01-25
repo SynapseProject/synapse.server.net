@@ -34,8 +34,6 @@ namespace Synapse.Services
 
         public static void Main(string[] args)
         {
-            RunConsole();
-
             AppDomain.CurrentDomain.UnhandledException += CurrentDomainUnhandledException;
 
             InstallService( args );
@@ -56,7 +54,7 @@ namespace Synapse.Services
         /// </summary>
         /// <param name="args"></param>
         [Conditional( "RELEASE" )]
-        static void InstallService(string[] args)
+        public static void InstallService(string[] args)
         {
             if( Environment.UserInteractive )
                 if( args.Length > 0 )
@@ -84,13 +82,13 @@ namespace Synapse.Services
                 }
         }
 
-        internal static void RunConsole()
+        public static void RunConsole()
         {
             using( SynapseControllerService s = new SynapseControllerService() )
             {
                 s.OnStart( null );
-                Console.WriteLine( "Press any key to stop SynapseController." );
-                while( Console.Read() != 'q' ) ;
+                Console.WriteLine( "Press Ctrl-C/Ctrl-Break to stop Synapse.Controller." );
+                Thread.Sleep( Timeout.Infinite );
                 s.OnStop();
             }
         }

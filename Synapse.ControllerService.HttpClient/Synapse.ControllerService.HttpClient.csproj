@@ -7,8 +7,8 @@
     <ProjectGuid>{059D8C9C-6397-422C-9AE1-9206A6C3D324}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Synapse.ControllerService.HttpClient</RootNamespace>
-    <AssemblyName>Synapse.ControllerService.HttpClient</AssemblyName>
+    <RootNamespace>Synapse.Services.Controller.HttpClient</RootNamespace>
+    <AssemblyName>Synapse.Controller.HttpClient</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
