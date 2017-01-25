@@ -34,6 +34,8 @@ namespace Synapse.Services
 
         public static void Main(string[] args)
         {
+            RunConsole();
+
             AppDomain.CurrentDomain.UnhandledException += CurrentDomainUnhandledException;
 
             InstallService( args );
@@ -67,6 +69,9 @@ namespace Synapse.Services
                         ok = InstallUtility.InstallService( install: true, message: out message );
                     else if( arg0 == "/uninstall" || arg0 == "/u" )
                         ok = InstallUtility.InstallService( install: false, message: out message );
+                    else if( arg0 == "/run" || arg0 == "/r" )
+                        RunConsole();
+
 
                     if( !ok )
                         WriteHelpAndExit( message );
@@ -77,6 +82,17 @@ namespace Synapse.Services
                 {
                     WriteHelpAndExit();
                 }
+        }
+
+        internal static void RunConsole()
+        {
+            using( SynapseControllerService s = new SynapseControllerService() )
+            {
+                s.OnStart( null );
+                Console.WriteLine( "Press any key to stop SynapseController." );
+                while( Console.Read() != 'q' ) ;
+                s.OnStop();
+            }
         }
 
         protected override void OnStart(string[] args)
