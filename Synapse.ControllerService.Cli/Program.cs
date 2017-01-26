@@ -13,6 +13,7 @@ namespace Synapse.Services.Controller.Cli
 
 
         Dictionary<string, string> _methods = new Dictionary<string, string>();
+        string _service = "service";
 
         void ProcessArgs(string[] args)
         {
@@ -32,51 +33,56 @@ namespace Synapse.Services.Controller.Cli
                 _methods.Add( "listplaninstances", "GetPlanInstanceIdList" );
 
                 string arg0 = args[0].ToLower();
-                string methodName = null;
+
                 if( _methods.ContainsKey( arg0 ) )
                 {
-                    methodName = _methods[arg0];
-                    arg0 = "method";
+                    ControllerServiceHttpApiClient c = new ControllerServiceHttpApiClient( "" );
+                    RunMethod( c, _methods[arg0], args );
                 }
-
-                switch( arg0 )
+                else if( arg0.StartsWith( _service ) )
                 {
-                    case "run":
-                    case "-run":
-                    case "/run":
-                    {
-                        SynapseControllerService.RunConsole();
-                        break;
-                    }
-                    case "install":
-                    case "-install":
-                    case "/install":
-                    {
-                        string message = string.Empty;
-                        if( !InstallUtility.InstallService( install: true, message: out message ) )
-                            Console.WriteLine( message );
-                        break;
-                    }
-                    case "uninstall":
-                    case "-uninstall":
-                    case "/uninstall":
-                    {
-                        string message = string.Empty;
-                        if( !InstallUtility.InstallService( install: false, message: out message ) )
-                            Console.WriteLine( message );
-                        break;
-                    }
-                    case "method":
-                    {
-                        ControllerServiceHttpApiClient c = new ControllerServiceHttpApiClient("");
-                        RunMethod( c, methodName, args );
-                        break;
-                    }
-                    default:
-                    {
-                        WriteHelpAndExit( "Unknown action." );
-                        break;
-                    }
+                    RunServiceAction( args );
+                }
+                else
+                {
+                    WriteHelpAndExit( "Unknown action." );
+                }
+            }
+        }
+
+
+        protected virtual void RunServiceAction(string[] args)
+        {
+            if( args.Length < 1 )
+                WriteHelpAndExit( "Not enough arguments specified." );
+
+            Dictionary<string, string> options = ParseCmdLine( args, 0 );
+
+            switch( options[_service] )
+            {
+                case "run":
+                {
+                    SynapseControllerService.RunConsole();
+                    break;
+                }
+                case "install":
+                {
+                    string message = string.Empty;
+                    if( !InstallUtility.InstallService( install: true, message: out message ) )
+                        Console.WriteLine( message );
+                    break;
+                }
+                case "uninstall":
+                {
+                    string message = string.Empty;
+                    if( !InstallUtility.InstallService( install: false, message: out message ) )
+                        Console.WriteLine( message );
+                    break;
+                }
+                default:
+                {
+                    WriteHelpAndExit( "Unknown service action." );
+                    break;
                 }
             }
         }
@@ -89,7 +95,7 @@ namespace Synapse.Services.Controller.Cli
 
             ConsoleColor defaultColor = Console.ForegroundColor;
 
-            Console_WriteLine( $"synapse..controller.cli.exe, Version: {typeof( Program ).Assembly.GetName().Version}\r\n", ConsoleColor.Green );
+            Console_WriteLine( $"synapse.controller.cli.exe, Version: {typeof( Program ).Assembly.GetName().Version}\r\n", ConsoleColor.Green );
             Console.WriteLine( "Syntax:" );
             Console_WriteLine( "  synapse.cli.exe /plan:{0}filePath{1}|{0}encodedPlanString{1}", ConsoleColor.Cyan, "{", "}" );
             Console.WriteLine( "    [/resultPlan:{0}filePath{1}|true] [/dryRun:true|false]", "{", "}" );
