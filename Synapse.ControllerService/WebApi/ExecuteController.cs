@@ -20,16 +20,18 @@ namespace Synapse.Services
         [Route( "" )]
         public IEnumerable<string> GetPlanList()
         {
+            string context = GetContext( nameof( GetPlanList ) );
+
             try
             {
+                SynapseControllerService.Logger.Debug( context );
                 string[] foo = new string[] { "Hello", "World", CurrentUser, DateTime.Now.ToString() };
-                SynapseControllerService.Logger.Debug( foo );
                 return foo;
             }
             catch( Exception ex )
             {
                 SynapseControllerService.Logger.Error(
-                    Utilities.UnwindException( nameof( GetPlanList ), ex, asSingleLine: true ) );
+                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
         }
@@ -38,16 +40,13 @@ namespace Synapse.Services
         [HttpGet]
         public IEnumerable<long> GetPlanInstanceIdList(string planName)
         {
-            //Dictionary<string, object> d = new Dictionary<string, object>();
-            //d.Add( nameof( planName ), planName );
-            //string context = GetContext( nameof( GetPlanInstanceIdList ), d );
-
             string context = GetContext( nameof( GetPlanInstanceIdList ), nameof( planName ), planName );
 
             try
             {
                 SynapseControllerService.Logger.Debug( context );
-                return new long[] { 1, 2, 3 };
+                long[] foo = new long[] { 1, 2, 3 };
+                return foo;
             }
             catch( Exception ex )
             {
@@ -61,17 +60,16 @@ namespace Synapse.Services
         [HttpGet]
         public long StartPlan(string planName, bool dryRun = false)
         {
+            string context = GetContext( nameof( StartPlan ),
+                nameof( planName ), planName, nameof( dryRun ), dryRun );
+
             try
             {
+                SynapseControllerService.Logger.Debug( context );
                 return _server.StartPlan( planName, dryRun );
             }
             catch( Exception ex )
             {
-                Dictionary<string, object> d = new Dictionary<string, object>();
-                d.Add( nameof( planName ), planName );
-                d.Add( nameof( dryRun ), dryRun );
-                string context = GetContext( nameof( StartPlan ), d );
-
                 SynapseControllerService.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
@@ -82,17 +80,16 @@ namespace Synapse.Services
         [HttpGet]
         public Plan GetPlanStatus(string planName, long planInstanceId)
         {
+            string context = GetContext( nameof( GetPlanStatus ),
+                nameof( planName ), planName, nameof( planInstanceId ), planInstanceId );
+
             try
             {
+                SynapseControllerService.Logger.Debug( context );
                 return _server.GetPlanStatus( planName, planInstanceId );
             }
             catch( Exception ex )
             {
-                Dictionary<string, object> d = new Dictionary<string, object>();
-                d.Add( nameof( planName ), planName );
-                d.Add( nameof( planInstanceId ), planInstanceId );
-                string context = GetContext( nameof( GetPlanStatus ), d );
-
                 SynapseControllerService.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
@@ -103,18 +100,17 @@ namespace Synapse.Services
         [HttpPost]
         public void WriteStatus(string planName, long planInstanceId, [FromBody]string msg)
         {
+            string context = GetContext( nameof( WriteStatus ),
+                nameof( planName ), planName, nameof( planInstanceId ), planInstanceId,
+                nameof( msg ), msg );
+
             try
             {
+                SynapseControllerService.Logger.Debug( context );
                 _server.WriteStatus( msg );
             }
             catch( Exception ex )
             {
-                Dictionary<string, object> d = new Dictionary<string, object>();
-                d.Add( nameof( planName ), planName );
-                d.Add( nameof( planInstanceId ), planInstanceId );
-                d.Add( nameof( msg ), msg );
-                string context = GetContext( nameof( WriteStatus ), d );
-
                 SynapseControllerService.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
@@ -125,50 +121,52 @@ namespace Synapse.Services
         [HttpDelete]
         public void CancelPlan(string planName, long planInstanceId)
         {
+            string context = GetContext( nameof( GetPlanStatus ),
+                nameof( planName ), planName, nameof( planInstanceId ), planInstanceId );
+
             try
             {
+                SynapseControllerService.Logger.Debug( context );
                 _server.CancelPlan( planInstanceId );
             }
             catch( Exception ex )
             {
-                Dictionary<string, object> d = new Dictionary<string, object>();
-                d.Add( nameof( planName ), planName );
-                d.Add( nameof( planInstanceId ), planInstanceId );
-                string context = GetContext( nameof( CancelPlan ), d );
-
                 SynapseControllerService.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
         }
 
-        public string GetContext(string context, params object[] parms)
+
+        #region utility methods
+        string GetContext(string context, params object[] parms)
         {
             StringBuilder c = new StringBuilder();
-            c.Append( $"{context}( " );
+            c.Append( $"{context}(" );
             for( int i = 0; i < parms.Length; i+=2 )
                 c.Append( $"{parms[i]}: {parms[i+1]}, " );
 
-            return $"{c.ToString().TrimEnd( ',', ' ' )} )";
+            return $"{c.ToString().TrimEnd( ',', ' ' )})";
         }
 
-        public string GetContext(string context, Dictionary<string, object> d)
+        string GetContext(string context, Dictionary<string, object> d)
         {
             StringBuilder c = new StringBuilder();
-            c.Append( $"{context}( " );
+            c.Append( $"{context}(" );
             foreach( string key in d.Keys )
                 c.Append( $"{key}: {d[key]}, " );
 
-            return $"{c.ToString().TrimEnd( ',', ' ' )} )";
+            return $"{c.ToString().TrimEnd( ',', ' ' )})";
         }
 
-        public string CurrentUser
+        string CurrentUser
         {
             get
             {
                 return User != null && User.Identity != null ? User.Identity.Name : "Anonymous";
             }
         }
+        #endregion
     }
 }
 
