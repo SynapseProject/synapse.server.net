@@ -3,6 +3,8 @@ using System.Data;
 
 using Suplex.Forms.SecureManager;
 using Suplex.Security;
+using System.Text;
+using System.Collections.Generic;
 
 namespace Synapse.Services.Controller.Dal
 {
@@ -134,21 +136,45 @@ namespace Synapse.Services.Controller.Dal
 			return new DateTimeOffset( datetime, offset );
 		}
 
-		//public static void DigestSecurityDescriptor(this Container container, SplxFileSystemManager security)
-		//{
-  //          container.Rights |= security.HasTakeOwnershipRight ? FileSystemRight.TakeOwnership : 0;
-  //          container.Rights |= security.HasReadPermissionsRight ? FileSystemRight.ReadPermissions : 0;
-  //          container.Rights |= security.HasChangePermissionsRight ? FileSystemRight.ChangePermissions : 0;
-  //          container.Rights |= security.HasListRight ? FileSystemRight.List : 0;
-  //          container.Rights |= security.HasReadRight ? FileSystemRight.Read : 0;
-  //          container.Rights |= security.HasCreateRight ? FileSystemRight.Create : 0;
-  //          container.Rights |= security.HasWritedRight ? FileSystemRight.Write : 0;
-  //          container.Rights |= security.HasDeleteRight ? FileSystemRight.Delete : 0;
-  //          container.Rights |= security.HasExecuteRight ? FileSystemRight.Execute : 0;
-		//}
-	}
+        //public static string UnwindException(string method, Exception ex)
+        //{
+        //    StringBuilder msg = new StringBuilder();
+        //    msg.Append( $"An error occurred in: {method}|{ex.Message}" );
 
-	public class ParseResult<T>
+        //    if( ex.InnerException != null )
+        //    {
+        //        Stack<Exception> exceptions = new Stack<Exception>();
+        //        exceptions.Push( ex.InnerException );
+
+        //        while( exceptions.Count > 0 )
+        //        {
+        //            Exception e = exceptions.Pop();
+        //            msg.Append( $"|{e.Message}" );
+
+        //            if( e.InnerException != null )
+        //                exceptions.Push( e.InnerException );
+        //        }
+        //    }
+
+        //    return msg.ToString();
+        //}
+
+
+        //public static void DigestSecurityDescriptor(this Container container, SplxFileSystemManager security)
+        //{
+        //          container.Rights |= security.HasTakeOwnershipRight ? FileSystemRight.TakeOwnership : 0;
+        //          container.Rights |= security.HasReadPermissionsRight ? FileSystemRight.ReadPermissions : 0;
+        //          container.Rights |= security.HasChangePermissionsRight ? FileSystemRight.ChangePermissions : 0;
+        //          container.Rights |= security.HasListRight ? FileSystemRight.List : 0;
+        //          container.Rights |= security.HasReadRight ? FileSystemRight.Read : 0;
+        //          container.Rights |= security.HasCreateRight ? FileSystemRight.Create : 0;
+        //          container.Rights |= security.HasWritedRight ? FileSystemRight.Write : 0;
+        //          container.Rights |= security.HasDeleteRight ? FileSystemRight.Delete : 0;
+        //          container.Rights |= security.HasExecuteRight ? FileSystemRight.Execute : 0;
+        //}
+    }
+
+    public class ParseResult<T>
 	{
 		public ParseResult()
 		{

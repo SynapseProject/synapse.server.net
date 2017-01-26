@@ -10,9 +10,11 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration( "" )]
 [assembly: AssemblyCompany( "" )]
 [assembly: AssemblyProduct( "Synapse.ControllerService.Cli" )]
-[assembly: AssemblyCopyright( "Copyright ©  2017" )]
+[assembly: AssemblyCopyright( "Copyright ©  Steve Shortt, 2016 - 2017" )]
 [assembly: AssemblyTrademark( "" )]
 [assembly: AssemblyCulture( "" )]
+
+//[assembly: log4net.Config.XmlConfigurator( Watch = true )]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
 // to COM components.  If you need to access a type in this assembly from 

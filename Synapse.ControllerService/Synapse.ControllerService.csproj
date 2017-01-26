@@ -117,6 +117,12 @@
       <DependentUpon>Synapse.ControllerService.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Synapse.ControllerService.Common\Synapse.ControllerService.Common.csproj">
+      <Project>{c2d081ef-8454-4d63-8d36-ea67bb9183ea}</Project>
+      <Name>Synapse.ControllerService.Common</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

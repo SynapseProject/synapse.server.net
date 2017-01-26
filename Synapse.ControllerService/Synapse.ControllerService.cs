@@ -1,18 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
-using System.Linq;
 using System.ServiceModel;
 using System.ServiceProcess;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+
 using log4net;
+
 using Microsoft.Owin.Hosting;
+
 using Synapse.Services.Common;
+
 
 namespace Synapse.Services
 {
@@ -36,16 +34,12 @@ namespace Synapse.Services
         {
             AppDomain.CurrentDomain.UnhandledException += CurrentDomainUnhandledException;
 
-            InstallService( args );
-
 #if DEBUG
-            SynapseControllerService s = new SynapseControllerService();
-            s.OnStart( null );
-            Thread.Sleep( Timeout.Infinite );
-            s.OnStop();
-#else
-			ServiceBase.Run( new SynapseControllerService() );
+            RunConsole();
 #endif
+
+            InstallService( args ); //only runs RELEASE
+            RunService(); //only runs RELEASE
         }
 
         /// <summary>
@@ -67,9 +61,6 @@ namespace Synapse.Services
                         ok = InstallUtility.InstallService( install: true, message: out message );
                     else if( arg0 == "/uninstall" || arg0 == "/u" )
                         ok = InstallUtility.InstallService( install: false, message: out message );
-                    else if( arg0 == "/run" || arg0 == "/r" )
-                        RunConsole();
-
 
                     if( !ok )
                         WriteHelpAndExit( message );
@@ -82,15 +73,26 @@ namespace Synapse.Services
                 }
         }
 
+        [Conditional( "RELEASE" )]
+        public static void RunService()
+        {
+            ServiceBase.Run( new SynapseControllerService() );
+        }
+
         public static void RunConsole()
         {
+            ConsoleColor current = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine( "Starting Synapse.Controller: Press Ctrl-C/Ctrl-Break to stop." );
+            Console.ForegroundColor = current;
+
             using( SynapseControllerService s = new SynapseControllerService() )
             {
                 s.OnStart( null );
-                Console.WriteLine( "Press Ctrl-C/Ctrl-Break to stop Synapse.Controller." );
                 Thread.Sleep( Timeout.Infinite );
                 s.OnStop();
             }
+            Console.WriteLine( "Terminating Synapse.Controller." );
         }
 
         protected override void OnStart(string[] args)
@@ -102,11 +104,11 @@ namespace Synapse.Services
                 if( _serviceHost != null )
                     _serviceHost.Close();
 
-#if DEBUG
-                _webapp = WebApp.Start<WebServerConfig>( $"http://localhost:{Config.WebApiPort}" );
-#else
-                _webapp = WebApp.Start<WebServerConfig>( $"http://*:{Config.WebApiPort}" );
-#endif
+                string url = Environment.UserInteractive ?
+                    $"http://localhost:{Config.WebApiPort}" :
+                    $"http://*:{Config.WebApiPort}";
+                _webapp = WebApp.Start<WebServerConfig>( url );
+                Logger.Info( $"Listening on {url}" );
 
                 _serviceHost = new ServiceHost( typeof( ExecuteController ) );
                 _serviceHost.Open();
@@ -121,7 +123,7 @@ namespace Synapse.Services
                 Logger.Fatal( msg );
                 WriteEventLog( msg );
 
-                this.Stop();
+                Stop();
                 Environment.Exit( 99 );
             }
         }
@@ -146,6 +148,9 @@ namespace Synapse.Services
             string log = "Application";
 
             string msg = ((Exception)e.ExceptionObject).Message + ((Exception)e.ExceptionObject).InnerException.Message;
+
+            Logger.Error( ((Exception)e.ExceptionObject).Message );
+            Logger.Error( msg );
 
             try
             {
