@@ -72,9 +72,14 @@ namespace Synapse.Services.Controller.Cli
 
                 if( _methods.ContainsKey( arg0 ) )
                 {
-                    Dictionary<string, string> parms = ParseCmdLine( args, 1 );
-                    if( parms.ContainsKey( "url" ) )
-                        BaseUrl = parms["url"];
+                    if( args.Length > 1 )
+                    {
+                        bool error = false;
+                        Dictionary<string, string> parms = ParseCmdLine( args, 1, ref error, suppressErrorMessages: true );
+                        if( parms.ContainsKey( "url" ) )
+                            BaseUrl = parms["url"];
+                    }
+                    Console.WriteLine( $"Calling {_methods[arg0]} on {BaseUrl}" );
                     RunMethod( new ControllerServiceHttpApiClient( BaseUrl ), _methods[arg0], args );
                 }
                 else if( arg0.StartsWith( _service ) )
