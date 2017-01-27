@@ -89,7 +89,7 @@ namespace Synapse.Services.Controller.Dal
             {
                 FilterDefinition<Plan> pf = GetPlanInstanceFilter( item.Plan.UniqueName, item.Plan.InstanceId );
 
-                item.Plan.LastModified = DateTime.Now;
+                item.Plan.LastModified = DateTime.Now.ToString();
                 _db.GetCollection<Plan>( _hist ).FindOneAndReplace( pf, item.Plan,
                     new FindOneAndReplaceOptions<Plan, object>() { IsUpsert = true } );
             }
