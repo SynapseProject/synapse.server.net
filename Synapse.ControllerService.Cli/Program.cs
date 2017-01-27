@@ -8,12 +8,57 @@ namespace Synapse.Services.Controller.Cli
     {
         static void Main(string[] args)
         {
-            new Program().ProcessArgs( args );
+            if( args.Length > 0 && (args[0].ToLower() == "interactive" || args[0].ToLower() == "i") )
+            {
+                Program p = new Program()
+                {
+                    IsInteractive = true,
+                };
+                if( args.Length > 1 )
+                {
+                    string[] s = args[1].Split( new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries );
+                    if( s.Length == 2 )
+                        p.BaseUrl = s[1];
+                }
+
+                string input = Console.ReadLine();
+                while( input.ToLower() != "exit" )
+                {
+                    p.ProcessArgs( input.Split( ' ' ) );
+                    input = Console.ReadLine();
+                }
+            }
+            else
+            {
+                new Program().ProcessArgs( args );
+            }
         }
 
 
         Dictionary<string, string> _methods = new Dictionary<string, string>();
         string _service = "service";
+
+        public Program()
+        {
+            _methods.Add( "list", "GetPlanList" );
+            _methods.Add( "l", "GetPlanList" );
+            _methods.Add( "listinstances", "GetPlanInstanceIdList" );
+            _methods.Add( "li", "GetPlanInstanceIdList" );
+            _methods.Add( "start", "StartPlan" );
+            _methods.Add( "s", "StartPlan" );
+            _methods.Add( "getstatus", "GetPlanStatus" );
+            _methods.Add( "gs", "GetPlanStatus" );
+            _methods.Add( "setstatus", "SetPlanStatus" );
+            _methods.Add( "ss", "SetPlanStatus" );
+            _methods.Add( "cancel", "CancelPlan" );
+            _methods.Add( "c", "CancelPlan" );
+
+            SynapseControllerConfig config = SynapseControllerConfig.Deserialze();
+            BaseUrl = $"http://localhost:{config.WebApiPort}/synapse/execute";
+        }
+
+        public bool IsInteractive { get; set; }
+        public string BaseUrl { get; set; }
 
         void ProcessArgs(string[] args)
         {
@@ -23,42 +68,31 @@ namespace Synapse.Services.Controller.Cli
             }
             else
             {
-                _methods.Add( "getplanlist", "GetPlanList" );
-                _methods.Add( "-getplanlist", "GetPlanList" );
-                _methods.Add( "/getplanlist", "GetPlanList" );
-                _methods.Add( "listplans", "GetPlanList" );
-                _methods.Add( "getplaninstanceidlist", "GetPlanInstanceIdList" );
-                _methods.Add( "-getplaninstanceidlist", "GetPlanInstanceIdList" );
-                _methods.Add( "/getplaninstanceidlist", "GetPlanInstanceIdList" );
-                _methods.Add( "listplaninstances", "GetPlanInstanceIdList" );
-
                 string arg0 = args[0].ToLower();
 
                 if( _methods.ContainsKey( arg0 ) )
                 {
-                    ControllerServiceHttpApiClient c = new ControllerServiceHttpApiClient( "" );
-                    RunMethod( c, _methods[arg0], args );
+                    Dictionary<string, string> parms = ParseCmdLine( args, 1 );
+                    if( parms.ContainsKey( "url" ) )
+                        BaseUrl = parms["url"];
+                    RunMethod( new ControllerServiceHttpApiClient( BaseUrl ), _methods[arg0], args );
                 }
                 else if( arg0.StartsWith( _service ) )
-                {
                     RunServiceAction( args );
-                }
                 else
-                {
                     WriteHelpAndExit( "Unknown action." );
-                }
             }
         }
 
 
         protected virtual void RunServiceAction(string[] args)
         {
-            if( args.Length < 1 )
+            if( args.Length < 2 )
                 WriteHelpAndExit( "Not enough arguments specified." );
 
-            Dictionary<string, string> options = ParseCmdLine( args, 0 );
+            string option = args[1].ToLower();
 
-            switch( options[_service] )
+            switch( option )
             {
                 case "run":
                 {
@@ -97,30 +131,39 @@ namespace Synapse.Services.Controller.Cli
 
             Console_WriteLine( $"synapse.controller.cli.exe, Version: {typeof( Program ).Assembly.GetName().Version}\r\n", ConsoleColor.Green );
             Console.WriteLine( "Syntax:" );
-            Console_WriteLine( "  synapse.cli.exe /plan:{0}filePath{1}|{0}encodedPlanString{1}", ConsoleColor.Cyan, "{", "}" );
-            Console.WriteLine( "    [/resultPlan:{0}filePath{1}|true] [/dryRun:true|false]", "{", "}" );
-            Console.WriteLine( "    [/taskModel:inProc|external] [/render:encode|decode] [dynamic parameters]\r\n" );
-            Console_WriteLine( "  /plan{0,-8}- filePath: Valid path to plan file.", ConsoleColor.Green, "" );
-            Console.WriteLine( "{0,-15}- [or] encodedPlanString: Inline base64 encoded plan string.", "" );
-            Console.WriteLine( "  /resultPlan{0,-2}- filePath: Valid path to write ResultPlan output file.", "" );
-            Console.WriteLine( "{0,-15}- [or]: 'true' will write to same path as /plan as *.result.*", "" );
-            Console.WriteLine( "  /dryRun{0,-6}Specifies whether to execute the plan as a DryRun only.", "" );
-            Console.WriteLine( "{0,-15}  Default is false.", "" );
-            Console.WriteLine( "  /taskModel{0,-3}Specifies whether to execute the plan on an internal", "" );
-            Console.WriteLine( "{0,-15}  thread or shell process.  Default is InProc.", "" );
-            Console.WriteLine( "  /render{0,-6}- encode: Returns the base64 encoded value of the", "" );
-            Console.WriteLine( "{0,-15}  specifed plan file.", "" );
-            Console.WriteLine( "{0,-15}- decode: Returns the base64 decoded value of the specified", "" );
-            Console.WriteLine( "{0,-15}  encodedPlanString.", "" );
-            Console.WriteLine( "  dynamic{0,-6}Any remaining /arg:value pairs will passed to the plan", "" );
-            Console.WriteLine( "{0,-15}  as dynamic parms.", "" );
+            Console_WriteLine( "  synapse.controller.cli.exe service {0}command{1} | {0}httpAction parm:value{1} |", ConsoleColor.Cyan, "{", "}" );
+            Console.WriteLine( "       interactive|i [url:http://{1}host:port{2}/synapse/execute]\r\n", "", "{", "}" );
+            Console_WriteLine( "  interactive{0,-2}Run this CLI in interactive mode. Optionally specify URL.", ConsoleColor.Green, "" );
+            Console.WriteLine( "{0,-15}All commands below work in standard or interactive modes.\r\n", "" );
+            Console.WriteLine( "  service{0,-6}Install/Uninstall the Windows Service, or Run the Service", "" );
+            Console.WriteLine( "{0,-15}as a cmdline-hosted daemon.", "" );
+            Console.WriteLine( "{0,-15}- Commands: install|uninstall|run", "" );
+            Console.WriteLine( "{0,-15}- Example:  synapse.controller.cli service run\r\n", "" );
+            Console.WriteLine( "  httpAction{0,-3}Execute a command, optionally include URL", "" );
+            Console.WriteLine( "{0,-15}Parm help: synapse.controller.cli {1}httpAction{2} help.", "", "{", "}" );
+            Console.WriteLine( "{0,-15}URL: url:http://{1}host:port{2}/synapse/execute\r\n", "", "{", "}" );
+            Console.WriteLine( "  - httpActions:", "" );
+            Console.WriteLine( "    - List|l             Get a list of Plans.", "" );
+            Console.WriteLine( "    - ListInstances|li   Get a list of Plans Instances.", "" );
+            Console.WriteLine( "    - Start|s            Start a new Plan Instance.", "" );
+            Console.WriteLine( "    - GetStatus|gs       Get the Status for a Plan Instance.", "" );
+            Console.WriteLine( "    - SetStatus|ss       Set the Status for a Plan Instance.", "" );
+            Console.WriteLine( "    - Cancel|c           Cancel a Plan Instance.\r\n", "" );
+            Console.WriteLine( "  Examples:", "" );
+            Console.WriteLine( "    synapse.controller.cli l url:http://somehost/synapse/execute", "" );
+            Console.WriteLine( "    synapse.controller.cli li help", "" );
+            Console.WriteLine( "    synapse.controller.cli li planName:foo url:http://somehost/synapse/execute", "" );
+            Console.WriteLine( "    synapse.controller.cli li planName:foo", "" );
+            Console.WriteLine( "    synapse.controller.cli i url:http://somehost/synapse/execute", "" );
+            Console.WriteLine( "    synapse.controller.cli i", "" );
 
             if( haveError )
                 Console_WriteLine( $"\r\n\r\n*** Last error:\r\n{errorMessage}\r\n", ConsoleColor.Red );
 
             Console.ForegroundColor = defaultColor;
 
-            Environment.Exit( haveError ? 1 : 0 );
+            if( !IsInteractive )
+                Environment.Exit( haveError ? 1 : 0 );
         }
         #endregion
     }
