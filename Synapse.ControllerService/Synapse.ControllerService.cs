@@ -124,7 +124,7 @@ namespace Synapse.Services
                 WriteEventLog( msg );
 
                 Stop();
-                Environment.Exit( 99 );
+                Environment.Exit( 1 );
             }
         }
 
@@ -132,10 +132,18 @@ namespace Synapse.Services
         {
             Logger.Info( ServiceStatus.Stopping );
 
-            _webapp?.Dispose();
+            try
+            {
+                _webapp?.Dispose();
 
-            if( _serviceHost != null )
-                _serviceHost.Close();
+                if( _serviceHost != null )
+                    _serviceHost.Close();
+            }
+            catch( Exception ex )
+            {
+                Logger.Fatal( ex.Message );
+                WriteEventLog( ex.Message );
+            }
 
             Logger.Info( ServiceStatus.Stopped );
         }
@@ -144,7 +152,7 @@ namespace Synapse.Services
         #region exception handling
         private static void CurrentDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            string source = "SynapseService";
+            string source = "SynapseControllerService";
             string log = "Application";
 
             string msg = ((Exception)e.ExceptionObject).Message + ((Exception)e.ExceptionObject).InnerException.Message;
