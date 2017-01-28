@@ -17,6 +17,23 @@ namespace Synapse.Services
         }
 
 
+        public string Hello() { return HelloAsync().Result; }
+
+        public async Task<string> HelloAsync()
+        {
+            string requestUri = $"{_rootPath}/hello";
+            return await GetAsync<string>( requestUri );
+        }
+
+        public string WhoAmI() { return WhoAmIAsync().Result; }
+
+        public async Task<string> WhoAmIAsync()
+        {
+            string requestUri = $"{_rootPath}/hello/whoami";
+            return await GetAsync<string>( requestUri );
+        }
+
+
         public List<string> GetPlanList()
         {
             return GetPlanListAsync().Result;

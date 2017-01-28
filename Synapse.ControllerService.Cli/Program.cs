@@ -40,6 +40,10 @@ namespace Synapse.Services.Controller.Cli
 
         public Program()
         {
+            _methods.Add( "hello", "Hello" );
+            _methods.Add( "hi", "Hello" );
+            _methods.Add( "whoami", "WhoAmI" );
+            _methods.Add( "who", "WhoAmI" );
             _methods.Add( "list", "GetPlanList" );
             _methods.Add( "l", "GetPlanList" );
             _methods.Add( "listinstances", "GetPlanInstanceIdList" );
@@ -148,6 +152,8 @@ namespace Synapse.Services.Controller.Cli
             Console.WriteLine( "{0,-15}Parm help: synapse.controller.cli {1}httpAction{2} help.", "", "{", "}" );
             Console.WriteLine( "{0,-15}URL: url:http://{1}host:port{2}/synapse/execute\r\n", "", "{", "}" );
             Console.WriteLine( "  - httpActions:", "" );
+            Console.WriteLine( "    - Hello|hi           Returns 'Hello World'.", "" );
+            Console.WriteLine( "    - WhoAmI|who         Returns ControllerServer User Context.", "" );
             Console.WriteLine( "    - List|l             Get a list of Plans.", "" );
             Console.WriteLine( "    - ListInstances|li   Get a list of Plans Instances.", "" );
             Console.WriteLine( "    - Start|s            Start a new Plan Instance.", "" );

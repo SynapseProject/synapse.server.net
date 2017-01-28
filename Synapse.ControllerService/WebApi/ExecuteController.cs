@@ -17,6 +17,44 @@ namespace Synapse.Services
         PlanServer _server = new PlanServer();
 
         [HttpGet]
+        [Route( "hello" )]
+        public string Hello()
+        {
+            string context = GetContext( nameof( Hello ) );
+
+            try
+            {
+                SynapseControllerService.Logger.Debug( context );
+                return "Hello from SynapseControllerServer, World!";
+            }
+            catch( Exception ex )
+            {
+                SynapseControllerService.Logger.Error(
+                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
+                throw;
+            }
+        }
+
+        [HttpGet]
+        [Route( "hello/whoami" )]
+        public string WhoAmI()
+        {
+            string context = GetContext( nameof( WhoAmI ) );
+
+            try
+            {
+                SynapseControllerService.Logger.Debug( context );
+                return CurrentUser;
+            }
+            catch( Exception ex )
+            {
+                SynapseControllerService.Logger.Error(
+                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
+                throw;
+            }
+        }
+
+        [HttpGet]
         [Route( "" )]
         public IEnumerable<string> GetPlanList()
         {
