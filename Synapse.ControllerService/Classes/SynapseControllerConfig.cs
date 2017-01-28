@@ -13,48 +13,16 @@ namespace Synapse.Services
     {
         public SynapseControllerConfig()
         {
-            AuthenticationScheme = AuthenticationSchemes.IntegratedWindowsAuthentication;
-            NodeServiceUrl = "http://localhost:8000/synapse/node";
         }
 
         public static readonly string CurrentPath = $"{Path.GetDirectoryName( typeof( SynapseControllerConfig ).Assembly.Location )}";
         public static readonly string FileName = $"{Path.GetDirectoryName( typeof( SynapseControllerConfig ).Assembly.Location )}\\Synapse.Controller.config.yaml";
 
-        public int MaxServerThreads { get; set; }
-        public AuthenticationSchemes AuthenticationScheme { get; set; }
-        public string WebApiPort { get; set; }
-        public string NodeServiceUrl { get; set; }
-
-
-        /// <summary>
-        /// A wrapper on Path.Combine to correct for fronting/trailing backslashes that otherwise fail in Path.Combine.
-        /// </summary>
-        /// <param name="paths">An array of parts of the path.</param>
-        /// <returns>The combined path</returns>
-        public static string PathCombine(params string[] paths)
-        {
-            if( paths.Length > 0 )
-            {
-                int last = paths.Length - 1;
-                for( int c = 0; c <= last; c++ )
-                {
-                    if( c != 0 )
-                    {
-                        paths[c] = paths[c].Trim( Path.DirectorySeparatorChar );
-                    }
-                    if( c != last )
-                    {
-                        paths[c] = string.Format( "{0}\\", paths[c] );
-                    }
-                }
-            }
-            else
-            {
-                return string.Empty;
-            }
-
-            return Path.Combine( paths );
-        }
+        //public int MaxServerThreads { get; set; } = 0;
+        public AuthenticationSchemes AuthenticationScheme { get; set; } = AuthenticationSchemes.IntegratedWindowsAuthentication;
+        public int WebApiPort { get; set; } = 8008;
+        public string NodeServiceUrl { get; set; } = "http://localhost:8000/synapse/node";
+        public string DalProvider { get; set; } = "Synapse.Controller.Dal.FileSystem:Synapse.Services.Controller.Dal.FileSystemDal";
 
 
         public void Serialize()
@@ -64,6 +32,9 @@ namespace Synapse.Services
 
         public static SynapseControllerConfig Deserialze()
         {
+            if( !File.Exists( FileName ) )
+                new SynapseControllerConfig().Serialize();
+
             return YamlHelpers.DeserializeFile<SynapseControllerConfig>( FileName );
         }
     }
