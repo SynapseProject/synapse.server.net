@@ -66,7 +66,7 @@ namespace Synapse.Services
         public async Task<long> StartPlanAsync(string planName, bool dryRun = false, Dictionary<string, string> dynamicParameters = null)
         {
             StringBuilder qs = new StringBuilder();
-            qs.Append( $"&dryRun={dryRun}" );
+            qs.Append( $"?dryRun={dryRun}" );
             if( dynamicParameters != null )
                 foreach( string key in dynamicParameters.Keys )
                     qs.Append( $"&{key}={dynamicParameters[key]}" );
