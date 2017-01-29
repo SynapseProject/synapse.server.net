@@ -151,7 +151,7 @@ namespace Synapse.Services
             }
         }
 
-        [Route( "{planUniqueName}/{planInstanceId}/" )]
+        [Route( "{planUniqueName}/{planInstanceId}/action/" )]
         [HttpPost]
         public void SetStatus(string planUniqueName, long planInstanceId, [FromBody]ActionItem actionItem)
         {

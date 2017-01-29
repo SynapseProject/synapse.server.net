@@ -87,15 +87,27 @@ namespace Synapse.Services
         }
 
 
-        public void SetPlanStatus(string planName, long planInstanceId, string status)
+        public void SetPlanStatus(string planName, long planInstanceId, Plan plan)
         {
-            SetPlanStatusAsync( planName, planInstanceId, status ).Wait();
+            SetPlanStatusAsync( planName, planInstanceId, plan ).Wait();
         }
 
-        public async Task SetPlanStatusAsync(string planName, long planInstanceId, string status)
+        public async Task SetPlanStatusAsync(string planName, long planInstanceId, Plan plan)
         {
             string requestUri = $"{_rootPath}/{planName}/{planInstanceId}/";
-            await PostAsyncVoid<string>( status, requestUri );
+            await PostAsyncVoid<Plan>( plan, requestUri );
+        }
+
+
+        public void SetPlanActionStatus(string planName, long planInstanceId, ActionItem actionItem)
+        {
+            SetPlanActionStatusAsync( planName, planInstanceId, actionItem ).Wait();
+        }
+
+        public async Task SetPlanActionStatusAsync(string planName, long planInstanceId, ActionItem actionItem)
+        {
+            string requestUri = $"{_rootPath}/{planName}/{planInstanceId}/action/";
+            await PostAsyncVoid<ActionItem>( actionItem, requestUri );
         }
 
 
