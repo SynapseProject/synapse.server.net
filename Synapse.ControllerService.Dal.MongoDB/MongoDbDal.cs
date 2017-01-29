@@ -15,9 +15,12 @@ namespace Synapse.Services.Controller.Dal
         static readonly string CurrentPath = $"{System.IO.Path.GetDirectoryName( typeof( MongoDBDal ).Assembly.Location )}";
 
         IMongoDatabase _db = null;
-        internal static readonly string _plans = "plans";
-        internal static readonly string _paths = "paths";
-        internal static readonly string _hist = "history";
+        internal static readonly string _plans = "synapsePlans";
+        internal static readonly string _paths = "synapsePaths";
+        internal static readonly string _hist = "synapseHistory";
+
+        //this is a stub feature
+        static long PlanInstanceIdCounter = DateTime.Now.Ticks;
 
         public MongoDBDal()
         {
@@ -59,11 +62,30 @@ namespace Synapse.Services.Controller.Dal
         public bool ProcessActionsOnSingleton { get; set; }
 
 
+        public IEnumerable<string> GetPlanList()
+        {
+            return new string[] { "Hello,", "World,", "from", "MongoDBDal!" };
+        }
+
+        public IEnumerable<long> GetPlanInstanceIdList(string planUniqueName)
+        {
+            return new long[] { 1, 2, 3 };
+        }
+
         public Plan GetPlan(string planUniqueName)
         {
             //todo: this is temporary only, switch to mongo impl
             string planFile = $"{CurrentPath}\\Plans\\{planUniqueName}.yaml";
             return YamlHelpers.DeserializeFile<Plan>( planFile );
+        }
+
+        public Plan CreatePlanInstance(string planUniqueName)
+        {
+            //todo: this is temporary only, switch to mongo impl
+            string planFile = $"{CurrentPath}\\Plans\\{planUniqueName}.yaml";
+            Plan plan = YamlHelpers.DeserializeFile<Plan>( planFile );
+            plan.InstanceId = PlanInstanceIdCounter++;
+            return plan;
         }
 
         public Plan GetPlanStatus(string planUniqueName, long planInstanceId)

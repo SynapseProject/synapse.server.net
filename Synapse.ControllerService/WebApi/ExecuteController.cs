@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Security.Principal;
 using System.Text;
-using System.Threading.Tasks;
 using System.Web.Http;
-using Synapse.Core;
 
+using Synapse.Core;
 using Synapse.Common.WebApi;
+
 
 namespace Synapse.Services
 {
@@ -63,8 +61,7 @@ namespace Synapse.Services
             try
             {
                 SynapseControllerService.Logger.Debug( context );
-                string[] foo = new string[] { "Hello", "World", CurrentUser, DateTime.Now.ToString() };
-                return foo;
+                return _server.GetPlanList();
             }
             catch( Exception ex )
             {
@@ -74,17 +71,16 @@ namespace Synapse.Services
             }
         }
 
-        [Route( "{planName}/" )]
+        [Route( "{planUniqueName}/" )]
         [HttpGet]
-        public IEnumerable<long> GetPlanInstanceIdList(string planName)
+        public IEnumerable<long> GetPlanInstanceIdList(string planUniqueName)
         {
-            string context = GetContext( nameof( GetPlanInstanceIdList ), nameof( planName ), planName );
+            string context = GetContext( nameof( GetPlanInstanceIdList ), nameof( planUniqueName ), planUniqueName );
 
             try
             {
                 SynapseControllerService.Logger.Debug( context );
-                long[] foo = new long[] { 1, 2, 3 };
-                return foo;
+                return _server.GetPlanInstanceIdList( planUniqueName );
             }
             catch( Exception ex )
             {
@@ -94,17 +90,17 @@ namespace Synapse.Services
             }
         }
 
-        [Route( "{planName}/start/" )]
+        [Route( "{planUniqueName}/start/" )]
         [HttpGet]
-        public long StartPlan(string planName, bool dryRun = false)
+        public long StartPlan(string planUniqueName, bool dryRun = false)
         {
             string context = GetContext( nameof( StartPlan ),
-                nameof( planName ), planName, nameof( dryRun ), dryRun );
+                nameof( planUniqueName ), planUniqueName, nameof( dryRun ), dryRun );
 
             try
             {
                 SynapseControllerService.Logger.Debug( context );
-                return _server.StartPlan( planName, dryRun );
+                return _server.StartPlan( planUniqueName, dryRun );
             }
             catch( Exception ex )
             {
@@ -114,17 +110,17 @@ namespace Synapse.Services
             }
         }
 
-        [Route( "{planName}/{planInstanceId}/" )]
+        [Route( "{planUniqueName}/{planInstanceId}/" )]
         [HttpGet]
-        public Plan GetPlanStatus(string planName, long planInstanceId)
+        public Plan GetPlanStatus(string planUniqueName, long planInstanceId)
         {
             string context = GetContext( nameof( GetPlanStatus ),
-                nameof( planName ), planName, nameof( planInstanceId ), planInstanceId );
+                nameof( planUniqueName ), planUniqueName, nameof( planInstanceId ), planInstanceId );
 
             try
             {
                 SynapseControllerService.Logger.Debug( context );
-                return _server.GetPlanStatus( planName, planInstanceId );
+                return _server.GetPlanStatus( planUniqueName, planInstanceId );
             }
             catch( Exception ex )
             {
@@ -134,18 +130,18 @@ namespace Synapse.Services
             }
         }
 
-        [Route( "{planName}/{planInstanceId}/" )]
+        [Route( "{planUniqueName}/{planInstanceId}/" )]
         [HttpPost]
-        public void WriteStatus(string planName, long planInstanceId, [FromBody]string msg)
+        public void SetStatus(string planUniqueName, long planInstanceId, [FromBody]Plan plan)
         {
-            string context = GetContext( nameof( WriteStatus ),
-                nameof( planName ), planName, nameof( planInstanceId ), planInstanceId,
-                nameof( msg ), msg );
+            string context = GetContext( nameof( SetStatus ),
+                nameof( planUniqueName ), planUniqueName, nameof( planInstanceId ), planInstanceId,
+                nameof( plan ), plan );
 
             try
             {
                 SynapseControllerService.Logger.Debug( context );
-                _server.WriteStatus( msg );
+                _server.UpdatePlanStatus( plan );
             }
             catch( Exception ex )
             {
@@ -155,12 +151,33 @@ namespace Synapse.Services
             }
         }
 
-        [Route( "{planName}/{planInstanceId}/" )]
+        [Route( "{planUniqueName}/{planInstanceId}/" )]
+        [HttpPost]
+        public void SetStatus(string planUniqueName, long planInstanceId, [FromBody]ActionItem actionItem)
+        {
+            string context = GetContext( nameof( SetStatus ),
+                nameof( planUniqueName ), planUniqueName, nameof( planInstanceId ), planInstanceId,
+                nameof( actionItem ), actionItem );
+
+            try
+            {
+                SynapseControllerService.Logger.Debug( context );
+                _server.UpdatePlanActionStatus( planUniqueName, planInstanceId, actionItem );
+            }
+            catch( Exception ex )
+            {
+                SynapseControllerService.Logger.Error(
+                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
+                throw;
+            }
+        }
+
+        [Route( "{planUniqueName}/{planInstanceId}/" )]
         [HttpDelete]
-        public void CancelPlan(string planName, long planInstanceId)
+        public void CancelPlan(string planUniqueName, long planInstanceId)
         {
             string context = GetContext( nameof( GetPlanStatus ),
-                nameof( planName ), planName, nameof( planInstanceId ), planInstanceId );
+                nameof( planUniqueName ), planUniqueName, nameof( planInstanceId ), planInstanceId );
 
             try
             {
@@ -181,8 +198,8 @@ namespace Synapse.Services
         {
             StringBuilder c = new StringBuilder();
             c.Append( $"{context}(" );
-            for( int i = 0; i < parms.Length; i+=2 )
-                c.Append( $"{parms[i]}: {parms[i+1]}, " );
+            for( int i = 0; i < parms.Length; i += 2 )
+                c.Append( $"{parms[i]}: {parms[i + 1]}, " );
 
             return $"{c.ToString().TrimEnd( ',', ' ' )})";
         }

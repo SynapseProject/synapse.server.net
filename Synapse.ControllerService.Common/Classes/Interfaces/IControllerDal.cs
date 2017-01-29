@@ -1,10 +1,17 @@
-﻿using Synapse.Core;
+﻿using System.Collections.Generic;
+using Synapse.Core;
 
 namespace Synapse.Services.Controller.Dal
 {
     public interface IControllerDal
     {
+        IEnumerable<string> GetPlanList();
+
+        IEnumerable<long> GetPlanInstanceIdList(string planUniqueName);
+
         Plan GetPlan(string planUniqueName);
+
+        Plan CreatePlanInstance(string planUniqueName);
 
         Plan GetPlanStatus(string planUniqueName, long planInstanceId);
 

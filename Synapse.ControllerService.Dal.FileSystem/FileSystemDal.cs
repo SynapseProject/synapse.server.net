@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using Suplex.Security;
@@ -17,6 +18,9 @@ namespace Synapse.Services.Controller.Dal
         string _splxPath = null;
 
         SuplexDal _splxDal = null;
+
+        //this is a stub feature
+        static long PlanInstanceIdCounter = DateTime.Now.Ticks;
 
         public FileSystemDal()
         {
@@ -67,12 +71,30 @@ namespace Synapse.Services.Controller.Dal
         public bool ProcessActionsOnSingleton { get; set; }
 
 
+        public IEnumerable<string> GetPlanList()
+        {
+            return new string[] { "Hello,", "World,", "from", "FileSystemDal!" };
+        }
+
+        public IEnumerable<long> GetPlanInstanceIdList(string planUniqueName)
+        {
+            return new long[] { 1, 2, 3 };
+        }
+
         public Plan GetPlan(string planUniqueName)
         {
             _splxDal?.TrySecurityOrException( planUniqueName, AceType.FileSystem, FileSystemRight.Execute, "Plan" );
 
             string planFile = $"{_planPath}{planUniqueName}.yaml";
             return YamlHelpers.DeserializeFile<Plan>( planFile );
+        }
+
+        public Plan CreatePlanInstance(string planUniqueName)
+        {
+            string planFile = $"{_planPath}{planUniqueName}.yaml";
+            Plan plan = YamlHelpers.DeserializeFile<Plan>( planFile );
+            plan.InstanceId = PlanInstanceIdCounter++;
+            return plan;
         }
 
         public Plan GetPlanStatus(string planUniqueName, long planInstanceId)

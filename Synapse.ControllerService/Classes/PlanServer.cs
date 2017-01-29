@@ -11,7 +11,6 @@ namespace Synapse.Services
 {
     public class PlanServer
     {
-        public static int PlanInstanceId = 0;
         NodeServiceHttpApiClient _nodeClient = new NodeServiceHttpApiClient( SynapseControllerService.Config.NodeServiceUrl );
         IControllerDal _dal = null;
 
@@ -26,15 +25,21 @@ namespace Synapse.Services
             _dal = AssemblyLoader.Load<IControllerDal>( SynapseControllerService.Config.DalProvider, defaultType );
         }
 
-        public int StartPlan(string planUniqueName, bool dryRun = false)
+        public IEnumerable<string> GetPlanList()
         {
-            //string planFile = $"{SynapseControllerConfig.CurrentPath}\\Plans\\{planName}.yaml";
-            //Plan plan = YamlHelpers.DeserializeFile<Plan>( planFile );
+            return _dal.GetPlanList();
+        }
 
-            Plan plan = _dal.GetPlan( planUniqueName );
-            int pIId = PlanInstanceId++;
-            _nodeClient.StartPlan( pIId, dryRun, plan );
-            return pIId;
+        public IEnumerable<long> GetPlanInstanceIdList(string planUniqueName)
+        {
+            return _dal.GetPlanInstanceIdList(planUniqueName);
+        }
+
+        public long StartPlan(string planUniqueName, bool dryRun = false)
+        {
+            Plan plan = _dal.CreatePlanInstance( planUniqueName );
+            _nodeClient.StartPlan( plan.InstanceId, dryRun, plan );
+            return plan.InstanceId;
         }
 
         public void CancelPlan(long instanceId)
@@ -44,16 +49,18 @@ namespace Synapse.Services
 
         public Plan GetPlanStatus(string planUniqueName, long planInstanceId)
         {
-            //string planFile = $"{SynapseControllerConfig.CurrentPath}\\Plans\\{planName}.yaml";
-            //return YamlHelpers.DeserializeFile<Plan>( planFile );
-
             return _dal.GetPlanStatus( planUniqueName, planInstanceId );
         }
 
 
-        public void WriteStatus(string msg)
+        public void UpdatePlanStatus(Plan plan)
         {
-            SynapseControllerService.Logger.Info( msg );
+            _dal.UpdatePlanStatus( plan );
+        }
+
+        public void UpdatePlanActionStatus(string planUniqueName, long planInstanceId, ActionItem actionItem)
+        {
+            _dal.UpdatePlanActionStatus( planUniqueName, planInstanceId, actionItem );
         }
     }
 }
