@@ -67,8 +67,9 @@ namespace Synapse.Services
         {
             StringBuilder qs = new StringBuilder();
             qs.Append( $"&dryRun={dryRun}" );
-            foreach( string key in dynamicParameters.Keys )
-                qs.Append( $"&{key}={dynamicParameters[key]}" );
+            if( dynamicParameters != null )
+                foreach( string key in dynamicParameters.Keys )
+                    qs.Append( $"&{key}={dynamicParameters[key]}" );
 
             string requestUri = $"{_rootPath}/{planName}/start/{qs.ToString()}";
             return await GetAsync<long>( requestUri );
