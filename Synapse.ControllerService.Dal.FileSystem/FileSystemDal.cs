@@ -93,7 +93,11 @@ namespace Synapse.Services.Controller.Dal
         {
             string planFile = $"{_planPath}{planUniqueName}.yaml";
             Plan plan = YamlHelpers.DeserializeFile<Plan>( planFile );
+
+            if( string.IsNullOrWhiteSpace( plan.UniqueName ) )
+                plan.UniqueName = planUniqueName;
             plan.InstanceId = PlanInstanceIdCounter++;
+
             return plan;
         }
 
