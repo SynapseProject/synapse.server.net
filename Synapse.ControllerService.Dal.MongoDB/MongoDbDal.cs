@@ -84,7 +84,11 @@ namespace Synapse.Services.Controller.Dal
             //todo: this is temporary only, switch to mongo impl
             string planFile = $"{CurrentPath}\\Plans\\{planUniqueName}.yaml";
             Plan plan = YamlHelpers.DeserializeFile<Plan>( planFile );
+
+            if( string.IsNullOrWhiteSpace( plan.UniqueName ) )
+                plan.UniqueName = planUniqueName;
             plan.InstanceId = PlanInstanceIdCounter++;
+
             return plan;
         }
 
