@@ -1,10 +1,9 @@
 param (
-    [string]$path = "c:\Users\$($env:username)\desktop\AssemblyInfo.cs",
+    [string]$path, # = "c:\Users\$($env:username)\desktop\AssemblyInfo.cs",
     [int]$major = 1,
     [int]$minor = 0
  )
 
-#$file = Get-Content $path | Out-String
 $file = [System.IO.File]::ReadAllText( $path ) 
 
 #adjust AssemblyVersion
@@ -34,4 +33,3 @@ $file = ([regex]::Replace( $file, $pattern, $v ))
 Write-Host $file
 [System.IO.File]::SetAttributes( $path, [System.IO.FileAttributes]::Normal );
 [System.IO.File]::WriteAllText( $path, $file )
-#Set-Content -Path $path -Value $file.Trim()
