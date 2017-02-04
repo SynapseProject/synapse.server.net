@@ -1,0 +1,14 @@
+<ai>
+  <av>
+    <Major>0</Major>
+    <Minor>1</Minor>
+    <Build>0</Build>
+    <Revision>0</Revision>
+  </av>
+  <afv>
+    <Major>0</Major>
+    <Minor>1</Minor>
+    <Build>#</Build>
+    <Revision>0</Revision>
+  </afv>
+</ai>
