@@ -64,40 +64,14 @@ namespace Synapse.Services
                     string arg0 = args[0].ToLower();
                     if( arg0 == "/install" || arg0 == "/i" )
                     {
-                        Dictionary<string, string> values = CmdLineUtilities.ParseCmdLine( args, 1, ref ok, null );
-                        if( ok )
-                            ok = InstallUtility.InstallService( install: true, configValues: values, message: out message );
-                        if( ok && !(values.ContainsKey( "run" ) && values["run"] == "false") )
-                            try
-                            {
-                                ServiceController sc = new ServiceController( SynapseControllerConfig.Deserialze().ServiceName );
-                                sc.Start();
-                                sc.WaitForStatus( ServiceControllerStatus.Running, TimeSpan.FromMinutes( 2 ) );
-                            }
-                            catch( Exception ex )
-                            {
-                                message = ex.Message;
-                                ok = false;
-                            }
+                        bool error = false;
+                        Dictionary<string, string> values = CmdLineUtilities.ParseCmdLine( args, 1, ref error, ref message, null );
+                        if( !error )
+                            ok = InstallUtility.InstallAndStartService( configValues: values, message: out message );
                     }
                     else if( arg0 == "/uninstall" || arg0 == "/u" )
                     {
-                        try
-                        {
-                            ServiceController sc = new ServiceController( SynapseControllerConfig.Deserialze().ServiceName );
-                            if( sc.Status == ServiceControllerStatus.Running )
-                            {
-                                sc.Stop();
-                                sc.WaitForStatus( ServiceControllerStatus.Stopped, TimeSpan.FromMinutes( 2 ) );
-                            }
-                        }
-                        catch( Exception ex )
-                        {
-                            message = ex.Message;
-                            ok = false;
-                        }
-                        if( ok )
-                            ok = InstallUtility.InstallService( install: false, configValues: null, message: out message );
+                        ok = InstallUtility.StopAndUninstallService( out message );
                     }
 
                     if( !ok )

@@ -126,53 +126,30 @@ namespace Synapse.Services.Controller.Cli
                     string message = string.Empty;
                     bool error = false;
                     Dictionary<string, string> values = ParseCmdLine( args, 2, ref error, true );
-                    if( !InstallUtility.InstallService( install: true, configValues: values, message: out message ) )
+                    if( !InstallUtility.InstallAndStartService( configValues: values, message: out message ) )
+                    {
                         Console.WriteLine( message );
-                    else if( !(values.ContainsKey( "run" ) && values["run"] == "false") )
-                        try
-                        {
-                            string sn = SynapseControllerConfig.Deserialze().ServiceName;
-                            Console.WriteLine( $"\r\nStarting {sn}..." );
-                            ServiceController sc = new ServiceController( sn );
-                            sc.Start();
-                            sc.WaitForStatus( ServiceControllerStatus.Running, TimeSpan.FromMinutes( 2 ) );
-                            Console.WriteLine( $"{sn} is {sc.Status}" );
-                        }
-                        catch( Exception ex )
-                        {
-                            Console.WriteLine( ex.Message );
-                            Environment.Exit( 1 );
-                        }
+                        Environment.Exit( 1 );
+                    }
 
                     break;
                 }
                 case "uninstall":
                 {
-                    try
+                    string message = string.Empty;
+                    if( !InstallUtility.StopAndUninstallService( out message ) )
                     {
-                        string sn = SynapseControllerConfig.Deserialze().ServiceName;
-                        ServiceController sc = new ServiceController( sn );
-                        if( sc.Status == ServiceControllerStatus.Running )
-                        {
-                            Console.WriteLine( $"\r\nStopping {sn}..." );
-                            sc.Stop();
-                            sc.WaitForStatus( ServiceControllerStatus.Stopped, TimeSpan.FromMinutes( 2 ) );
-                        }
-                    }
-                    catch( Exception ex )
-                    {
-                        Console.WriteLine( ex.Message );
+                        Console.WriteLine( message );
                         Environment.Exit( 1 );
                     }
 
-                    string message = string.Empty;
-                    if( !InstallUtility.InstallService( install: false, configValues: null, message: out message ) )
-                        Console.WriteLine( message );
                     break;
                 }
                 default:
                 {
                     WriteHelpAndExit( "Unknown service action." );
+                    Environment.Exit( 1 );
+
                     break;
                 }
             }

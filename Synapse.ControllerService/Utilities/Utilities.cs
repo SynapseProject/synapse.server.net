@@ -9,16 +9,44 @@ namespace Synapse.Services
 {
     public class InstallUtility
     {
-        public static bool StopAndUninstall(bool install, out string message)
+        public static bool InstallAndStartService(Dictionary<string, string> configValues, out string message)
         {
-            bool ok = false;
+            message = null;
+
+            bool ok = InstallService( install: true, configValues: configValues, message: out message );
+
+            if( ok && !(configValues.ContainsKey( "run" ) && configValues["run"] == "false") )
+                try
+                {
+                    string sn = SynapseControllerConfig.Deserialze().ServiceName;
+                    Console.Write( $"\r\nStarting {sn}... " );
+                    ServiceController sc = new ServiceController( sn );
+                    sc.Start();
+                    sc.WaitForStatus( ServiceControllerStatus.Running, TimeSpan.FromMinutes( 2 ) );
+                    Console.WriteLine( sc.Status );
+                }
+                catch( Exception ex )
+                {
+                    Console.WriteLine();
+                    message = ex.Message;
+                    ok = false;
+                }
+
+            return ok;
+        }
+
+        public static bool StopAndUninstallService(out string message)
+        {
+            bool ok = true;
             message = null;
 
             try
             {
-                ServiceController sc = new ServiceController( SynapseControllerConfig.Deserialze().ServiceName );
+                string sn = SynapseControllerConfig.Deserialze().ServiceName;
+                ServiceController sc = new ServiceController( sn );
                 if( sc.Status == ServiceControllerStatus.Running )
                 {
+                    Console.WriteLine( $"\r\nStopping {sn}..." );
                     sc.Stop();
                     sc.WaitForStatus( ServiceControllerStatus.Stopped, TimeSpan.FromMinutes( 2 ) );
                 }
@@ -76,6 +104,7 @@ namespace Synapse.Services
         {
             ServiceProcessInstaller processInstaller = new ServiceProcessInstaller();
             ServiceInstaller serviceInstaller = new ServiceInstaller();
+
             SynapseControllerConfig config = SynapseControllerConfig.Deserialze();
 
             //set the privileges
