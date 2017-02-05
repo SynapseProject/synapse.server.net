@@ -9,10 +9,38 @@ namespace Synapse.Services
 {
     public class InstallUtility
     {
-        public static bool InstallService(bool install, out string message)
+        public static bool StopAndUninstall(bool install, out string message)
         {
-            Type type = typeof( SynapseControllerServiceInstaller );
+            bool ok = false;
+            message = null;
 
+            try
+            {
+                ServiceController sc = new ServiceController( SynapseControllerConfig.Deserialze().ServiceName );
+                if( sc.Status == ServiceControllerStatus.Running )
+                {
+                    sc.Stop();
+                    sc.WaitForStatus( ServiceControllerStatus.Stopped, TimeSpan.FromMinutes( 2 ) );
+                }
+            }
+            catch( Exception ex )
+            {
+                message = ex.Message;
+                ok = false;
+            }
+
+            if( ok )
+                ok = InstallService( install: false, configValues: null, message: out message );
+
+            return ok;
+        }
+
+        public static bool InstallService(bool install, Dictionary<string, string> configValues, out string message)
+        {
+            if( configValues != null )
+                SynapseControllerConfig.Configure( configValues );
+
+            string fullFilePath = typeof( SynapseControllerServiceInstaller ).Assembly.Location;
             string logFile = $"Synapse.Node.InstallLog.txt";
 
             List<string> args = new List<string>();
@@ -20,7 +48,7 @@ namespace Synapse.Services
             args.Add( $"/logfile={logFile}" );
             args.Add( "/LogToConsole=true" );
             args.Add( "/ShowCallStack=true" );
-            args.Add( type.Assembly.Location );
+            args.Add( fullFilePath );
 
             if( !install )
                 args.Add( "/u" );
@@ -33,7 +61,7 @@ namespace Synapse.Services
             }
             catch( Exception ex )
             {
-                string path = Path.GetDirectoryName( type.Assembly.Location );
+                string path = Path.GetDirectoryName( fullFilePath );
                 File.AppendAllText( $"{path}\\{logFile}", ex.Message );
                 message = ex.Message;
                 return false;
@@ -48,16 +76,17 @@ namespace Synapse.Services
         {
             ServiceProcessInstaller processInstaller = new ServiceProcessInstaller();
             ServiceInstaller serviceInstaller = new ServiceInstaller();
+            SynapseControllerConfig config = SynapseControllerConfig.Deserialze();
 
             //set the privileges
             processInstaller.Account = ServiceAccount.LocalSystem;
 
-            serviceInstaller.DisplayName = "Synapse Controller Service";
+            serviceInstaller.DisplayName = config.ServiceDisplayName;
             serviceInstaller.Description = "Serves Plan commands to and receives Plan status from Synapse Nodes.  Use 'Synapse.Controller /uninstall' to remove.  Information at http://synapse.readthedocs.io/en/latest/.";
             serviceInstaller.StartType = ServiceStartMode.Automatic;
 
             //must be the same as what was set in Program's constructor
-            serviceInstaller.ServiceName = "Synapse.Controller";
+            serviceInstaller.ServiceName = config.ServiceName;
             this.Installers.Add( processInstaller );
             this.Installers.Add( serviceInstaller );
         }

@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.ServiceModel;
 using System.ServiceProcess;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -9,6 +11,7 @@ using log4net;
 
 using Microsoft.Owin.Hosting;
 
+using Synapse.Common.CmdLine;
 using Synapse.Services.Common;
 
 
@@ -28,6 +31,8 @@ namespace Synapse.Services
             Config = SynapseControllerConfig.Deserialze();
 
             InitializeComponent();
+
+            this.ServiceName = Config.ServiceName;
         }
 
         public static void Main(string[] args)
@@ -58,9 +63,42 @@ namespace Synapse.Services
 
                     string arg0 = args[0].ToLower();
                     if( arg0 == "/install" || arg0 == "/i" )
-                        ok = InstallUtility.InstallService( install: true, message: out message );
+                    {
+                        Dictionary<string, string> values = CmdLineUtilities.ParseCmdLine( args, 1, ref ok, null );
+                        if( ok )
+                            ok = InstallUtility.InstallService( install: true, configValues: values, message: out message );
+                        if( ok && !(values.ContainsKey( "run" ) && values["run"] == "false") )
+                            try
+                            {
+                                ServiceController sc = new ServiceController( SynapseControllerConfig.Deserialze().ServiceName );
+                                sc.Start();
+                                sc.WaitForStatus( ServiceControllerStatus.Running, TimeSpan.FromMinutes( 2 ) );
+                            }
+                            catch( Exception ex )
+                            {
+                                message = ex.Message;
+                                ok = false;
+                            }
+                    }
                     else if( arg0 == "/uninstall" || arg0 == "/u" )
-                        ok = InstallUtility.InstallService( install: false, message: out message );
+                    {
+                        try
+                        {
+                            ServiceController sc = new ServiceController( SynapseControllerConfig.Deserialze().ServiceName );
+                            if( sc.Status == ServiceControllerStatus.Running )
+                            {
+                                sc.Stop();
+                                sc.WaitForStatus( ServiceControllerStatus.Stopped, TimeSpan.FromMinutes( 2 ) );
+                            }
+                        }
+                        catch( Exception ex )
+                        {
+                            message = ex.Message;
+                            ok = false;
+                        }
+                        if( ok )
+                            ok = InstallUtility.InstallService( install: false, configValues: null, message: out message );
+                    }
 
                     if( !ok )
                         WriteHelpAndExit( message );
@@ -203,7 +241,14 @@ namespace Synapse.Services
             bool haveError = !string.IsNullOrWhiteSpace( errorMessage );
 
             MessageBoxIcon icon = MessageBoxIcon.Information;
-            string msg = $"synapse.controller.exe, Version: {typeof( SynapseControllerService ).Assembly.GetName().Version}\r\nSyntax:\r\n  synapse.controller.exe /install | /uninstall";
+            Dictionary<string, string> cdf = SynapseControllerConfig.GetConfigDefaultValues();
+            StringBuilder df = new StringBuilder();
+            df.AppendLine( $"Optional args for configuring /install, use argname:value.  Defaults shown." );
+            foreach( string key in cdf.Keys )
+                df.AppendLine( $" - {key}:{cdf[key]}" );
+            df.AppendLine( $" - Run:true  (Optionally Starts the Windows Service)" );
+
+            string msg = $"synapse.controller.exe, Version: {typeof( SynapseControllerService ).Assembly.GetName().Version}\r\nSyntax:\r\n  synapse.controller.exe /install | /uninstall\r\n\r\n{df.ToString()}";
 
             if( haveError )
             {

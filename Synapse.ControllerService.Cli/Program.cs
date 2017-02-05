@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using System.ServiceProcess;
+using System.Text;
 
 namespace Synapse.Services.Controller.Cli
 {
@@ -27,6 +28,10 @@ namespace Synapse.Services.Controller.Cli
                     p.ProcessArgs( input.Split( ' ' ) );
                     input = Console.ReadLine();
                 }
+            }
+            else if( args.Length > 0 && (args[0].ToLower() == "test" || args[0].ToLower() == "t") )
+            {
+                new Program().RediculousExcuseForUnitTest( args );
             }
             else
             {
@@ -59,6 +64,14 @@ namespace Synapse.Services.Controller.Cli
 
             SynapseControllerConfig config = SynapseControllerConfig.Deserialze();
             BaseUrl = $"http://localhost:{config.WebApiPort}/synapse/execute";
+        }
+
+
+        //todo: delete this and create actual unit tests
+        void RediculousExcuseForUnitTest(string[] args)
+        {
+            string[] a = new string[] { "s", $"planName:{args[1]}", "dryRun:true" };
+            System.Threading.Tasks.Parallel.For( 0, Int32.Parse( args[2] ), ctr => { ProcessArgs( a ); } );
         }
 
         public bool IsInteractive { get; set; }
@@ -111,14 +124,49 @@ namespace Synapse.Services.Controller.Cli
                 case "install":
                 {
                     string message = string.Empty;
-                    if( !InstallUtility.InstallService( install: true, message: out message ) )
+                    bool error = false;
+                    Dictionary<string, string> values = ParseCmdLine( args, 2, ref error, true );
+                    if( !InstallUtility.InstallService( install: true, configValues: values, message: out message ) )
                         Console.WriteLine( message );
+                    else if( !(values.ContainsKey( "run" ) && values["run"] == "false") )
+                        try
+                        {
+                            string sn = SynapseControllerConfig.Deserialze().ServiceName;
+                            Console.WriteLine( $"\r\nStarting {sn}..." );
+                            ServiceController sc = new ServiceController( sn );
+                            sc.Start();
+                            sc.WaitForStatus( ServiceControllerStatus.Running, TimeSpan.FromMinutes( 2 ) );
+                            Console.WriteLine( $"{sn} is {sc.Status}" );
+                        }
+                        catch( Exception ex )
+                        {
+                            Console.WriteLine( ex.Message );
+                            Environment.Exit( 1 );
+                        }
+
                     break;
                 }
                 case "uninstall":
                 {
+                    try
+                    {
+                        string sn = SynapseControllerConfig.Deserialze().ServiceName;
+                        ServiceController sc = new ServiceController( sn );
+                        if( sc.Status == ServiceControllerStatus.Running )
+                        {
+                            Console.WriteLine( $"\r\nStopping {sn}..." );
+                            sc.Stop();
+                            sc.WaitForStatus( ServiceControllerStatus.Stopped, TimeSpan.FromMinutes( 2 ) );
+                        }
+                    }
+                    catch( Exception ex )
+                    {
+                        Console.WriteLine( ex.Message );
+                        Environment.Exit( 1 );
+                    }
+
                     string message = string.Empty;
-                    if( !InstallUtility.InstallService( install: false, message: out message ) )
+                    if( !InstallUtility.InstallService( install: false, configValues: null, message: out message ) )
                         Console.WriteLine( message );
                     break;
                 }
@@ -134,6 +182,13 @@ namespace Synapse.Services.Controller.Cli
         #region Help
         protected override void WriteHelpAndExit(string errorMessage = null)
         {
+            Dictionary<string, string> cdf = SynapseControllerConfig.GetConfigDefaultValues();
+            StringBuilder df = new StringBuilder();
+            df.AppendFormat( "{0,-15}- Optional install args, use argname:value.  Defaults shown.\r\n", "" );
+            foreach( string key in cdf.Keys )
+                df.AppendLine( $"                 - {key}:{cdf[key]}" );
+            df.AppendLine( $"                 - Run:true  (Optionally Starts the Windows Service)\r\n" );
+
             bool haveError = !string.IsNullOrWhiteSpace( errorMessage );
 
             ConsoleColor defaultColor = Console.ForegroundColor;
@@ -150,7 +205,8 @@ namespace Synapse.Services.Controller.Cli
             Console.WriteLine( "  service{0,-6}Install/Uninstall the Windows Service, or Run the Service", "" );
             Console.WriteLine( "{0,-15}as a cmdline-hosted daemon.", "" );
             Console.WriteLine( "{0,-15}- Commands: install|uninstall|run", "" );
-            Console.WriteLine( "{0,-15}- Example:  synapse.controller.cli service run\r\n", "" );
+            Console.WriteLine( "{0,-15}- Example:  synapse.controller.cli service run", "" );
+            Console.WriteLine( df.ToString() );
             Console.WriteLine( "  httpAction{0,-3}Execute a command, optionally specify URL.", "" );
             Console.WriteLine( "{0,-15}Parm help: synapse.controller.cli {1}httpAction{2} help.\r\n", "", "{", "}" );
             Console.WriteLine( "  - httpActions:", "" );
