@@ -1,0 +1,58 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.Server", "Synapse.Server\Synapse.Server.csproj", "{6335FE8D-72F6-40E6-98B8-F921EAF9377D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.Server.HttpClient", "Synapse.Server.HttpClient\Synapse.Server.HttpClient.csproj", "{059D8C9C-6397-422C-9AE1-9206A6C3D324}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.Controller.Common", "Synapse.Controller.Common\Synapse.Controller.Common.csproj", "{C2D081EF-8454-4D63-8D36-EA67BB9183EA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.Controller.Dal.MongoDB", "Synapse.Controller.Dal.MongoDB\Synapse.Controller.Dal.MongoDB.csproj", "{EC38BC80-6F04-4508-A83D-19667135BD84}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.Controller.Dal.FileSystem", "Synapse.Controller.Dal.FileSystem\Synapse.Controller.Dal.FileSystem.csproj", "{241A483D-5450-43DC-8E0D-ECAE92DA1138}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.Controller.Cli", "Synapse.Controller.Cli\Synapse.Controller.Cli.csproj", "{8FB2EBE2-EDBF-4CB9-8F85-3771F59E8A51}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.Node.cli", "Synapse.Node.cli\Synapse.Node.cli.csproj", "{871FF00E-C7CA-48D7-92B2-B769333703A4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6335FE8D-72F6-40E6-98B8-F921EAF9377D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6335FE8D-72F6-40E6-98B8-F921EAF9377D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6335FE8D-72F6-40E6-98B8-F921EAF9377D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6335FE8D-72F6-40E6-98B8-F921EAF9377D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{059D8C9C-6397-422C-9AE1-9206A6C3D324}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{059D8C9C-6397-422C-9AE1-9206A6C3D324}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{059D8C9C-6397-422C-9AE1-9206A6C3D324}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{059D8C9C-6397-422C-9AE1-9206A6C3D324}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2D081EF-8454-4D63-8D36-EA67BB9183EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2D081EF-8454-4D63-8D36-EA67BB9183EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2D081EF-8454-4D63-8D36-EA67BB9183EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2D081EF-8454-4D63-8D36-EA67BB9183EA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC38BC80-6F04-4508-A83D-19667135BD84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC38BC80-6F04-4508-A83D-19667135BD84}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC38BC80-6F04-4508-A83D-19667135BD84}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC38BC80-6F04-4508-A83D-19667135BD84}.Release|Any CPU.Build.0 = Release|Any CPU
+		{241A483D-5450-43DC-8E0D-ECAE92DA1138}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{241A483D-5450-43DC-8E0D-ECAE92DA1138}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{241A483D-5450-43DC-8E0D-ECAE92DA1138}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{241A483D-5450-43DC-8E0D-ECAE92DA1138}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8FB2EBE2-EDBF-4CB9-8F85-3771F59E8A51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8FB2EBE2-EDBF-4CB9-8F85-3771F59E8A51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8FB2EBE2-EDBF-4CB9-8F85-3771F59E8A51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8FB2EBE2-EDBF-4CB9-8F85-3771F59E8A51}.Release|Any CPU.Build.0 = Release|Any CPU
+		{871FF00E-C7CA-48D7-92B2-B769333703A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{871FF00E-C7CA-48D7-92B2-B769333703A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{871FF00E-C7CA-48D7-92B2-B769333703A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{871FF00E-C7CA-48D7-92B2-B769333703A4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
