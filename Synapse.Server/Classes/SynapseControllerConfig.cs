@@ -82,8 +82,8 @@ namespace Synapse.Services
             SynapseControllerConfig c = new SynapseControllerConfig();
             values[nameof( c.ServiceName )] = c.ServiceName;
             values[nameof( c.ServiceDisplayName )] = c.ServiceDisplayName;
-            values[nameof( c.AuthenticationScheme )] = c.AuthenticationScheme.ToString();
             values[nameof( c.WebApiPort )] = c.WebApiPort.ToString();
+            values[nameof( c.AuthenticationScheme )] = c.AuthenticationScheme.ToString();
             values[nameof( c.NodeServiceUrl )] = c.NodeServiceUrl;
             values[nameof( c.DalProvider )] = c.DalProvider;
 
@@ -100,11 +100,11 @@ namespace Synapse.Services
             if( values.ContainsKey( nameof( c.ServiceDisplayName ).ToLower() ) )
                 c.ServiceDisplayName = values[nameof( c.ServiceDisplayName ).ToLower()];
 
-            if( values.ContainsKey( nameof( c.AuthenticationScheme ).ToLower() ) )
-                c.AuthenticationSchemeString = values[nameof( c.AuthenticationScheme ).ToLower()];
-
             if( values.ContainsKey( nameof( c.WebApiPort ).ToLower() ) )
                 c.WebApiPortString = values[nameof( c.WebApiPort ).ToLower()];
+
+            if( values.ContainsKey( nameof( c.AuthenticationScheme ).ToLower() ) )
+                c.AuthenticationSchemeString = values[nameof( c.AuthenticationScheme ).ToLower()];
 
             if( values.ContainsKey( nameof( c.NodeServiceUrl ).ToLower() ) )
                 c.NodeServiceUrl = values[nameof( c.NodeServiceUrl ).ToLower()];

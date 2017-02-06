@@ -19,7 +19,8 @@ namespace Synapse.Services
 {
     public partial class SynapseServer : ServiceBase
     {
-        public static ILog Logger = LogManager.GetLogger( "SynapseControllerServer" );
+        public static ILog Logger = LogManager.GetLogger( "SynapseServer" );
+        public static SynapseServerConfig ServerConfig = null;
         public static SynapseControllerConfig ControllerConfig = null;
         public static SynapseNodeConfig NodeConfig = null;
 
@@ -29,11 +30,15 @@ namespace Synapse.Services
 
         public SynapseServer()
         {
-            ControllerConfig = SynapseControllerConfig.Deserialze();
+            ServerConfig = SynapseServerConfig.Deserialze();
+            if( ServerConfig.ServerIsController )
+                ControllerConfig = SynapseControllerConfig.Deserialze();
+            else
+                NodeConfig = SynapseNodeConfig.Deserialze();
 
             InitializeComponent();
 
-            this.ServiceName = ControllerConfig.ServiceName;
+            this.ServiceName = ServerConfig.ServiceName;
         }
 
         public static void Main(string[] args)
@@ -63,12 +68,24 @@ namespace Synapse.Services
                     string message = string.Empty;
 
                     string arg0 = args[0].ToLower();
-                    if( arg0 == "/install" || arg0 == "/i" )
+                    ServerRole role = ServerRole.Controller;
+                    bool installService = false;
+                    if( arg0 == "/install-controller" || arg0 == "/i-controller" )
+                    {
+                        installService = true;
+                    }
+                    else if( arg0 == "/install-node" || arg0 == "/i-node" )
+                    {
+                        role = ServerRole.Node;
+                        installService = true;
+                    }
+
+                    if( installService )
                     {
                         bool error = false;
                         Dictionary<string, string> values = CmdLineUtilities.ParseCmdLine( args, 1, ref error, ref message, null );
                         if( !error )
-                            ok = InstallUtility.InstallAndStartService( configValues: values, message: out message );
+                            ok = InstallUtility.InstallAndStartService( role: role, configValues: values, message: out message );
                     }
                     else if( arg0 == "/uninstall" || arg0 == "/u" )
                     {
@@ -96,7 +113,7 @@ namespace Synapse.Services
         {
             ConsoleColor current = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine( "Starting Synapse.Controller: Press Ctrl-C/Ctrl-Break to stop." );
+            Console.WriteLine( $"Starting Synapse.Server as {ServerConfig.ServerRole}: Press Ctrl-C/Ctrl-Break to stop." );
             Console.ForegroundColor = current;
 
             using( SynapseServer s = new SynapseServer() )
@@ -118,8 +135,8 @@ namespace Synapse.Services
                     _serviceHost.Close();
 
                 string url = Environment.UserInteractive ?
-                    $"http://localhost:{ControllerConfig.WebApiPort}" :
-                    $"http://*:{ControllerConfig.WebApiPort}";
+                    $"http://localhost:{ServerConfig.WebApiPort}" :
+                    $"http://*:{ServerConfig.WebApiPort}";
                 _webapp = WebApp.Start<WebServerConfig>( url );
                 Logger.Info( $"Listening on {url}" );
 
@@ -165,7 +182,7 @@ namespace Synapse.Services
         #region exception handling
         private static void CurrentDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            string source = "SynapseControllerService";
+            string source = "SynapseServer";
             string log = "Application";
 
             string msg = ((Exception)e.ExceptionObject).Message + ((Exception)e.ExceptionObject).InnerException.Message;
@@ -185,7 +202,7 @@ namespace Synapse.Services
             try
             {
                 string logRootPath = System.IO.Directory.CreateDirectory(
-                    SynapseControllerConfig.CurrentPath ).FullName;
+                    SynapseServerConfig.CurrentPath ).FullName;
                 string logFilePath = $"{logRootPath}\\UnhandledException_{DateTime.Now.Ticks}.log";
                 Exception ex = (Exception)e.ExceptionObject;
                 string innerMsg = ex.InnerException != null ? ex.InnerException.Message : string.Empty;
@@ -196,7 +213,7 @@ namespace Synapse.Services
 
         void WriteEventLog(string msg, EventLogEntryType entryType = EventLogEntryType.Error)
         {
-            string source = "SynapseControllerService";
+            string source = "SynapseServer";
             string log = "Application";
 
             try
@@ -216,14 +233,15 @@ namespace Synapse.Services
             bool haveError = !string.IsNullOrWhiteSpace( errorMessage );
 
             MessageBoxIcon icon = MessageBoxIcon.Information;
-            Dictionary<string, string> cdf = SynapseControllerConfig.GetConfigDefaultValues();
+            Dictionary<string, string> cdf = ServerConfig.ServerIsController ?
+                SynapseServerConfig.GetConfigDefaultValues() : SynapseNodeConfig.GetConfigDefaultValues();
             StringBuilder df = new StringBuilder();
             df.AppendLine( $"Optional args for configuring /install, use argname:value.  Defaults shown." );
             foreach( string key in cdf.Keys )
                 df.AppendLine( $" - {key}:{cdf[key]}" );
             df.AppendLine( $" - Run:true  (Optionally Starts the Windows Service)" );
 
-            string msg = $"synapse.controller.exe, Version: {typeof( SynapseServer ).Assembly.GetName().Version}\r\nSyntax:\r\n  synapse.controller.exe /install | /uninstall\r\n\r\n{df.ToString()}";
+            string msg = $"synapse.server.exe, Version: {typeof( SynapseServer ).Assembly.GetName().Version}\r\nSyntax:\r\n  synapse.server.exe /install | /uninstall\r\n\r\n{df.ToString()}";
 
             if( haveError )
             {
@@ -231,7 +249,7 @@ namespace Synapse.Services
                 icon = MessageBoxIcon.Error;
             }
 
-            MessageBox.Show( msg, "Synapse Controller Service", MessageBoxButtons.OK, icon );
+            MessageBox.Show( msg, "Synapse Server", MessageBoxButtons.OK, icon );
 
             Environment.Exit( haveError ? 1 : 0 );
         }

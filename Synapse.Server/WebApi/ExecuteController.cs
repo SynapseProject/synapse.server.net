@@ -23,7 +23,7 @@ namespace Synapse.Services
             try
             {
                 SynapseServer.Logger.Debug( context );
-                return "Hello from SynapseControllerServer, World!";
+                return "Hello from SynapseController, World!";
             }
             catch( Exception ex )
             {

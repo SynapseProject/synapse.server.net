@@ -96,6 +96,8 @@
   <ItemGroup>
     <Compile Include="Classes\PlanRuntimePod.cs" />
     <Compile Include="Classes\PlanServer.cs" />
+    <Compile Include="Classes\ServerRole.cs" />
+    <Compile Include="Classes\SynapseServerConfig.cs" />
     <Compile Include="Classes\SynapseNodeConfig.cs" />
     <Compile Include="WebApi\WebServerConfig.cs" />
     <Compile Include="WebApi\ExecuteController.cs" />

@@ -9,16 +9,22 @@ namespace Synapse.Services
 {
     public class InstallUtility
     {
-        public static bool InstallAndStartService(Dictionary<string, string> configValues, out string message)
+        public static bool InstallAndStartService(ServerRole role, Dictionary<string, string> configValues, out string message)
         {
             message = null;
 
-            bool ok = InstallService( install: true, configValues: configValues, message: out message );
+            SynapseServerConfig config = new SynapseServerConfig() { ServerRole = role };
+            SynapseServerConfig.Configure( config );
+            if( configValues != null )
+                SynapseServerConfig.Configure( configValues );
+
+
+            bool ok = InstallService( role: role, install: true, configValues: configValues, message: out message );
 
             if( ok && !(configValues.ContainsKey( "run" ) && configValues["run"] == "false") )
                 try
                 {
-                    string sn = SynapseControllerConfig.Deserialze().ServiceName;
+                    string sn = SynapseServerConfig.Deserialze().ServiceName;
                     Console.Write( $"\r\nStarting {sn}... " );
                     ServiceController sc = new ServiceController( sn );
                     sc.Start();
@@ -40,9 +46,11 @@ namespace Synapse.Services
             bool ok = true;
             message = null;
 
+            SynapseServerConfig config = SynapseServerConfig.Deserialze();
+
             try
             {
-                string sn = SynapseControllerConfig.Deserialze().ServiceName;
+                string sn = config.ServiceName;
                 ServiceController sc = new ServiceController( sn );
                 if( sc.Status == ServiceControllerStatus.Running )
                 {
@@ -58,18 +66,23 @@ namespace Synapse.Services
             }
 
             if( ok )
-                ok = InstallService( install: false, configValues: null, message: out message );
+                ok = InstallService( config.ServerRole, install: false, configValues: null, message: out message );
 
             return ok;
         }
 
-        public static bool InstallService(bool install, Dictionary<string, string> configValues, out string message)
+        public static bool InstallService(ServerRole role, bool install, Dictionary<string, string> configValues, out string message)
         {
             if( configValues != null )
-                SynapseControllerConfig.Configure( configValues );
+            {
+                if( role == ServerRole.Controller )
+                    SynapseServerConfig.Configure( configValues );
+                else
+                    SynapseNodeConfig.Configure( configValues );
+            }
 
-            string fullFilePath = typeof( SynapseControllerServiceInstaller ).Assembly.Location;
-            string logFile = $"Synapse.Node.InstallLog.txt";
+            string fullFilePath = typeof( SynapseServerServiceInstaller ).Assembly.Location;
+            string logFile = $"Synapse.Server.InstallLog.txt";
 
             List<string> args = new List<string>();
 
@@ -98,20 +111,22 @@ namespace Synapse.Services
     }
 
     [RunInstaller( true )]
-    public class SynapseControllerServiceInstaller : Installer
+    public class SynapseServerServiceInstaller : Installer
     {
-        public SynapseControllerServiceInstaller()
+        public SynapseServerServiceInstaller()
         {
             ServiceProcessInstaller processInstaller = new ServiceProcessInstaller();
             ServiceInstaller serviceInstaller = new ServiceInstaller();
 
-            SynapseControllerConfig config = SynapseControllerConfig.Deserialze();
+            SynapseServerConfig config = SynapseServerConfig.Deserialze();
 
             //set the privileges
             processInstaller.Account = ServiceAccount.LocalSystem;
 
             serviceInstaller.DisplayName = config.ServiceDisplayName;
-            serviceInstaller.Description = "Serves Plan commands to and receives Plan status from Synapse Nodes.  Use 'Synapse.Controller /uninstall' to remove.  Information at http://synapse.readthedocs.io/en/latest/.";
+            string desc = config.ServerIsController ?
+                "Serves Plan commands to and receives Plan status from Synapse Nodes." : "Runs Plans, proxies to other Synapse Nodes.";
+            serviceInstaller.Description = $"{desc}  Use 'Synapse.Server /uninstall' to remove.  Information at http://synapse.readthedocs.io/en/latest/.";
             serviceInstaller.StartType = ServiceStartMode.Automatic;
 
             //must be the same as what was set in Program's constructor
