@@ -31,7 +31,7 @@
             // 
             // SynapseControllerService
             // 
-            this.ServiceName = "Synapse.Controller";
+            this.ServiceName = "Synapse.Server";
 
         }
 

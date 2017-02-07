@@ -20,9 +20,7 @@ namespace Synapse.Services
     public partial class SynapseServer : ServiceBase
     {
         public static ILog Logger = LogManager.GetLogger( "SynapseServer" );
-        public static SynapseServerConfig ServerConfig = null;
-        //public static SynapseControllerConfig ControllerConfig = null;
-        //public static SynapseNodeConfig NodeConfig = null;
+        public static SynapseServerConfig Config = null;
 
         ServiceHost _serviceHost = null;
         private IDisposable _webapp;
@@ -30,11 +28,12 @@ namespace Synapse.Services
 
         public SynapseServer()
         {
-            ServerConfig = SynapseServerConfig.Deserialze();
+            if( Config == null )
+                Config = SynapseServerConfig.Deserialze();
 
             InitializeComponent();
 
-            this.ServiceName = ServerConfig.ServiceName;
+            this.ServiceName = Config.ServiceNameValue;
         }
 
         public static void Main(string[] args)
@@ -95,9 +94,10 @@ namespace Synapse.Services
 
         public static void RunConsole()
         {
+            Config = SynapseServerConfig.Deserialze();
             ConsoleColor current = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine( $"Starting Synapse.Server as {ServerConfig.ServerRole}: Press Ctrl-C/Ctrl-Break to stop." );
+            Console.WriteLine( $"Starting Synapse.Server as {Config?.ServerRole}: Press Ctrl-C/Ctrl-Break to stop." );
             Console.ForegroundColor = current;
 
             using( SynapseServer s = new SynapseServer() )
@@ -106,7 +106,7 @@ namespace Synapse.Services
                 Thread.Sleep( Timeout.Infinite );
                 s.OnStop();
             }
-            Console.WriteLine( "Terminating Synapse.Controller." );
+            Console.WriteLine( "Terminating Synapse.Server." );
         }
 
         protected override void OnStart(string[] args)
@@ -119,12 +119,13 @@ namespace Synapse.Services
                     _serviceHost.Close();
 
                 string url = Environment.UserInteractive ?
-                    $"http://localhost:{ServerConfig.WebApiPort}" :
-                    $"http://*:{ServerConfig.WebApiPort}";
+                    $"http://localhost:{Config.WebApiPort}" :
+                    $"http://*:{Config.WebApiPort}";
                 _webapp = WebApp.Start<WebServerConfig>( url );
                 Logger.Info( $"Listening on {url}" );
 
-                _serviceHost = new ServiceHost( typeof( ExecuteController ) );
+                _serviceHost = Config.ServerIsController ?
+                    new ServiceHost( typeof( ExecuteController ) ) : new ServiceHost( typeof( NodeController ) );
                 _serviceHost.Open();
 
                 Logger.Info( ServiceStatus.Running );
@@ -134,8 +135,8 @@ namespace Synapse.Services
                 string msg = ex.Message;
 
                 //_log.Write( Synapse.Common.LogLevel.Fatal, msg );
-                Logger.Fatal( msg );
-                WriteEventLog( msg );
+                Logger.Fatal( ex );
+                WriteEventLog( ex.ToString() );
 
                 Stop();
                 Environment.Exit( 1 );

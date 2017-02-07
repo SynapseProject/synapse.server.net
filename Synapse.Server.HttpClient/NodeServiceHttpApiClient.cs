@@ -45,7 +45,7 @@ namespace Synapse.Services
             if( File.Exists( filePath ) )
             {
                 Plan plan = YamlHelpers.DeserializeFile<Plan>( filePath );
-                string requestUri = $"{_rootPath}/execute/{planInstanceId}/?action=start&dryRun={dryRun}";
+                string requestUri = $"{_rootPath}/{planInstanceId}/?dryRun={dryRun}";
                 return await PostAsync<Plan, ExecuteResult>( plan, requestUri );
             }
             else
@@ -62,7 +62,7 @@ namespace Synapse.Services
             if( File.Exists( filePath ) )
             {
                 Plan plan = YamlHelpers.DeserializeFile<Plan>( filePath );
-                string requestUri = $"{_rootPath}/execute/{planInstanceId}/?action=start&dryRun={dryRun}";
+                string requestUri = $"{_rootPath}/{planInstanceId}/?dryRun={dryRun}";
                 return await PostAsync<Plan, ExecuteResult>( plan, requestUri );
             }
             else
@@ -76,7 +76,7 @@ namespace Synapse.Services
 
         public async Task<ExecuteResult> StartPlanAsync(long planInstanceId, bool dryRun, Plan plan)
         {
-            string requestUri = $"{_rootPath}/execute/{planInstanceId}/?action=start&dryRun={dryRun}";
+            string requestUri = $"{_rootPath}/{planInstanceId}/?dryRun={dryRun}";
             return await PostAsync<Plan, ExecuteResult>( plan, requestUri );
         }
 
@@ -87,8 +87,8 @@ namespace Synapse.Services
 
         public async Task CancelPlanAsync(long planInstanceId)
         {
-            string requestUri = $"{_rootPath}/execute/{planInstanceId}/?action=cancel";
-            await GetAsync( requestUri );
+            string requestUri = $"{_rootPath}/{planInstanceId}/";
+            await DeleteAsync( requestUri );
         }
 
 

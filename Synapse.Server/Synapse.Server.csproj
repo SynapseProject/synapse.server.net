@@ -100,6 +100,7 @@
     <Compile Include="Classes\ServerRole.cs" />
     <Compile Include="Classes\SynapseServerConfig.cs" />
     <Compile Include="Classes\SynapseNodeConfig.cs" />
+    <Compile Include="WebApi\NodeController.cs" />
     <Compile Include="WebApi\WebServerConfig.cs" />
     <Compile Include="WebApi\ExecuteController.cs" />
     <Compile Include="Synapse.Server.cs">
