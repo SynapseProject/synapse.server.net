@@ -11,7 +11,7 @@ namespace Synapse.Services
         public void Configuration(IAppBuilder app)
         {
             HttpListener listener = (HttpListener)app.Properties["System.Net.HttpListener"];
-            listener.AuthenticationSchemes = SynapseServer.ControllerConfig.AuthenticationScheme;
+            listener.AuthenticationSchemes = SynapseServer.ServerConfig.AuthenticationScheme;
 
             // Configure Web API for self-host. 
             HttpConfiguration config = new HttpConfiguration();

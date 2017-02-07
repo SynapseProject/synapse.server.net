@@ -9,17 +9,11 @@ namespace Synapse.Services
 {
     public class InstallUtility
     {
-        public static bool InstallAndStartService(ServerRole role, Dictionary<string, string> configValues, out string message)
+        public static bool InstallAndStartService(Dictionary<string, string> configValues, out string message)
         {
             message = null;
 
-            SynapseServerConfig config = new SynapseServerConfig() { ServerRole = role };
-            SynapseServerConfig.Configure( config );
-            if( configValues != null )
-                SynapseServerConfig.Configure( configValues );
-
-
-            bool ok = InstallService( role: role, install: true, configValues: configValues, message: out message );
+            bool ok = InstallService( install: true, configValues: configValues, message: out message );
 
             if( ok && !(configValues.ContainsKey( "run" ) && configValues["run"] == "false") )
                 try
@@ -46,11 +40,9 @@ namespace Synapse.Services
             bool ok = true;
             message = null;
 
-            SynapseServerConfig config = SynapseServerConfig.Deserialze();
-
             try
             {
-                string sn = config.ServiceName;
+                string sn = SynapseServerConfig.Deserialze().ServiceName;
                 ServiceController sc = new ServiceController( sn );
                 if( sc.Status == ServiceControllerStatus.Running )
                 {
@@ -66,20 +58,15 @@ namespace Synapse.Services
             }
 
             if( ok )
-                ok = InstallService( config.ServerRole, install: false, configValues: null, message: out message );
+                ok = InstallService( install: false, configValues: null, message: out message );
 
             return ok;
         }
 
-        public static bool InstallService(ServerRole role, bool install, Dictionary<string, string> configValues, out string message)
+        public static bool InstallService(bool install, Dictionary<string, string> configValues, out string message)
         {
             if( configValues != null )
-            {
-                if( role == ServerRole.Controller )
-                    SynapseServerConfig.Configure( configValues );
-                else
-                    SynapseNodeConfig.Configure( configValues );
-            }
+                SynapseServerConfig.Configure( configValues );
 
             string fullFilePath = typeof( SynapseServerServiceInstaller ).Assembly.Location;
             string logFile = $"Synapse.Server.InstallLog.txt";

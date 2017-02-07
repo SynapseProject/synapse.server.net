@@ -62,7 +62,7 @@ namespace Synapse.Services.Controller.Cli
             _methods.Add( "cancel", "CancelPlan" );
             _methods.Add( "c", "CancelPlan" );
 
-            SynapseControllerConfig config = SynapseControllerConfig.Deserialze();
+            SynapseServerConfig config = SynapseServerConfig.Deserialze();
             BaseUrl = $"http://localhost:{config.WebApiPort}/synapse/execute";
         }
 

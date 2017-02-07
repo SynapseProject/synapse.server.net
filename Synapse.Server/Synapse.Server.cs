@@ -21,8 +21,8 @@ namespace Synapse.Services
     {
         public static ILog Logger = LogManager.GetLogger( "SynapseServer" );
         public static SynapseServerConfig ServerConfig = null;
-        public static SynapseControllerConfig ControllerConfig = null;
-        public static SynapseNodeConfig NodeConfig = null;
+        //public static SynapseControllerConfig ControllerConfig = null;
+        //public static SynapseNodeConfig NodeConfig = null;
 
         ServiceHost _serviceHost = null;
         private IDisposable _webapp;
@@ -31,10 +31,6 @@ namespace Synapse.Services
         public SynapseServer()
         {
             ServerConfig = SynapseServerConfig.Deserialze();
-            if( ServerConfig.ServerIsController )
-                ControllerConfig = SynapseControllerConfig.Deserialze();
-            else
-                NodeConfig = SynapseNodeConfig.Deserialze();
 
             InitializeComponent();
 
@@ -68,24 +64,12 @@ namespace Synapse.Services
                     string message = string.Empty;
 
                     string arg0 = args[0].ToLower();
-                    ServerRole role = ServerRole.Controller;
-                    bool installService = false;
-                    if( arg0 == "/install-controller" || arg0 == "/i-controller" )
-                    {
-                        installService = true;
-                    }
-                    else if( arg0 == "/install-node" || arg0 == "/i-node" )
-                    {
-                        role = ServerRole.Node;
-                        installService = true;
-                    }
-
-                    if( installService )
+                    if( arg0 == "/install" || arg0 == "/i" )
                     {
                         bool error = false;
                         Dictionary<string, string> values = CmdLineUtilities.ParseCmdLine( args, 1, ref error, ref message, null );
                         if( !error )
-                            ok = InstallUtility.InstallAndStartService( role: role, configValues: values, message: out message );
+                            ok = InstallUtility.InstallAndStartService( configValues: values, message: out message );
                     }
                     else if( arg0 == "/uninstall" || arg0 == "/u" )
                     {

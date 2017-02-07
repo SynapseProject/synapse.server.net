@@ -11,7 +11,7 @@ namespace Synapse.Services
 {
     public class PlanServer
     {
-        NodeServiceHttpApiClient _nodeClient = new NodeServiceHttpApiClient( SynapseServer.ControllerConfig.NodeServiceUrl );
+        NodeServiceHttpApiClient _nodeClient = new NodeServiceHttpApiClient( SynapseServer.ServerConfig.ControllerConfig.NodeServiceUrl );
         IControllerDal _dal = null;
 
         public PlanServer()
@@ -22,7 +22,7 @@ namespace Synapse.Services
         void LoadDal()
         {
             string defaultType = "Synapse.Controller.Dal.FileSystem:Synapse.Services.Controller.Dal.FileSystemDal";
-            _dal = AssemblyLoader.Load<IControllerDal>( SynapseServer.ControllerConfig.DalProvider, defaultType );
+            _dal = AssemblyLoader.Load<IControllerDal>( SynapseServer.ServerConfig.ControllerConfig.DalProvider, defaultType );
         }
 
         public IEnumerable<string> GetPlanList()

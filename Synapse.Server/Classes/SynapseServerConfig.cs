@@ -10,7 +10,7 @@ namespace Synapse.Services
     /// <summary>
     /// Hold the startup config for Synapse.Server; written as an independent class (not using .NET config) for cross-platform compatibility.
     /// </summary>
-    public class SynapseServerConfig : ISynapseServerConfig
+    public class SynapseServerConfig
     {
         public SynapseServerConfig() { }
 
@@ -68,7 +68,11 @@ namespace Synapse.Services
         }
 
 
-        public virtual void Serialize()
+        public SynapseControllerConfig ControllerConfig { get; set; }
+        public SynapseNodeConfig NodeConfig { get; set; }
+
+
+        public void Serialize()
         {
             YamlHelpers.SerializeFile( FileName, this, serializeAsJson: false, emitDefaultValues: true );
         }
@@ -81,21 +85,28 @@ namespace Synapse.Services
             return YamlHelpers.DeserializeFile<SynapseServerConfig>( FileName );
         }
 
-        public virtual Dictionary<string, string> GetConfigDefaultValues()
+        public static Dictionary<string, string> GetConfigDefaultValues()
         {
             Dictionary<string, string> values = new Dictionary<string, string>();
 
             SynapseServerConfig c = new SynapseServerConfig();
+
             values[nameof( c.ServiceName )] = c.ServiceName;
             values[nameof( c.ServiceDisplayName )] = c.ServiceDisplayName;
             values[nameof( c.ServerRole )] = c.ServerRole.ToString();
             values[nameof( c.WebApiPort )] = c.WebApiPort.ToString();
             values[nameof( c.AuthenticationScheme )] = c.AuthenticationScheme.ToString();
 
+            foreach( KeyValuePair<string, string> kvp in SynapseControllerConfig.GetConfigDefaultValues() )
+                values[kvp.Key] = kvp.Value;
+
+            foreach( KeyValuePair<string, string> kvp in SynapseNodeConfig.GetConfigDefaultValues() )
+                values[kvp.Key] = kvp.Value;
+
             return values;
         }
 
-        public virtual SynapseServerConfig Configure(Dictionary<string, string> values)
+        public static SynapseServerConfig Configure(Dictionary<string, string> values)
         {
             SynapseServerConfig c = new SynapseServerConfig();
 
@@ -114,10 +125,14 @@ namespace Synapse.Services
             if( values.ContainsKey( nameof( c.AuthenticationScheme ).ToLower() ) )
                 c.AuthenticationSchemeString = values[nameof( c.AuthenticationScheme ).ToLower()];
 
-            return c;
+            c.ControllerConfig.Configure( values );
+
+            c.NodeConfig.Configure( values );
+
+            return Configure( c );
         }
 
-        public virtual SynapseServerConfig Configure(SynapseServerConfig value)
+        public static SynapseServerConfig Configure(SynapseServerConfig value)
         {
             //initialize with defaults
             SynapseServerConfig config = new SynapseServerConfig();
@@ -140,6 +155,10 @@ namespace Synapse.Services
 
             if( value.TestSetAuthenticationSchemeString && !(value.AuthenticationScheme == config.AuthenticationScheme) )
                 config.AuthenticationScheme = value.AuthenticationScheme;
+
+            config.ControllerConfig.Configure( value.ControllerConfig );
+
+            config.NodeConfig.Configure( value.NodeConfig );
 
             config.Serialize();
 

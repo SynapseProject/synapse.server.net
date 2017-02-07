@@ -16,7 +16,7 @@ namespace Synapse.Services
         bool _wantsCancel = false;
         string _ticks = null;
         ControllerServiceHttpApiClient _controllerService =
-            new ControllerServiceHttpApiClient( SynapseServer.NodeConfig.ControllerServiceUrl );
+            new ControllerServiceHttpApiClient( SynapseServer.ServerConfig.NodeConfig.ControllerServiceUrl );
 
         public PlanRuntimePod(Plan plan, bool isDryRun = false, Dictionary<string, string> dynamicData = null, long planInstanceId = 0)
         {
@@ -39,13 +39,13 @@ namespace Synapse.Services
             try
             {
                 string logFileName = $"{_ticks}_{Plan.Name}";
-                _logRootPath = Directory.CreateDirectory( SynapseServer.NodeConfig.GetResolvedAuditLogRootPath() );
+                _logRootPath = Directory.CreateDirectory( SynapseServer.ServerConfig.NodeConfig.GetResolvedAuditLogRootPath() );
                 logFilePath = $"{_logRootPath.FullName}\\{logFileName}.log";
-                _log.InitDynamicFileAppender( logFileName, logFileName, logFilePath, SynapseServer.NodeConfig.Log4NetConversionPattern, "all" );
+                _log.InitDynamicFileAppender( logFileName, logFileName, logFilePath, SynapseServer.ServerConfig.NodeConfig.Log4NetConversionPattern, "all" );
             }
             catch( Exception ex )
             {
-                throw new FileNotFoundException( $"Could not find/acceess log file: {logFilePath}, AuditLogRootPath: {SynapseServer.NodeConfig.AuditLogRootPath}", ex );
+                throw new FileNotFoundException( $"Could not find/acceess log file: {logFilePath}, AuditLogRootPath: {SynapseServer.ServerConfig.NodeConfig.AuditLogRootPath}", ex );
             }
         }
 
@@ -54,8 +54,8 @@ namespace Synapse.Services
             token.Register( () => CancelPlanExecution() );
             Plan.Start( DynamicData, IsDryRun );
 
-            SynapseServer.Logger.Info( $"SerializeResultPlan: {SynapseServer.NodeConfig.SerializeResultPlan}, {_logRootPath.FullName}\\{_ticks}_{Plan.Name}.result.yaml" );
-            if( SynapseServer.NodeConfig.SerializeResultPlan )
+            SynapseServer.Logger.Info( $"SerializeResultPlan: {SynapseServer.ServerConfig.NodeConfig.SerializeResultPlan}, {_logRootPath.FullName}\\{_ticks}_{Plan.Name}.result.yaml" );
+            if( SynapseServer.ServerConfig.NodeConfig.SerializeResultPlan )
                 File.WriteAllText( $"{_logRootPath.FullName}\\{_ticks}_{Plan.Name}.result.yaml", Plan.ResultPlan.ToYaml() );
 
             //send final message home
