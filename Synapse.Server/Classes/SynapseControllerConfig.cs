@@ -10,49 +10,12 @@ namespace Synapse.Services
     /// <summary>
     /// Hold the startup config for Synapse.Node; written as an independent class (not using .NET config) for cross-platform compatibility.
     /// </summary>
-    public class SynapseControllerConfig
+    public class SynapseControllerConfig : SynapseServerConfig
     {
         public SynapseControllerConfig()
         {
         }
 
-        public static readonly string CurrentPath = $"{Path.GetDirectoryName( typeof( SynapseControllerConfig ).Assembly.Location )}";
-        public static readonly string FileName = $"{Path.GetDirectoryName( typeof( SynapseControllerConfig ).Assembly.Location )}\\Synapse.Controller.config.yaml";
-
-        public string ServiceName { get; set; } = "Synapse.Controller";
-        internal bool HasServiceName { get { return !string.IsNullOrWhiteSpace( ServiceName ); } }
-
-        public string ServiceDisplayName { get; set; } = "Synapse Controller";
-        internal bool HasServiceDisplayName { get { return !string.IsNullOrWhiteSpace( ServiceDisplayName ); } }
-
-        public AuthenticationSchemes AuthenticationScheme { get; set; } = AuthenticationSchemes.IntegratedWindowsAuthentication;
-        internal string AuthenticationSchemeString { get; set; } = "IntegratedWindowsAuthentication";
-        internal bool TestSetAuthenticationSchemeString
-        {
-            get
-            {
-                AuthenticationSchemes scheme = AuthenticationScheme;
-                bool ok = Enum.TryParse( AuthenticationSchemeString, true, out scheme );
-                if( ok )
-                    AuthenticationScheme = scheme;
-                return ok;
-            }
-        }
-
-
-        public int WebApiPort { get; set; } = 8008;
-        internal string WebApiPortString { get; set; } = "8008";
-        internal bool TestSetWebApiPortString
-        {
-            get
-            {
-                int port = WebApiPort;
-                bool ok = int.TryParse( WebApiPortString, out port );
-                if( ok )
-                    WebApiPort = port;
-                return ok;
-            }
-        }
 
         public string NodeServiceUrl { get; set; } = "http://localhost:8000/synapse/node";
         internal bool HasNodeServiceUrl { get { return !string.IsNullOrWhiteSpace( NodeServiceUrl ); } }
@@ -62,12 +25,12 @@ namespace Synapse.Services
 
 
 
-        public void Serialize()
+        override public void Serialize()
         {
             YamlHelpers.SerializeFile( FileName, this, serializeAsJson: false, emitDefaultValues: true );
         }
 
-        public static SynapseControllerConfig Deserialze()
+        new public static SynapseControllerConfig Deserialze()
         {
             if( !File.Exists( FileName ) )
                 new SynapseControllerConfig().Serialize();
@@ -75,9 +38,9 @@ namespace Synapse.Services
             return YamlHelpers.DeserializeFile<SynapseControllerConfig>( FileName );
         }
 
-        public static Dictionary<string, string> GetConfigDefaultValues()
+        override public Dictionary<string, string> GetConfigDefaultValues()
         {
-            Dictionary<string, string> values = new Dictionary<string, string>();
+            Dictionary<string, string> values = base.GetConfigDefaultValues();
 
             SynapseControllerConfig c = new SynapseControllerConfig();
             values[nameof( c.ServiceName )] = c.ServiceName;
@@ -90,7 +53,7 @@ namespace Synapse.Services
             return values;
         }
 
-        public static SynapseControllerConfig Configure(Dictionary<string, string> values)
+        override public SynapseServerConfig Configure(Dictionary<string, string> values)
         {
             SynapseControllerConfig c = new SynapseControllerConfig();
 

@@ -94,6 +94,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Classes\ISynapseServerConfig.cs" />
     <Compile Include="Classes\PlanRuntimePod.cs" />
     <Compile Include="Classes\PlanServer.cs" />
     <Compile Include="Classes\ServerRole.cs" />

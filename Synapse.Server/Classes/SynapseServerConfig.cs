@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-
+using System.Net;
 using Synapse.Core.Utilities;
 
 
@@ -10,7 +10,7 @@ namespace Synapse.Services
     /// <summary>
     /// Hold the startup config for Synapse.Server; written as an independent class (not using .NET config) for cross-platform compatibility.
     /// </summary>
-    public class SynapseServerConfig
+    public class SynapseServerConfig : ISynapseServerConfig
     {
         public SynapseServerConfig() { }
 
@@ -53,8 +53,22 @@ namespace Synapse.Services
             }
         }
 
+        public AuthenticationSchemes AuthenticationScheme { get; set; } = AuthenticationSchemes.IntegratedWindowsAuthentication;
+        internal string AuthenticationSchemeString { get; set; } = "IntegratedWindowsAuthentication";
+        internal bool TestSetAuthenticationSchemeString
+        {
+            get
+            {
+                AuthenticationSchemes scheme = AuthenticationScheme;
+                bool ok = Enum.TryParse( AuthenticationSchemeString, true, out scheme );
+                if( ok )
+                    AuthenticationScheme = scheme;
+                return ok;
+            }
+        }
 
-        public void Serialize()
+
+        public virtual void Serialize()
         {
             YamlHelpers.SerializeFile( FileName, this, serializeAsJson: false, emitDefaultValues: true );
         }
@@ -67,7 +81,7 @@ namespace Synapse.Services
             return YamlHelpers.DeserializeFile<SynapseServerConfig>( FileName );
         }
 
-        public static Dictionary<string, string> GetConfigDefaultValues()
+        public virtual Dictionary<string, string> GetConfigDefaultValues()
         {
             Dictionary<string, string> values = new Dictionary<string, string>();
 
@@ -76,11 +90,12 @@ namespace Synapse.Services
             values[nameof( c.ServiceDisplayName )] = c.ServiceDisplayName;
             values[nameof( c.ServerRole )] = c.ServerRole.ToString();
             values[nameof( c.WebApiPort )] = c.WebApiPort.ToString();
+            values[nameof( c.AuthenticationScheme )] = c.AuthenticationScheme.ToString();
 
             return values;
         }
 
-        public static SynapseServerConfig Configure(Dictionary<string, string> values)
+        public virtual SynapseServerConfig Configure(Dictionary<string, string> values)
         {
             SynapseServerConfig c = new SynapseServerConfig();
 
@@ -96,10 +111,13 @@ namespace Synapse.Services
             if( values.ContainsKey( nameof( c.WebApiPort ).ToLower() ) )
                 c.WebApiPortString = values[nameof( c.WebApiPort ).ToLower()];
 
-            return Configure( c );
+            if( values.ContainsKey( nameof( c.AuthenticationScheme ).ToLower() ) )
+                c.AuthenticationSchemeString = values[nameof( c.AuthenticationScheme ).ToLower()];
+
+            return c;
         }
 
-        public static SynapseServerConfig Configure(SynapseServerConfig value)
+        public virtual SynapseServerConfig Configure(SynapseServerConfig value)
         {
             //initialize with defaults
             SynapseServerConfig config = new SynapseServerConfig();
@@ -119,6 +137,9 @@ namespace Synapse.Services
 
             if( value.TestSetWebApiPortString && !(value.WebApiPort == config.WebApiPort) )
                 config.WebApiPort = value.WebApiPort;
+
+            if( value.TestSetAuthenticationSchemeString && !(value.AuthenticationScheme == config.AuthenticationScheme) )
+                config.AuthenticationScheme = value.AuthenticationScheme;
 
             config.Serialize();
 
