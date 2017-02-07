@@ -17,11 +17,11 @@ namespace Synapse.Services
         }
 
 
-        public string NodeServiceUrl { get; set; } = "http://localhost:8000/synapse/node";
-        internal bool HasNodeServiceUrl { get { return !string.IsNullOrWhiteSpace( NodeServiceUrl ); } }
+        public string NodeUrl { get; set; } = "http://localhost:8000/synapse/node";
+        internal bool HasNodeUrl { get { return !string.IsNullOrWhiteSpace( NodeUrl ); } }
 
-        public string DalProvider { get; set; } = "Synapse.Controller.Dal.FileSystem:FileSystemDal";
-        internal bool HasDalProvider { get { return !string.IsNullOrWhiteSpace( DalProvider ); } }
+        public string Dal { get; set; } = "Synapse.Controller.Dal.FileSystem:FileSystemDal";
+        internal bool HasDal { get { return !string.IsNullOrWhiteSpace( Dal ); } }
 
 
         public static Dictionary<string, string> GetConfigDefaultValues()
@@ -30,8 +30,9 @@ namespace Synapse.Services
 
             SynapseControllerConfig c = new SynapseControllerConfig();
 
-            values[nameof( c.NodeServiceUrl )] = c.NodeServiceUrl;
-            values[nameof( c.DalProvider )] = c.DalProvider;
+            string n = "c.";
+            values[n + nameof( c.NodeUrl )] = c.NodeUrl;
+            values[n + nameof( c.Dal )] = c.Dal;
 
             return values;
         }
@@ -40,11 +41,12 @@ namespace Synapse.Services
         {
             SynapseControllerConfig c = new SynapseControllerConfig();
 
-            if( values.ContainsKey( nameof( c.NodeServiceUrl ).ToLower() ) )
-                c.NodeServiceUrl = values[nameof( c.NodeServiceUrl ).ToLower()];
+            string n = "c.";
+            if( values.ContainsKey( n + nameof( c.NodeUrl ).ToLower() ) )
+                c.NodeUrl = values[n + nameof( c.NodeUrl ).ToLower()];
 
-            if( values.ContainsKey( nameof( c.DalProvider ).ToLower() ) )
-                c.DalProvider = values[nameof( c.DalProvider ).ToLower()];
+            if( values.ContainsKey( n + nameof( c.Dal ).ToLower() ) )
+                c.Dal = values[n + nameof( c.Dal ).ToLower()];
 
             Configure( c );
         }
@@ -52,11 +54,11 @@ namespace Synapse.Services
         public void Configure(SynapseControllerConfig value)
         {
             //configure with anything provided
-            if( value.HasNodeServiceUrl )
-                NodeServiceUrl = value.NodeServiceUrl;
+            if( value.HasNodeUrl )
+                NodeUrl = value.NodeUrl;
 
-            if( value.HasDalProvider )
-                DalProvider = value.DalProvider;
+            if( value.HasDal )
+                Dal = value.Dal;
         }
     }
 }

@@ -106,6 +106,12 @@ namespace Synapse.Services
             ServiceInstaller serviceInstaller = new ServiceInstaller();
 
             SynapseServerConfig config = SynapseServerConfig.Deserialze();
+            if( config.HasServiceNameDefaults )
+            {
+                config.ServiceName = config.ServiceNameValue;
+                config.ServiceDisplayName = config.ServiceDisplayNameValue;
+                config.Serialize();
+            }
 
             //set the privileges
             processInstaller.Account = ServiceAccount.LocalSystem;

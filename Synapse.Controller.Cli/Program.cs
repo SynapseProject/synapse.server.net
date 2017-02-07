@@ -159,7 +159,7 @@ namespace Synapse.Services.Controller.Cli
         #region Help
         protected override void WriteHelpAndExit(string errorMessage = null)
         {
-            Dictionary<string, string> cdf = SynapseControllerConfig.GetConfigDefaultValues();
+            Dictionary<string, string> cdf = SynapseServerConfig.GetConfigDefaultValues();
             StringBuilder df = new StringBuilder();
             df.AppendFormat( "{0,-15}- Optional install args, use argname:value.  Defaults shown.\r\n", "" );
             foreach( string key in cdf.Keys )

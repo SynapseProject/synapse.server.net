@@ -18,11 +18,37 @@ namespace Synapse.Services
         public static readonly string FileName = $"{Path.GetDirectoryName( typeof( SynapseServerConfig ).Assembly.Location )}\\Synapse.Server.config.yaml";
 
 
-        public string ServiceName { get; set; } = "Synapse.Server";
+        internal static readonly string defaultServiceName = "Synapse.[Controller/Node]";
+        public string ServiceName { get; set; } = defaultServiceName;
         internal bool HasServiceName { get { return !string.IsNullOrWhiteSpace( ServiceName ); } }
+        internal string ServiceNameValue
+        {
+            get
+            {
+                if( ServiceName == defaultServiceName )
+                    return ServerIsController ? "Synapse.Controller" : "Synapse.Node";
+                else
+                    return ServiceName;
+            }
+        }
 
-        public string ServiceDisplayName { get; set; } = "Synapse Server";
+
+        internal static readonly string defaultServiceDisplayName = "Synapse [Controller/Node]";
+        public string ServiceDisplayName { get; set; } = defaultServiceDisplayName;
         internal bool HasServiceDisplayName { get { return !string.IsNullOrWhiteSpace( ServiceDisplayName ); } }
+        internal string ServiceDisplayNameValue
+        {
+            get
+            {
+                if( ServiceDisplayName == defaultServiceDisplayName )
+                    return ServerIsController ? "Synapse Controller" : "Synapse Node";
+                else
+                    return ServiceDisplayName;
+            }
+        }
+
+        internal bool HasServiceNameDefaults {get { return ServiceName == defaultServiceName || ServiceDisplayName == defaultServiceDisplayName; } }
+
 
         public ServerRole ServerRole { get; set; } = ServerRole.Controller;
         internal string ServerRoleString { get; set; } = "Controller";
@@ -37,7 +63,7 @@ namespace Synapse.Services
                 return ok;
             }
         }
-        public bool ServerIsController { get { return ServerRole == ServerRole.Controller; } }
+        internal bool ServerIsController { get { return ServerRole == ServerRole.Controller; } }
 
         public int WebApiPort { get; set; } = 8008;
         internal string WebApiPortString { get; set; } = "8008";
@@ -68,8 +94,8 @@ namespace Synapse.Services
         }
 
 
-        public SynapseControllerConfig ControllerConfig { get; set; }
-        public SynapseNodeConfig NodeConfig { get; set; }
+        public SynapseControllerConfig Controller { get; set; } = new SynapseControllerConfig();
+        public SynapseNodeConfig Node { get; set; } = new SynapseNodeConfig();
 
 
         public void Serialize()
@@ -125,9 +151,9 @@ namespace Synapse.Services
             if( values.ContainsKey( nameof( c.AuthenticationScheme ).ToLower() ) )
                 c.AuthenticationSchemeString = values[nameof( c.AuthenticationScheme ).ToLower()];
 
-            c.ControllerConfig.Configure( values );
+            c.Controller.Configure( values );
 
-            c.NodeConfig.Configure( values );
+            c.Node.Configure( values );
 
             return Configure( c );
         }
@@ -156,9 +182,9 @@ namespace Synapse.Services
             if( value.TestSetAuthenticationSchemeString && !(value.AuthenticationScheme == config.AuthenticationScheme) )
                 config.AuthenticationScheme = value.AuthenticationScheme;
 
-            config.ControllerConfig.Configure( value.ControllerConfig );
+            config.Controller.Configure( value.Controller );
 
-            config.NodeConfig.Configure( value.NodeConfig );
+            config.Node.Configure( value.Node );
 
             config.Serialize();
 

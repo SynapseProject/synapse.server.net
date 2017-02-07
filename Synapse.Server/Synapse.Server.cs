@@ -217,8 +217,7 @@ namespace Synapse.Services
             bool haveError = !string.IsNullOrWhiteSpace( errorMessage );
 
             MessageBoxIcon icon = MessageBoxIcon.Information;
-            Dictionary<string, string> cdf = ServerConfig.ServerIsController ?
-                SynapseServerConfig.GetConfigDefaultValues() : SynapseNodeConfig.GetConfigDefaultValues();
+            Dictionary<string, string> cdf = SynapseServerConfig.GetConfigDefaultValues();
             StringBuilder df = new StringBuilder();
             df.AppendLine( $"Optional args for configuring /install, use argname:value.  Defaults shown." );
             foreach( string key in cdf.Keys )

@@ -67,8 +67,8 @@ namespace Synapse.Services
             }
         }
 
-        public string ControllerServiceUrl { get; set; } = "http://localhost:8008/synapse/execute";
-        internal bool HasControllerServiceUrl { get { return !string.IsNullOrWhiteSpace( ControllerServiceUrl ); } }
+        public string ControllerUrl { get; set; } = "http://localhost:8008/synapse/execute";
+        internal bool HasControllerUrl { get { return !string.IsNullOrWhiteSpace( ControllerUrl ); } }
 
 
         public string GetResolvedAuditLogRootPath()
@@ -116,13 +116,13 @@ namespace Synapse.Services
             Dictionary<string, string> values = new Dictionary<string, string>();
 
             SynapseNodeConfig c = new SynapseNodeConfig();
-
-            values[nameof( c.MaxServerThreads )] = c.MaxServerThreads.ToString();
-            values[nameof( c.AuditLogRootPath )] = c.AuditLogRootPath;
-            values[nameof( c.Log4NetConversionPattern )] = c.Log4NetConversionPattern;
-            values[nameof( c.SerializeResultPlan )] = c.SerializeResultPlan.ToString();
-            values[nameof( c.ValidatePlanSignature )] = c.ValidatePlanSignature.ToString();
-            values[nameof( c.ControllerServiceUrl )] = c.ControllerServiceUrl;
+            string n = "n.";
+            values[n + nameof( c.MaxServerThreads )] = c.MaxServerThreads.ToString();
+            values[n + nameof( c.AuditLogRootPath )] = c.AuditLogRootPath;
+            values[n + nameof( c.Log4NetConversionPattern )] = c.Log4NetConversionPattern;
+            values[n + nameof( c.SerializeResultPlan )] = c.SerializeResultPlan.ToString();
+            values[n + nameof( c.ValidatePlanSignature )] = c.ValidatePlanSignature.ToString();
+            values[n + nameof( c.ControllerUrl )] = c.ControllerUrl;
 
             return values;
         }
@@ -131,23 +131,25 @@ namespace Synapse.Services
         {
             SynapseNodeConfig c = new SynapseNodeConfig();
 
-            if( values.ContainsKey( nameof( c.MaxServerThreads ).ToLower() ) )
-                c.MaxServerThreadsString = values[nameof( c.MaxServerThreads ).ToLower()];
+            string n = "n.";
 
-            if( values.ContainsKey( nameof( c.AuditLogRootPath ).ToLower() ) )
-                c.AuditLogRootPath = values[nameof( c.AuditLogRootPath ).ToLower()];
+            if( values.ContainsKey( n + nameof( c.MaxServerThreads ).ToLower() ) )
+                c.MaxServerThreadsString = values[n + nameof( c.MaxServerThreads ).ToLower()];
 
-            if( values.ContainsKey( nameof( c.Log4NetConversionPattern ).ToLower() ) )
-                c.Log4NetConversionPattern = values[nameof( c.Log4NetConversionPattern ).ToLower()];
+            if( values.ContainsKey( n + nameof( c.AuditLogRootPath ).ToLower() ) )
+                c.AuditLogRootPath = values[n + nameof( c.AuditLogRootPath ).ToLower()];
 
-            if( values.ContainsKey( nameof( c.SerializeResultPlan ).ToLower() ) )
-                c.SerializeResultPlanString = values[nameof( c.SerializeResultPlan ).ToLower()];
+            if( values.ContainsKey( n + nameof( c.Log4NetConversionPattern ).ToLower() ) )
+                c.Log4NetConversionPattern = values[n + nameof( c.Log4NetConversionPattern ).ToLower()];
 
-            if( values.ContainsKey( nameof( c.ValidatePlanSignature ).ToLower() ) )
-                c.ValidatePlanSignatureString = values[nameof( c.ValidatePlanSignature ).ToLower()];
+            if( values.ContainsKey( n + nameof( c.SerializeResultPlan ).ToLower() ) )
+                c.SerializeResultPlanString = values[n + nameof( c.SerializeResultPlan ).ToLower()];
 
-            if( values.ContainsKey( nameof( c.ControllerServiceUrl ).ToLower() ) )
-                c.ControllerServiceUrl = values[nameof( c.ControllerServiceUrl ).ToLower()];
+            if( values.ContainsKey( n + nameof( c.ValidatePlanSignature ).ToLower() ) )
+                c.ValidatePlanSignatureString = values[n + nameof( c.ValidatePlanSignature ).ToLower()];
+
+            if( values.ContainsKey( n + nameof( c.ControllerUrl ).ToLower() ) )
+                c.ControllerUrl = values[n + nameof( c.ControllerUrl ).ToLower()];
 
             Configure( c );
         }
@@ -169,8 +171,8 @@ namespace Synapse.Services
             if( value.TestSetValidatePlanSignatureString )
                 ValidatePlanSignature = value.ValidatePlanSignature;
 
-            if( value.HasControllerServiceUrl )
-                ControllerServiceUrl = value.ControllerServiceUrl;
+            if( value.HasControllerUrl )
+                ControllerUrl = value.ControllerUrl;
         }
     }
 }
