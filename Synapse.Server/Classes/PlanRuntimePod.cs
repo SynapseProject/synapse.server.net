@@ -14,7 +14,7 @@ namespace Synapse.Services
         LogUtility _log = new LogUtility();
         DirectoryInfo _logRootPath = null;
         bool _wantsCancel = false;
-        string _ticks = null;
+
         ControllerServiceHttpApiClient _controllerService =
             new ControllerServiceHttpApiClient( SynapseServer.Config.Node.ControllerUrl );
 
@@ -24,8 +24,6 @@ namespace Synapse.Services
             IsDryRun = isDryRun;
             DynamicData = dynamicData;
             PlanInstanceId = planInstanceId;
-
-            _ticks = $"{planInstanceId}_{DateTime.Now.Ticks}";
 
             InitializeLogger();
 
@@ -38,7 +36,7 @@ namespace Synapse.Services
             string logFilePath = null;
             try
             {
-                string logFileName = $"{_ticks}_{Plan.Name}";
+                string logFileName = $"{PlanInstanceId}_{Plan.Name}";
                 _logRootPath = Directory.CreateDirectory( SynapseServer.Config.Node.GetResolvedAuditLogRootPath() );
                 logFilePath = $"{_logRootPath.FullName}\\{logFileName}.log";
                 _log.InitDynamicFileAppender( logFileName, logFileName, logFilePath, SynapseServer.Config.Node.Log4NetConversionPattern, "all" );
@@ -54,9 +52,9 @@ namespace Synapse.Services
             token.Register( () => CancelPlanExecution() );
             Plan.Start( DynamicData, IsDryRun );
 
-            SynapseServer.Logger.Info( $"SerializeResultPlan: {SynapseServer.Config.Node.SerializeResultPlan}, {_logRootPath.FullName}\\{_ticks}_{Plan.Name}.result.yaml" );
+            SynapseServer.Logger.Info( $"SerializeResultPlan: {SynapseServer.Config.Node.SerializeResultPlan}, {_logRootPath.FullName}\\{PlanInstanceId}_{Plan.Name}.result.yaml" );
             if( SynapseServer.Config.Node.SerializeResultPlan )
-                File.WriteAllText( $"{_logRootPath.FullName}\\{_ticks}_{Plan.Name}.result.yaml", Plan.ResultPlan.ToYaml() );
+                File.WriteAllText( $"{_logRootPath.FullName}\\{PlanInstanceId}_{Plan.Name}.result.yaml", Plan.ResultPlan.ToYaml() );
 
             //send final message home
             _controllerService.SetPlanStatusAsync( Plan.Name, PlanInstanceId, Plan.ResultPlan );

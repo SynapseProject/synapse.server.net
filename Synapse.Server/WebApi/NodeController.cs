@@ -17,6 +17,11 @@ namespace Synapse.Services
     {
         PlanServer _server = new PlanServer();
 
+        public NodeController()
+        {
+            //ThreadPool.SetMaxThreads( 1, 1 );
+        }
+
         bool _isDrainstopped;
         List<Task> _tasks = new List<Task>();
         Dictionary<long, InProcPlanInfo> _plans = new Dictionary<long, InProcPlanInfo>();
@@ -71,6 +76,8 @@ namespace Synapse.Services
             {
                 SynapseServer.Logger.Debug( context );
                 plan.InstanceId = planInstanceId;
+                plan.Start( null, dryRun );
+
                 PlanRuntimePod planContainer = new PlanRuntimePod( plan, dryRun, null, plan.InstanceId );
 
                 if( !_isDrainstopped )
@@ -82,9 +89,12 @@ namespace Synapse.Services
                         CancellationToken = cts
                     };
 
-                    _plans[planContainer.PlanInstanceId] = info;
+                    //_plans[planContainer.PlanInstanceId] = info;
 
-                    _tasks.Add( Task.Run( () => { planContainer.Start( cts.Token, PlanComplete ); }, cts.Token ) );
+                    //_tasks.Add( Task.Run( () => { planContainer.Start( cts.Token, PlanComplete ); }, cts.Token ) );
+                    //Task.Run( () => { planContainer.Start( cts.Token, null ); }, cts.Token );
+
+                    planContainer.Start( cts.Token, null );
                 }
 
                 return !_isDrainstopped;
@@ -100,7 +110,7 @@ namespace Synapse.Services
 
         protected virtual void PlanComplete(IPlanRuntimeContainer planContainer)
         {
-            _plans.Remove( planContainer.PlanInstanceId );
+            //_plans.Remove( planContainer.PlanInstanceId );
             SynapseServer.Logger.Debug( $"Completed: {planContainer.PlanInstanceId}, {planContainer.Plan.Name}" );
         }
 
