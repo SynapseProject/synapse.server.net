@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,8 +18,8 @@ namespace Synapse.Services
         TaskFactory _tf = null;
 
         // list of current tasks
-        List<Task> _tasks = new List<Task>();
-        Dictionary<long, InProcPlanInfo> _plans = new Dictionary<long, InProcPlanInfo>();
+        ConcurrentBag<Task> _tasks = new ConcurrentBag<Task>();
+        ConcurrentDictionary<long, InProcPlanInfo> _plans = new ConcurrentDictionary<long, InProcPlanInfo>();
 
         // handles max threading
         LimitedConcurrencyLevelTaskScheduler _limitedConcurTaskSched = null;
@@ -81,7 +82,10 @@ namespace Synapse.Services
 
         protected virtual void PlanComplete(IPlanRuntimeContainer planContainer)
         {
-            _plans.Remove( planContainer.PlanInstanceId );
+            InProcPlanInfo fake = null;
+            if( _plans.ContainsKey( planContainer.PlanInstanceId ) )
+                _plans.TryRemove( planContainer.PlanInstanceId, out fake );
+
             OnPlanCompleted( planContainer );
         }
 
