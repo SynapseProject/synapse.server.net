@@ -14,7 +14,7 @@ namespace Synapse.Services
     [RoutePrefix( "synapse/node" )]
     public class NodeController : ApiController
     {
-        static PlanScheduler _scheduler = null;
+        static PlanTaskScheduler _scheduler = null;
 
         public NodeController()
         {
@@ -27,7 +27,7 @@ namespace Synapse.Services
         {
             if( _scheduler == null )
             {
-                _scheduler = new PlanScheduler( SynapseServer.Config.Node.MaxServerThreads );
+                _scheduler = new PlanTaskScheduler( SynapseServer.Config.Node.MaxServerThreads );
                 _scheduler.PlanCompleted += Scheduler_PlanCompleted;
                 SynapseServer.Logger.Info( $"Initialized PlanScheduler, MaxThreads: {SynapseServer.Config.Node.MaxServerThreads}" );
             }

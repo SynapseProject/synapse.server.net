@@ -31,6 +31,12 @@ namespace Synapse.Services
             Plan.LogMessage += Plan_LogMessage;
         }
 
+        public Plan Plan { get; }
+        public bool IsDryRun { get; }
+        public Dictionary<string, string> DynamicData { get; }
+        public long PlanInstanceId { get; }
+
+
         public void InitializeLogger()
         {
             string logFilePath = null;
@@ -66,12 +72,6 @@ namespace Synapse.Services
         {
             _wantsCancel = true;
         }
-
-        public Plan Plan { get; }
-        public bool IsDryRun { get; }
-        public Dictionary<string, string> DynamicData { get; }
-        public long PlanInstanceId { get; }
-
 
         private void Plan_Progress(object sender, HandlerProgressCancelEventArgs e)
         {

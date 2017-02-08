@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Synapse.Services
 {
-    public class PlanScheduler : IDisposable
+    public class PlanTaskScheduler : IDisposable
     {
         public event EventHandler<PlanCompletedEventArgs> PlanCompleted;
         protected void OnPlanCompleted(IPlanRuntimeContainer planContainer)
@@ -27,7 +27,7 @@ namespace Synapse.Services
         bool _isDrainstopComplete = false;
 
         // default ctor
-        public PlanScheduler()
+        public PlanTaskScheduler()
             : this( 0 )
         { }
 
@@ -35,7 +35,7 @@ namespace Synapse.Services
         /// Initializes a new PlanScheduler with optional MaxThreads
         /// </summary>
         /// <param name="maxThreads">Specifies the maximum count for processing threads</param>
-        public PlanScheduler(int maxThreads = 0)
+        public PlanTaskScheduler(int maxThreads = 0)
         {
             if( maxThreads <= 0 )
             {
