@@ -7,7 +7,6 @@ using System.Web.Http;
 
 using Synapse.Common.WebApi;
 using Synapse.Core;
-using Synapse.Core.Runtime;
 
 
 namespace Synapse.Services
@@ -15,12 +14,25 @@ namespace Synapse.Services
     [RoutePrefix( "synapse/node" )]
     public class NodeController : ApiController
     {
-        PlanServer _server = new PlanServer();
+        static PlanScheduler _scheduler = null;
 
         public NodeController()
         {
-            //ThreadPool.SetMaxThreads( 1, 1 );
+            InitPlanScheduler();
         }
+
+        public static Action DrainstopCallback { get; set; }
+
+        public static void InitPlanScheduler()
+        {
+            if( _scheduler == null )
+            {
+                _scheduler = new PlanScheduler( SynapseServer.Config.Node.MaxServerThreads );
+                _scheduler.PlanCompleted += Scheduler_PlanCompleted;
+                SynapseServer.Logger.Info( $"Initialized PlanScheduler, MaxThreads: {SynapseServer.Config.Node.MaxServerThreads}" );
+            }
+        }
+
 
         bool _isDrainstopped;
         List<Task> _tasks = new List<Task>();
@@ -67,7 +79,7 @@ namespace Synapse.Services
 
         [Route( "{planInstanceId}/" )]
         [HttpPost]
-        public bool StartPlanAsync(long planInstanceId, bool dryRun, [FromBody]Plan plan)
+        public void StartPlanAsync(long planInstanceId, bool dryRun, [FromBody]Plan plan)
         {
             string context = GetContext( nameof( StartPlanAsync ),
                 nameof( plan ), plan.Name, nameof( dryRun ), dryRun, nameof( planInstanceId ), planInstanceId );
@@ -76,29 +88,8 @@ namespace Synapse.Services
             {
                 SynapseServer.Logger.Debug( context );
                 plan.InstanceId = planInstanceId;
-                plan.Start( null, dryRun );
-
-                PlanRuntimePod planContainer = new PlanRuntimePod( plan, dryRun, null, plan.InstanceId );
-
-                if( !_isDrainstopped )
-                {
-                    CancellationTokenSource cts = new CancellationTokenSource();
-                    InProcPlanInfo info = new InProcPlanInfo()
-                    {
-                        PlanPod = planContainer,
-                        CancellationToken = cts
-                    };
-
-                    //_plans[planContainer.PlanInstanceId] = info;
-
-                    //_tasks.Add( Task.Run( () => { planContainer.Start( cts.Token, PlanComplete ); }, cts.Token ) );
-                    //Task.Run( () => { planContainer.Start( cts.Token, null ); }, cts.Token );
-
-                    planContainer.Start( cts.Token, null );
-                }
-
-                return !_isDrainstopped;
-
+                PlanRuntimePod p = new PlanRuntimePod( plan, dryRun, null, plan.InstanceId );
+                _scheduler.StartPlan( p );
             }
             catch( Exception ex )
             {
@@ -108,10 +99,9 @@ namespace Synapse.Services
             }
         }
 
-        protected virtual void PlanComplete(IPlanRuntimeContainer planContainer)
+        private static void Scheduler_PlanCompleted(object sender, PlanCompletedEventArgs e)
         {
-            //_plans.Remove( planContainer.PlanInstanceId );
-            SynapseServer.Logger.Debug( $"Completed: {planContainer.PlanInstanceId}, {planContainer.Plan.Name}" );
+            SynapseServer.Logger.Info( $"Plan Completed: InstanceId: {e.PlanContainer.PlanInstanceId}, Name: {e.PlanContainer.Plan.Name}" );  //, At: {e.TimeCompleted}
         }
 
         [Route( "{planInstanceId}/" )]
@@ -141,87 +131,87 @@ namespace Synapse.Services
         }
 
 
-        [Route( "{planUniqueName}/{planInstanceId}/" )]
-        [HttpGet]
-        public Plan GetPlanStatus(string planUniqueName, long planInstanceId)
-        {
-            string context = GetContext( nameof( GetPlanStatus ),
-                nameof( planUniqueName ), planUniqueName, nameof( planInstanceId ), planInstanceId );
+        //[Route( "{planUniqueName}/{planInstanceId}/" )]
+        //[HttpGet]
+        //public Plan GetPlanStatus(string planUniqueName, long planInstanceId)
+        //{
+        //    string context = GetContext( nameof( GetPlanStatus ),
+        //        nameof( planUniqueName ), planUniqueName, nameof( planInstanceId ), planInstanceId );
 
-            try
-            {
-                SynapseServer.Logger.Debug( context );
-                return _server.GetPlanStatus( planUniqueName, planInstanceId );
-            }
-            catch( Exception ex )
-            {
-                SynapseServer.Logger.Error(
-                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
-                throw;
-            }
-        }
+        //    try
+        //    {
+        //        SynapseServer.Logger.Debug( context );
+        //        return _server.GetPlanStatus( planUniqueName, planInstanceId );
+        //    }
+        //    catch( Exception ex )
+        //    {
+        //        SynapseServer.Logger.Error(
+        //            Utilities.UnwindException( context, ex, asSingleLine: true ) );
+        //        throw;
+        //    }
+        //}
 
-        [Route( "{planUniqueName}/{planInstanceId}/" )]
-        [HttpPost]
-        public void SetStatus(string planUniqueName, long planInstanceId, [FromBody]Plan plan)
-        {
-            string context = GetContext( nameof( SetStatus ),
-                nameof( planUniqueName ), planUniqueName, nameof( planInstanceId ), planInstanceId,
-                nameof( plan ), plan );
+        //[Route( "{planUniqueName}/{planInstanceId}/" )]
+        //[HttpPost]
+        //public void SetStatus(string planUniqueName, long planInstanceId, [FromBody]Plan plan)
+        //{
+        //    string context = GetContext( nameof( SetStatus ),
+        //        nameof( planUniqueName ), planUniqueName, nameof( planInstanceId ), planInstanceId,
+        //        nameof( plan ), plan );
 
-            try
-            {
-                SynapseServer.Logger.Debug( context );
-                _server.UpdatePlanStatus( plan );
-            }
-            catch( Exception ex )
-            {
-                SynapseServer.Logger.Error(
-                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
-                throw;
-            }
-        }
+        //    try
+        //    {
+        //        SynapseServer.Logger.Debug( context );
+        //        _server.UpdatePlanStatus( plan );
+        //    }
+        //    catch( Exception ex )
+        //    {
+        //        SynapseServer.Logger.Error(
+        //            Utilities.UnwindException( context, ex, asSingleLine: true ) );
+        //        throw;
+        //    }
+        //}
 
-        [Route( "{planUniqueName}/{planInstanceId}/action/" )]
-        [HttpPost]
-        public void SetStatus(string planUniqueName, long planInstanceId, [FromBody]ActionItem actionItem)
-        {
-            string context = GetContext( nameof( SetStatus ),
-                nameof( planUniqueName ), planUniqueName, nameof( planInstanceId ), planInstanceId,
-                nameof( actionItem ), actionItem );
+        //[Route( "{planUniqueName}/{planInstanceId}/action/" )]
+        //[HttpPost]
+        //public void SetStatus(string planUniqueName, long planInstanceId, [FromBody]ActionItem actionItem)
+        //{
+        //    string context = GetContext( nameof( SetStatus ),
+        //        nameof( planUniqueName ), planUniqueName, nameof( planInstanceId ), planInstanceId,
+        //        nameof( actionItem ), actionItem );
 
-            try
-            {
-                SynapseServer.Logger.Debug( context );
-                _server.UpdatePlanActionStatus( planUniqueName, planInstanceId, actionItem );
-            }
-            catch( Exception ex )
-            {
-                SynapseServer.Logger.Error(
-                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
-                throw;
-            }
-        }
+        //    try
+        //    {
+        //        SynapseServer.Logger.Debug( context );
+        //        _server.UpdatePlanActionStatus( planUniqueName, planInstanceId, actionItem );
+        //    }
+        //    catch( Exception ex )
+        //    {
+        //        SynapseServer.Logger.Error(
+        //            Utilities.UnwindException( context, ex, asSingleLine: true ) );
+        //        throw;
+        //    }
+        //}
 
-        [Route( "{planUniqueName}/{planInstanceId}/" )]
-        [HttpDelete]
-        public void CancelPlan(string planUniqueName, long planInstanceId)
-        {
-            string context = GetContext( nameof( GetPlanStatus ),
-                nameof( planUniqueName ), planUniqueName, nameof( planInstanceId ), planInstanceId );
+        //[Route( "{planUniqueName}/{planInstanceId}/" )]
+        //[HttpDelete]
+        //public void CancelPlan(string planUniqueName, long planInstanceId)
+        //{
+        //    string context = GetContext( nameof( GetPlanStatus ),
+        //        nameof( planUniqueName ), planUniqueName, nameof( planInstanceId ), planInstanceId );
 
-            try
-            {
-                SynapseServer.Logger.Debug( context );
-                _server.CancelPlan( planInstanceId );
-            }
-            catch( Exception ex )
-            {
-                SynapseServer.Logger.Error(
-                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
-                throw;
-            }
-        }
+        //    try
+        //    {
+        //        SynapseServer.Logger.Debug( context );
+        //        _server.CancelPlan( planInstanceId );
+        //    }
+        //    catch( Exception ex )
+        //    {
+        //        SynapseServer.Logger.Error(
+        //            Utilities.UnwindException( context, ex, asSingleLine: true ) );
+        //        throw;
+        //    }
+        //}
 
 
         #region utility methods

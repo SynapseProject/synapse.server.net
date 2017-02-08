@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Synapse.Core.Runtime
+namespace Synapse.Services
 {
     public class PlanScheduler : IDisposable
     {
@@ -37,7 +37,7 @@ namespace Synapse.Core.Runtime
         /// <param name="maxThreads">Specifies the maximum count for processing threads</param>
         public PlanScheduler(int maxThreads = 0)
         {
-            if( maxThreads == 0 )
+            if( maxThreads <= 0 )
             {
                 _tf = new TaskFactory();
             }
