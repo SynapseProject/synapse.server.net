@@ -92,25 +92,25 @@ namespace Synapse.Services
         }
 
 
-        public void Drainstop(bool shutdown)
+        public void Drainstop(bool shutdown = true)
         {
             DrainstopAsync( shutdown ).Wait();
         }
 
-        public async Task DrainstopAsync(bool shutdown)
+        public async Task DrainstopAsync(bool shutdown = true)
         {
-            string requestUri = $"{_rootPath}/drainstop/?action=stop&shutdown={shutdown}";
+            string requestUri = $"{_rootPath}/drainstop/?shutdown={shutdown}";
             await GetAsync( requestUri );
         }
 
-        public void Undrainstop()
+        public void CancelDrainstop()
         {
-            UndrainstopAsync().Wait();
+            CancelDrainstopAsync().Wait();
         }
 
-        public async Task UndrainstopAsync()
+        public async Task CancelDrainstopAsync()
         {
-            string requestUri = $"{_rootPath}/drainstop/?action=unstop";
+            string requestUri = $"{_rootPath}/drainstop/cancel";
             await GetAsync( requestUri );
         }
 
@@ -118,7 +118,7 @@ namespace Synapse.Services
 
         public async Task<bool> GetIsDrainstopCompleteAsync()
         {
-            string requestUri = $"{_rootPath}/drainstop/?action=status";
+            string requestUri = $"{_rootPath}/drainstop/iscomplete";
             return await GetAsync<bool>( requestUri );
         }
 
@@ -126,7 +126,7 @@ namespace Synapse.Services
 
         public async Task<int> GetCurrentQueueDepthAsync()
         {
-            string requestUri = $"{_rootPath}/queue/?action=depth";
+            string requestUri = $"{_rootPath}/queue/count";
             return await GetAsync<int>( requestUri );
         }
 
@@ -134,7 +134,7 @@ namespace Synapse.Services
 
         public async Task<List<string>> GetCurrentQueueItemsAsync()
         {
-            string requestUri = $"{_rootPath}/queue/?action=list";
+            string requestUri = $"{_rootPath}/queue";
             return await GetAsync<List<string>>( requestUri );
         }
     }

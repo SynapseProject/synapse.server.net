@@ -126,8 +126,8 @@ namespace Synapse.Services
 
         #region drainstop
         [HttpGet]
-        [Route( "drainstop/?action=stop&shutdown={shutdown}" )]
-        public void Drainstop(bool shutdown)
+        [Route( "drainstop/" )]
+        public void Drainstop(bool shutdown = true)
         {
             string context = GetContext( nameof( Drainstop ), nameof( shutdown ), shutdown );
 
@@ -137,9 +137,9 @@ namespace Synapse.Services
                 SynapseServer.Logger.Info( $"Drainstop starting, CurrentQueueDepth: {_scheduler.CurrentQueueDepth}.  Shutdown when complete: {shutdown}." );
                 _scheduler.Drainstop();
                 SynapseServer.Logger.Info( $"Drainstop complete, CurrentQueueDepth: {_scheduler.CurrentQueueDepth}" );
-                if( shutdown )
+                if( shutdown && _scheduler.IsDrainstopped )
                 {
-                    SynapseServer.Logger.Info( $"Drainstop initiating Shutdown." );
+                    SynapseServer.Logger.Info( $"Drainstop complete, initiating Shutdown." );
                     DrainstopCallback?.Invoke();
                 }
             }
@@ -151,15 +151,17 @@ namespace Synapse.Services
             }
         }
 
-        public void Undrainstop()
+        [HttpGet]
+        [Route( "drainstop/cancel" )]
+        public void CancelDrainstop()
         {
-            string context = GetContext( nameof( Undrainstop ) );
+            string context = GetContext( nameof( CancelDrainstop ) );
 
             try
             {
                 SynapseServer.Logger.Debug( context );
                 SynapseServer.Logger.Info( $"Undrainstop starting, CurrentQueueDepth: {_scheduler.CurrentQueueDepth}" );
-                _scheduler.Undrainstop();
+                _scheduler.CancelDrainstop();
                 SynapseServer.Logger.Info( $"Undrainstop complete, CurrentQueueDepth: {_scheduler.CurrentQueueDepth}" );
             }
             catch( Exception ex )
@@ -170,6 +172,8 @@ namespace Synapse.Services
             }
         }
 
+        [HttpGet]
+        [Route( "drainstop/iscomplete" )]
         public bool GetIsDrainstopComplete()
         {
             string context = GetContext( nameof( GetIsDrainstopComplete ) );
@@ -187,6 +191,8 @@ namespace Synapse.Services
             }
         }
 
+        [HttpGet]
+        [Route( "queue/count" )]
         public int GetCurrentQueueDepth()
         {
             string context = GetContext( nameof( GetCurrentQueueDepth ) );
@@ -204,6 +210,8 @@ namespace Synapse.Services
             }
         }
 
+        [HttpGet]
+        [Route( "queue" )]
         public List<string> GetCurrentQueueItems()
         {
             string context = GetContext( nameof( GetCurrentQueueItems ) );

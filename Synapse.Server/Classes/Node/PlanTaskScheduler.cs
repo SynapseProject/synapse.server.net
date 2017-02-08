@@ -96,7 +96,7 @@ namespace Synapse.Services
                 _isDrainstopComplete = true;
             }
         }
-        public virtual void Undrainstop()
+        public virtual void CancelDrainstop()
         {
             _isDrainstopped = false;
             _isDrainstopComplete = false;

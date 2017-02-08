@@ -104,9 +104,9 @@ namespace Synapse.Services
             {
                 s.OnStart( null );
                 Thread.Sleep( Timeout.Infinite );
+                Console.WriteLine( "Terminating Synapse.Server." );
                 s.OnStop();
             }
-            Console.WriteLine( "Terminating Synapse.Server." );
         }
 
         protected override void OnStart(string[] args)
@@ -117,6 +117,12 @@ namespace Synapse.Services
 
                 if( _serviceHost != null )
                     _serviceHost.Close();
+
+                if( !Config.ServerIsController )
+                {
+                    NodeController.InitPlanScheduler();
+                    NodeController.DrainstopCallback = () => StopCallback();
+                }
 
                 string url = Environment.UserInteractive ?
                     $"http://localhost:{Config.WebApiPort}" :
@@ -141,6 +147,12 @@ namespace Synapse.Services
                 Stop();
                 Environment.Exit( 1 );
             }
+        }
+
+        void StopCallback()
+        {
+            this.Stop();
+            Environment.Exit( 0 );
         }
 
         protected override void OnStop()
