@@ -34,10 +34,6 @@ namespace Synapse.Services
         }
 
 
-        bool _isDrainstopped;
-        List<Task> _tasks = new List<Task>();
-        Dictionary<long, InProcPlanInfo> _plans = new Dictionary<long, InProcPlanInfo>();
-
 
         [HttpGet]
         [Route( "hello" )]
@@ -106,21 +102,18 @@ namespace Synapse.Services
 
         [Route( "{planInstanceId}/" )]
         [HttpDelete]
-        public bool CancelPlan(long planInstanceId)
+        public void CancelPlan(long planInstanceId)
         {
             string context = GetContext( nameof( CancelPlan ), nameof( planInstanceId ), planInstanceId );
 
             try
             {
                 SynapseServer.Logger.Debug( context );
-                bool found = _plans.ContainsKey( planInstanceId );
-                if( found )
-                    _plans[planInstanceId].CancellationToken.Cancel();
+                bool found = _scheduler.CancelPlan( planInstanceId );
                 string foundMsg = found ?
                     "Found executing Plan and signaled Cancel request." :
                     "Could not find executing Plan; Plan may have already completed execution.";
                 SynapseServer.Logger.Info( $"CancelPlan {planInstanceId}: {foundMsg}" );
-                return found;
             }
             catch( Exception ex )
             {
@@ -131,88 +124,103 @@ namespace Synapse.Services
         }
 
 
-        //[Route( "{planUniqueName}/{planInstanceId}/" )]
-        //[HttpGet]
-        //public Plan GetPlanStatus(string planUniqueName, long planInstanceId)
-        //{
-        //    string context = GetContext( nameof( GetPlanStatus ),
-        //        nameof( planUniqueName ), planUniqueName, nameof( planInstanceId ), planInstanceId );
+        #region drainstop
+        [HttpGet]
+        [Route( "drainstop/?action=stop&shutdown={shutdown}" )]
+        public void Drainstop(bool shutdown)
+        {
+            string context = GetContext( nameof( Drainstop ), nameof( shutdown ), shutdown );
 
-        //    try
-        //    {
-        //        SynapseServer.Logger.Debug( context );
-        //        return _server.GetPlanStatus( planUniqueName, planInstanceId );
-        //    }
-        //    catch( Exception ex )
-        //    {
-        //        SynapseServer.Logger.Error(
-        //            Utilities.UnwindException( context, ex, asSingleLine: true ) );
-        //        throw;
-        //    }
-        //}
+            try
+            {
+                SynapseServer.Logger.Debug( context );
+                SynapseServer.Logger.Info( $"Drainstop starting, CurrentQueueDepth: {_scheduler.CurrentQueueDepth}.  Shutdown when complete: {shutdown}." );
+                _scheduler.Drainstop();
+                SynapseServer.Logger.Info( $"Drainstop complete, CurrentQueueDepth: {_scheduler.CurrentQueueDepth}" );
+                if( shutdown )
+                {
+                    SynapseServer.Logger.Info( $"Drainstop initiating Shutdown." );
+                    DrainstopCallback?.Invoke();
+                }
+            }
+            catch( Exception ex )
+            {
+                SynapseServer.Logger.Error(
+                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
+                throw;
+            }
+        }
 
-        //[Route( "{planUniqueName}/{planInstanceId}/" )]
-        //[HttpPost]
-        //public void SetStatus(string planUniqueName, long planInstanceId, [FromBody]Plan plan)
-        //{
-        //    string context = GetContext( nameof( SetStatus ),
-        //        nameof( planUniqueName ), planUniqueName, nameof( planInstanceId ), planInstanceId,
-        //        nameof( plan ), plan );
+        public void Undrainstop()
+        {
+            string context = GetContext( nameof( Undrainstop ) );
 
-        //    try
-        //    {
-        //        SynapseServer.Logger.Debug( context );
-        //        _server.UpdatePlanStatus( plan );
-        //    }
-        //    catch( Exception ex )
-        //    {
-        //        SynapseServer.Logger.Error(
-        //            Utilities.UnwindException( context, ex, asSingleLine: true ) );
-        //        throw;
-        //    }
-        //}
+            try
+            {
+                SynapseServer.Logger.Debug( context );
+                SynapseServer.Logger.Info( $"Undrainstop starting, CurrentQueueDepth: {_scheduler.CurrentQueueDepth}" );
+                _scheduler.Undrainstop();
+                SynapseServer.Logger.Info( $"Undrainstop complete, CurrentQueueDepth: {_scheduler.CurrentQueueDepth}" );
+            }
+            catch( Exception ex )
+            {
+                SynapseServer.Logger.Error(
+                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
+                throw;
+            }
+        }
 
-        //[Route( "{planUniqueName}/{planInstanceId}/action/" )]
-        //[HttpPost]
-        //public void SetStatus(string planUniqueName, long planInstanceId, [FromBody]ActionItem actionItem)
-        //{
-        //    string context = GetContext( nameof( SetStatus ),
-        //        nameof( planUniqueName ), planUniqueName, nameof( planInstanceId ), planInstanceId,
-        //        nameof( actionItem ), actionItem );
+        public bool GetIsDrainstopComplete()
+        {
+            string context = GetContext( nameof( GetIsDrainstopComplete ) );
 
-        //    try
-        //    {
-        //        SynapseServer.Logger.Debug( context );
-        //        _server.UpdatePlanActionStatus( planUniqueName, planInstanceId, actionItem );
-        //    }
-        //    catch( Exception ex )
-        //    {
-        //        SynapseServer.Logger.Error(
-        //            Utilities.UnwindException( context, ex, asSingleLine: true ) );
-        //        throw;
-        //    }
-        //}
+            try
+            {
+                SynapseServer.Logger.Debug( context );
+                return _scheduler.IsDrainstopComplete;
+            }
+            catch( Exception ex )
+            {
+                SynapseServer.Logger.Error(
+                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
+                throw;
+            }
+        }
 
-        //[Route( "{planUniqueName}/{planInstanceId}/" )]
-        //[HttpDelete]
-        //public void CancelPlan(string planUniqueName, long planInstanceId)
-        //{
-        //    string context = GetContext( nameof( GetPlanStatus ),
-        //        nameof( planUniqueName ), planUniqueName, nameof( planInstanceId ), planInstanceId );
+        public int GetCurrentQueueDepth()
+        {
+            string context = GetContext( nameof( GetCurrentQueueDepth ) );
 
-        //    try
-        //    {
-        //        SynapseServer.Logger.Debug( context );
-        //        _server.CancelPlan( planInstanceId );
-        //    }
-        //    catch( Exception ex )
-        //    {
-        //        SynapseServer.Logger.Error(
-        //            Utilities.UnwindException( context, ex, asSingleLine: true ) );
-        //        throw;
-        //    }
-        //}
+            try
+            {
+                SynapseServer.Logger.Debug( context );
+                return _scheduler.CurrentQueueDepth;
+            }
+            catch( Exception ex )
+            {
+                SynapseServer.Logger.Error(
+                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
+                throw;
+            }
+        }
 
+        public List<string> GetCurrentQueueItems()
+        {
+            string context = GetContext( nameof( GetCurrentQueueItems ) );
+
+            try
+            {
+                SynapseServer.Logger.Debug( context );
+                return _scheduler.CurrentQueue;
+            }
+            catch( Exception ex )
+            {
+                SynapseServer.Logger.Error(
+                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
+                throw;
+            }
+        }
+        #endregion
 
         #region utility methods
         string GetContext(string context, params object[] parms)

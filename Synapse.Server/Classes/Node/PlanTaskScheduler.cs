@@ -71,7 +71,7 @@ namespace Synapse.Services
             return !_isDrainstopped;
         }
 
-        public virtual bool CancelPlan(int planInstanceId)
+        public virtual bool CancelPlan(long planInstanceId)
         {
             bool found = _plans.ContainsKey( planInstanceId );
             if( found )
