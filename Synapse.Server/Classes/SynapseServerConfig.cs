@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Security.Cryptography;
 using Synapse.Core.Utilities;
 
 
@@ -80,7 +81,7 @@ namespace Synapse.Services
         }
 
         public AuthenticationSchemes AuthenticationScheme { get; set; } = AuthenticationSchemes.IntegratedWindowsAuthentication;
-        internal string AuthenticationSchemeString { get; set; } = "IntegratedWindowsAuthentication";
+        internal string AuthenticationSchemeString { get; set; } = AuthenticationSchemes.IntegratedWindowsAuthentication.ToString();
         internal bool TestSetAuthenticationSchemeString
         {
             get
@@ -92,6 +93,27 @@ namespace Synapse.Services
                 return ok;
             }
         }
+
+        public string SignatureKeyFile { get; set; }
+        internal bool HasSignatureKeyFile { get { return !string.IsNullOrWhiteSpace( SignatureKeyFile ); } }
+
+        public string SignatureKeyContainerName { get; set; } = "DefaultContainerName";
+        internal bool HasSignatureKeyContainerName { get { return !string.IsNullOrWhiteSpace( SignatureKeyContainerName ); } }
+
+        public CspProviderFlags SignatureCspProviderFlags { get; set; }
+        internal string SignatureCspProviderFlagsString { get; set; } = CspProviderFlags.NoFlags.ToString();
+        internal bool TestSignatureCspProviderFlagsString
+        {
+            get
+            {
+                CspProviderFlags flags = SignatureCspProviderFlags;
+                bool ok = Enum.TryParse( SignatureCspProviderFlagsString, true, out flags );
+                if( ok )
+                    SignatureCspProviderFlags = flags;
+                return ok;
+            }
+        }
+
 
 
         public SynapseControllerConfig Controller { get; set; } = new SynapseControllerConfig();
@@ -122,6 +144,9 @@ namespace Synapse.Services
             values[nameof( c.ServerRole )] = c.ServerRole.ToString();
             values[nameof( c.WebApiPort )] = c.WebApiPort.ToString();
             values[nameof( c.AuthenticationScheme )] = c.AuthenticationScheme.ToString();
+            values[nameof( c.SignatureKeyFile )] = c.SignatureKeyFile;
+            values[nameof( c.SignatureKeyContainerName )] = c.SignatureKeyContainerName;
+            values[nameof( c.SignatureCspProviderFlags )] = c.SignatureCspProviderFlags.ToString();
 
             foreach( KeyValuePair<string, string> kvp in SynapseControllerConfig.GetConfigDefaultValues() )
                 values[kvp.Key] = kvp.Value;
@@ -150,6 +175,16 @@ namespace Synapse.Services
 
             if( values.ContainsKey( nameof( c.AuthenticationScheme ).ToLower() ) )
                 c.AuthenticationSchemeString = values[nameof( c.AuthenticationScheme ).ToLower()];
+
+            if( values.ContainsKey( nameof( c.SignatureKeyFile ).ToLower() ) )
+                c.SignatureKeyFile = values[nameof( c.SignatureKeyFile ).ToLower()];
+
+            if( values.ContainsKey( nameof( c.SignatureKeyContainerName ).ToLower() ) )
+                c.SignatureKeyContainerName = values[nameof( c.SignatureKeyContainerName ).ToLower()];
+
+            if( values.ContainsKey( nameof( c.SignatureCspProviderFlags ).ToLower() ) )
+                c.SignatureCspProviderFlagsString = values[nameof( c.SignatureCspProviderFlags ).ToLower()];
+
 
             c.Controller.Configure( values );
 
@@ -181,6 +216,16 @@ namespace Synapse.Services
 
             if( value.TestSetAuthenticationSchemeString && !(value.AuthenticationScheme == config.AuthenticationScheme) )
                 config.AuthenticationScheme = value.AuthenticationScheme;
+
+            if( value.HasSignatureKeyFile && !(value.SignatureKeyFile == config.SignatureKeyFile) )
+                config.SignatureKeyFile = value.SignatureKeyFile;
+
+            if( value.HasSignatureKeyContainerName && !(value.SignatureKeyContainerName == config.SignatureKeyContainerName) )
+                config.SignatureKeyContainerName = value.SignatureKeyContainerName;
+
+            if( value.TestSignatureCspProviderFlagsString && !(value.SignatureCspProviderFlags == config.SignatureCspProviderFlags) )
+                config.SignatureCspProviderFlags = value.SignatureCspProviderFlags;
+
 
             config.Controller.Configure( value.Controller );
 

@@ -41,6 +41,11 @@ namespace Synapse.Services
         public long StartPlan(string planUniqueName, bool dryRun = false)
         {
             Plan plan = _dal.CreatePlanInstance( planUniqueName );
+            if( SynapseServer.Config.Controller.SignPlan )
+            {
+                SynapseServer.Logger.Debug( $"Signing Plan {plan.Name}/{plan.InstanceId}." );
+                plan.Sign( SynapseServer.Config.SignatureKeyContainerName, SynapseServer.Config.SignatureKeyFile, SynapseServer.Config.SignatureCspProviderFlags );
+            }
             _nodeClient.StartPlan( plan.InstanceId, dryRun, plan );
             return plan.InstanceId;
         }

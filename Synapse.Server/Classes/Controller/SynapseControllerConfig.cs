@@ -23,6 +23,20 @@ namespace Synapse.Services
         public string Dal { get; set; } = "Synapse.Controller.Dal.FileSystem:FileSystemDal";
         internal bool HasDal { get { return !string.IsNullOrWhiteSpace( Dal ); } }
 
+        public bool SignPlan { get; set; } = true;
+        internal string SignPlanString { get; set; } = "true";
+        internal bool TestSetSignPlanString
+        {
+            get
+            {
+                bool v = SignPlan;
+                bool ok = bool.TryParse( SignPlanString, out v );
+                if( ok )
+                    SignPlan = v;
+                return ok;
+            }
+        }
+
 
         public static Dictionary<string, string> GetConfigDefaultValues()
         {
@@ -33,6 +47,7 @@ namespace Synapse.Services
             string n = "c.";
             values[n + nameof( c.NodeUrl )] = c.NodeUrl;
             values[n + nameof( c.Dal )] = c.Dal;
+            values[n + nameof( c.SignPlan )] = c.SignPlan.ToString();
 
             return values;
         }
@@ -48,6 +63,9 @@ namespace Synapse.Services
             if( values.ContainsKey( n + nameof( c.Dal ).ToLower() ) )
                 c.Dal = values[n + nameof( c.Dal ).ToLower()];
 
+            if( values.ContainsKey( n + nameof( c.SignPlan ).ToLower() ) )
+                c.SignPlanString = values[n + nameof( c.SignPlan ).ToLower()];
+
             Configure( c );
         }
 
@@ -59,6 +77,9 @@ namespace Synapse.Services
 
             if( value.HasDal )
                 Dal = value.Dal;
+
+            if( value.TestSetSignPlanString )
+                SignPlan = value.SignPlan;
         }
     }
 }

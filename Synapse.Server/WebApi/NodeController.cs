@@ -84,6 +84,16 @@ namespace Synapse.Services
             {
                 SynapseServer.Logger.Debug( context );
                 plan.InstanceId = planInstanceId;
+
+                if( SynapseServer.Config.Node.ValidatePlanSignature )
+                {
+                    SynapseServer.Logger.Debug( $"Checking Plan signature on {plan.Name}/{planInstanceId}." );
+                    if( !plan.VerifySignature( SynapseServer.Config.SignatureKeyContainerName, SynapseServer.Config.SignatureKeyFile, SynapseServer.Config.SignatureCspProviderFlags ) )
+                        throw new System.Security.SecurityException( $"Plan signature validation failed on {plan.Name}/{planInstanceId}." );
+                    else
+                        SynapseServer.Logger.Debug( $"Plan signature validation succeeded on {plan.Name}/{planInstanceId}." );
+                }
+
                 PlanRuntimePod p = new PlanRuntimePod( plan, dryRun, null, plan.InstanceId );
                 _scheduler.StartPlan( p );
             }
