@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
+
 using Synapse.Core;
 using Synapse.Core.Utilities;
 using Synapse.Services.Controller.Dal;
@@ -44,6 +43,10 @@ namespace Synapse.Services
             if( SynapseServer.Config.Controller.SignPlan )
             {
                 SynapseServer.Logger.Debug( $"Signing Plan {plan.Name}/{plan.InstanceId}." );
+
+                if( !File.Exists( SynapseServer.Config.SignatureKeyFile ) )
+                    throw new FileNotFoundException( SynapseServer.Config.SignatureKeyFile );
+
                 plan.Sign( SynapseServer.Config.SignatureKeyContainerName, SynapseServer.Config.SignatureKeyFile, SynapseServer.Config.SignatureCspProviderFlags );
             }
             _nodeClient.StartPlan( plan.InstanceId, dryRun, plan );

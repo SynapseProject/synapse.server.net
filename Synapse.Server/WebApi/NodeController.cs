@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Web.Http;
 
 using Synapse.Common.WebApi;
@@ -88,6 +87,10 @@ namespace Synapse.Services
                 if( SynapseServer.Config.Node.ValidatePlanSignature )
                 {
                     SynapseServer.Logger.Debug( $"Checking Plan signature on {plan.Name}/{planInstanceId}." );
+
+                    if( !File.Exists( SynapseServer.Config.SignatureKeyFile ) )
+                        throw new FileNotFoundException( SynapseServer.Config.SignatureKeyFile );
+
                     if( !plan.VerifySignature( SynapseServer.Config.SignatureKeyContainerName, SynapseServer.Config.SignatureKeyFile, SynapseServer.Config.SignatureCspProviderFlags ) )
                         throw new System.Security.SecurityException( $"Plan signature validation failed on {plan.Name}/{planInstanceId}." );
                     else

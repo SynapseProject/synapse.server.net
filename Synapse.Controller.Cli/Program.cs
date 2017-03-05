@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ServiceProcess;
 using System.Text;
+using Synapse.Core.Utilities;
 
 namespace Synapse.Services.Controller.Cli
 {
@@ -42,6 +43,7 @@ namespace Synapse.Services.Controller.Cli
 
         Dictionary<string, string> _methods = new Dictionary<string, string>();
         string _service = "service";
+        string _keygen = "keygen";
 
         public Program()
         {
@@ -101,11 +103,12 @@ namespace Synapse.Services.Controller.Cli
                 }
                 else if( arg0.StartsWith( _service ) )
                     RunServiceAction( args );
+                else if( arg0.StartsWith( _keygen ) )
+                    RunKeyGenerator( args );
                 else
                     WriteHelpAndExit( "Unknown action." );
             }
         }
-
 
         protected virtual void RunServiceAction(string[] args)
         {
@@ -156,6 +159,18 @@ namespace Synapse.Services.Controller.Cli
         }
 
 
+        private void RunKeyGenerator(string[] args)
+        {
+            Console.WriteLine( $"Calling {nameof( GenerateRsaKeys )}." );
+            RunMethod( this, nameof( GenerateRsaKeys ), args );
+        }
+
+        public void GenerateRsaKeys(string keyContainerName, string filePath)
+        {
+            CryptoHelpers.GenerateRsaKeys( keyContainerName, $"{filePath}.pubPriv", $"{filePath}.pubOnly" );
+        }
+
+
         #region Help
         protected override void WriteHelpAndExit(string errorMessage = null)
         {
@@ -184,6 +199,9 @@ namespace Synapse.Services.Controller.Cli
             Console.WriteLine( "{0,-15}- Commands: install|uninstall|run", "" );
             Console.WriteLine( "{0,-15}- Example:  synapse.controller.cli service run", "" );
             Console.WriteLine( df.ToString() );
+            Console.WriteLine( "  keygen{0,-7}Generate RSA key for signing Plans.", "" );
+            Console.WriteLine( "{0,-15}- keyContainerName:  Key values storage Container.", "" );
+            Console.WriteLine( "{0,-15}- filePath:          Path and filename to store key values.\r\n", "" );
             Console.WriteLine( "  httpAction{0,-3}Execute a command, optionally specify URL.", "" );
             Console.WriteLine( "{0,-15}Parm help: synapse.controller.cli {1}httpAction{2} help.\r\n", "", "{", "}" );
             Console.WriteLine( "  - httpActions:", "" );
