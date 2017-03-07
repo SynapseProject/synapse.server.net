@@ -15,7 +15,15 @@ namespace Synapse.Services
 
         public PlanServer()
         {
-            LoadDal();
+            try
+            {
+                LoadDal();
+            }
+            catch(Exception ex)
+            {
+                SynapseServer.Logger.Fatal( "Failed to load Dal.", ex );
+                throw;
+            }
         }
 
         void LoadDal()
@@ -48,6 +56,7 @@ namespace Synapse.Services
                     throw new FileNotFoundException( SynapseServer.Config.SignatureKeyFile );
 
                 plan.Sign( SynapseServer.Config.SignatureKeyContainerName, SynapseServer.Config.SignatureKeyFile, SynapseServer.Config.SignatureCspProviderFlags );
+                //plan.Name += "foo";  //testing: intentionally crash the sig
             }
             _nodeClient.StartPlan( plan.InstanceId, dryRun, plan );
             return plan.InstanceId;
