@@ -6,7 +6,7 @@ using System.Web.Http;
 
 using Synapse.Common.WebApi;
 using Synapse.Core;
-
+using Synapse.Core.Utilities;
 
 namespace Synapse.Services
 {
@@ -74,8 +74,11 @@ namespace Synapse.Services
 
         [Route( "{planInstanceId}/" )]
         [HttpPost]
-        public void StartPlanAsync(long planInstanceId, bool dryRun, [FromBody]Plan plan)
+        public void StartPlanAsync(long planInstanceId, bool dryRun, [FromBody]string planString)
         {
+            planString = CryptoHelpers.Decode( planString );
+            Plan plan  = Plan.FromYaml( new StringReader( planString ) );
+
             string context = GetContext( nameof( StartPlanAsync ),
                 nameof( plan ), plan.Name, nameof( dryRun ), dryRun, nameof( planInstanceId ), planInstanceId );
 

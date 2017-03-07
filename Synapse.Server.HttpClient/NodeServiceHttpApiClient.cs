@@ -45,8 +45,10 @@ namespace Synapse.Services
             if( File.Exists( filePath ) )
             {
                 Plan plan = YamlHelpers.DeserializeFile<Plan>( filePath );
+                string planString = plan.ToYaml();
+                planString = CryptoHelpers.Encode( planString );
                 string requestUri = $"{_rootPath}/{planInstanceId}/?dryRun={dryRun}";
-                return await PostAsync<Plan, ExecuteResult>( plan, requestUri );
+                return await PostAsync<string, ExecuteResult>( planString, requestUri );
             }
             else
                 throw new FileNotFoundException( "Unable to start Plan.", filePath );
@@ -62,8 +64,10 @@ namespace Synapse.Services
             if( File.Exists( filePath ) )
             {
                 Plan plan = YamlHelpers.DeserializeFile<Plan>( filePath );
+                string planString = plan.ToYaml();
+                planString = CryptoHelpers.Encode( planString );
                 string requestUri = $"{_rootPath}/{planInstanceId}/?dryRun={dryRun}";
-                return await PostAsync<Plan, ExecuteResult>( plan, requestUri );
+                return await PostAsync<string, ExecuteResult>( planString, requestUri );
             }
             else
                 throw new FileNotFoundException( "Unable to start Plan.", filePath );
@@ -76,8 +80,10 @@ namespace Synapse.Services
 
         public async Task<ExecuteResult> StartPlanAsync(long planInstanceId, bool dryRun, Plan plan)
         {
+            string planString = plan.ToYaml();
+            planString = CryptoHelpers.Encode( planString );
             string requestUri = $"{_rootPath}/{planInstanceId}/?dryRun={dryRun}";
-            return await PostAsync<Plan, ExecuteResult>( plan, requestUri );
+            return await PostAsync<string, ExecuteResult>( planString, requestUri );
         }
 
         public void CancelPlan(long planInstanceId)
