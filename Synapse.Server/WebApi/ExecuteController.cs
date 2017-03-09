@@ -94,13 +94,16 @@ namespace Synapse.Services
         [HttpGet]
         public long StartPlan(string planUniqueName, bool dryRun = false)
         {
+            Uri uri = this.Url.Request.RequestUri;
             string context = GetContext( nameof( StartPlan ),
-                nameof( planUniqueName ), planUniqueName, nameof( dryRun ), dryRun );
+                nameof( planUniqueName ), planUniqueName, nameof( dryRun ), dryRun, "QueryString", uri.Query );
 
             try
             {
                 SynapseServer.Logger.Debug( context );
-                return _server.StartPlan( planUniqueName, dryRun );
+                Dictionary<string, string> dynamicParameters = uri.ParseQueryString();
+                if( dynamicParameters.ContainsKey( nameof( dryRun ) ) ) dynamicParameters.Remove( nameof( dryRun ) );
+                return _server.StartPlan( planUniqueName, dryRun, dynamicParameters );
             }
             catch( Exception ex )
             {

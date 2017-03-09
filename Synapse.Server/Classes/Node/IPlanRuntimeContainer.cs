@@ -9,7 +9,7 @@ namespace Synapse.Services
     {
         Plan Plan { get; }
         bool IsDryRun { get; }
-        Dictionary<string, string> DynamicData { get; }
+        Dictionary<string, string> DynamicParameters { get; }
         long PlanInstanceId { get; }
 
         void Start(CancellationToken token, Action<IPlanRuntimeContainer> callback);

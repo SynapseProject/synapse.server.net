@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ServiceProcess;
 using System.Text;
+
 using Synapse.Core.Utilities;
 
 namespace Synapse.Services.Controller.Cli
@@ -91,15 +91,23 @@ namespace Synapse.Services.Controller.Cli
 
                 if( _methods.ContainsKey( arg0 ) )
                 {
+                    Dictionary<string, string> parms = new Dictionary<string, string>();
                     if( args.Length > 1 )
                     {
                         bool error = false;
-                        Dictionary<string, string> parms = ParseCmdLine( args, 1, ref error, suppressErrorMessages: true );
+                        parms = ParseCmdLine( args, 1, ref error, suppressErrorMessages: true );
                         if( parms.ContainsKey( "url" ) )
+                        {
                             BaseUrl = parms["url"];
+                            parms.Remove( "url" );
+                        }
                     }
                     Console.WriteLine( $"Calling {_methods[arg0]} on {BaseUrl}" );
-                    RunMethod( new ControllerServiceHttpApiClient( BaseUrl ), _methods[arg0], args );
+
+                    if( _methods[arg0] == "StartPlan" )
+                        RunStartPlanMethod( args, parms );
+                    else
+                        RunMethod( new ControllerServiceHttpApiClient( BaseUrl ), _methods[arg0], args );
                 }
                 else if( arg0.StartsWith( _service ) )
                     RunServiceAction( args );
@@ -109,6 +117,55 @@ namespace Synapse.Services.Controller.Cli
                     WriteHelpAndExit( "Unknown action." );
             }
         }
+
+        protected virtual void RunStartPlanMethod(string[] args, Dictionary<string, string> parameters)
+        {
+            string methodName = "StartPlan";
+            ControllerServiceHttpApiClient instance = new ControllerServiceHttpApiClient( BaseUrl );
+            bool needHelp = args.Length == 2 && args[1].ToLower().Contains( "help" );
+
+            if( needHelp )
+            {
+                Dictionary<string, Type> parms = new Dictionary<string, Type>();
+                parms.Add( "planName", typeof( string ) );
+                parms.Add( "dryRun", typeof( bool ) );
+                Console.WriteLine( $"Parameter options for {methodName}:\r\n" );
+                WriteMethodParametersHelp( parms );
+                Console.WriteLine( $"Remaining argname:argvalue pairs will be passed as dynamic parameters.\r\n" );
+            }
+            else
+            {
+                string planName = null;
+                string pn = nameof( planName ).ToLower();
+                if( parameters.ContainsKey( pn ) )
+                {
+                    planName = parameters[pn];
+                    parameters.Remove( pn );
+                }
+                else
+                    throw new Exception( "PlanName is required." );
+
+                bool dryRun = false;
+                string dr = nameof( dryRun ).ToLower();
+                if( parameters.ContainsKey( dr ) )
+                {
+                    bool.TryParse( parameters[dr], out dryRun );
+                    parameters.Remove( dr );
+                }
+
+
+                try
+                {
+                    long result = instance.StartPlan( planName, dryRun, parameters );
+                    Console.WriteLine( result );
+                }
+                catch( Exception ex )
+                {
+                    WriteException( ex );
+                }
+            }
+        }
+
 
         protected virtual void RunServiceAction(string[] args)
         {

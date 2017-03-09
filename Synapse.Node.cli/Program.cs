@@ -79,20 +79,82 @@ namespace Synapse.Services.NodeService.Cli
 
                 if( _methods.ContainsKey( arg0 ) )
                 {
+                    Dictionary<string, string> parms = new Dictionary<string, string>();
                     if( args.Length > 1 )
                     {
                         bool error = false;
-                        Dictionary<string, string> parms = ParseCmdLine( args, 1, ref error, suppressErrorMessages: true );
+                        parms = ParseCmdLine( args, 1, ref error, suppressErrorMessages: true );
                         if( parms.ContainsKey( "url" ) )
                             BaseUrl = parms["url"];
                     }
                     Console.WriteLine( $"Calling {_methods[arg0]} on {BaseUrl}" );
-                    RunMethod( new NodeServiceHttpApiClient( BaseUrl ), _methods[arg0], args );
+
+                    if( _methods[arg0] == "StartPlanFile" )
+                        RunStartPlanMethod( args, parms );
+                    else
+                        RunMethod( new NodeServiceHttpApiClient( BaseUrl ), _methods[arg0], args );
                 }
                 else if( arg0.StartsWith( _service ) )
                     RunServiceAction( args );
                 else
                     WriteHelpAndExit( "Unknown action." );
+            }
+        }
+
+        protected virtual void RunStartPlanMethod(string[] args, Dictionary<string, string> parameters)
+        {
+            string methodName = "StartPlanFile";
+            NodeServiceHttpApiClient instance = new NodeServiceHttpApiClient( BaseUrl );
+            bool needHelp = args.Length == 2 && args[1].ToLower().Contains( "help" );
+
+            if( needHelp )
+            {
+                Dictionary<string, Type> parms = new Dictionary<string, Type>();
+                parms.Add( "filePath", typeof( string ) );
+                parms.Add( "planInstanceId", typeof( long ) );
+                parms.Add( "dryRun", typeof( bool ) );
+                Console.WriteLine( $"Parameter options for {methodName}:\r\n" );
+                WriteMethodParametersHelp( parms );
+                Console.WriteLine( $"Remaining argname:argvalue pairs will be passed as dynamic parameters.\r\n" );
+            }
+            else
+            {
+                string filePath = null;
+                string fp = nameof( filePath ).ToLower();
+                if( parameters.ContainsKey( fp ) )
+                {
+                    filePath = parameters[fp];
+                    parameters.Remove( fp );
+                }
+                else
+                    throw new Exception( "filePath is required." );
+
+                long planInstanceId = 0;
+                string piid = nameof( planInstanceId ).ToLower();
+                if( parameters.ContainsKey( piid ) )
+                {
+                    long.TryParse( parameters[piid], out planInstanceId );
+                    parameters.Remove( piid );
+                }
+
+                bool dryRun = false;
+                string dr = nameof( dryRun ).ToLower();
+                if( parameters.ContainsKey( dr ) )
+                {
+                    bool.TryParse( parameters[dr], out dryRun );
+                    parameters.Remove( dr );
+                }
+
+
+                try
+                {
+                    Core.ExecuteResult result = instance.StartPlanFile( filePath, planInstanceId, dryRun, parameters );
+                    Console.WriteLine( result );
+                }
+                catch( Exception ex )
+                {
+                    WriteException( ex );
+                }
             }
         }
 

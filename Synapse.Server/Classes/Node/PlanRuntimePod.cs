@@ -18,11 +18,11 @@ namespace Synapse.Services
         ControllerServiceHttpApiClient _controllerService =
             new ControllerServiceHttpApiClient( SynapseServer.Config.Node.ControllerUrl );
 
-        public PlanRuntimePod(Plan plan, bool isDryRun = false, Dictionary<string, string> dynamicData = null, long planInstanceId = 0)
+        public PlanRuntimePod(Plan plan, bool isDryRun = false, Dictionary<string, string> dynamicParameters = null, long planInstanceId = 0)
         {
             Plan = plan;
             IsDryRun = isDryRun;
-            DynamicData = dynamicData;
+            DynamicParameters = dynamicParameters;
             PlanInstanceId = planInstanceId;
 
             InitializeLogger();
@@ -33,7 +33,7 @@ namespace Synapse.Services
 
         public Plan Plan { get; }
         public bool IsDryRun { get; }
-        public Dictionary<string, string> DynamicData { get; }
+        public Dictionary<string, string> DynamicParameters { get; }
         public long PlanInstanceId { get; }
 
 
@@ -56,7 +56,7 @@ namespace Synapse.Services
         public void Start(CancellationToken token, Action<IPlanRuntimeContainer> callback)
         {
             token.Register( () => CancelPlanExecution() );
-            Plan.Start( DynamicData, IsDryRun );
+            Plan.Start( DynamicParameters, IsDryRun );
 
             SynapseServer.Logger.Info( $"SerializeResultPlan: {SynapseServer.Config.Node.SerializeResultPlan}, {_logRootPath.FullName}\\{PlanInstanceId}_{Plan.Name}.result.yaml" );
             if( SynapseServer.Config.Node.SerializeResultPlan )

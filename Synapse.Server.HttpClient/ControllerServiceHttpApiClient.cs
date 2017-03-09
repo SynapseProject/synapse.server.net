@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-
 using Synapse.Common.WebApi;
 using Synapse.Core;
 
@@ -65,13 +64,8 @@ namespace Synapse.Services
 
         public async Task<long> StartPlanAsync(string planName, bool dryRun = false, Dictionary<string, string> dynamicParameters = null)
         {
-            StringBuilder qs = new StringBuilder();
-            qs.Append( $"?dryRun={dryRun}" );
-            if( dynamicParameters != null )
-                foreach( string key in dynamicParameters.Keys )
-                    qs.Append( $"&{key}={dynamicParameters[key]}" );
-
-            string requestUri = $"{_rootPath}/{planName}/start/{qs.ToString()}";
+            string qs = $"?dryRun={dryRun}{dynamicParameters?.ToQueryString( asPartialQueryString: true )}";
+            string requestUri = $"{_rootPath}/{planName}/start/{qs}";
             return await GetAsync<long>( requestUri );
         }
 

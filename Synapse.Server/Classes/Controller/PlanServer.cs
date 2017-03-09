@@ -19,7 +19,7 @@ namespace Synapse.Services
             {
                 LoadDal();
             }
-            catch(Exception ex)
+            catch( Exception ex )
             {
                 SynapseServer.Logger.Fatal( "Failed to load Dal.", ex );
                 throw;
@@ -45,9 +45,10 @@ namespace Synapse.Services
             return _dal.GetPlanInstanceIdList( planUniqueName );
         }
 
-        public long StartPlan(string planUniqueName, bool dryRun = false)
+        public long StartPlan(string planUniqueName, bool dryRun = false, Dictionary<string, string> dynamicParameters = null)
         {
             Plan plan = _dal.CreatePlanInstance( planUniqueName );
+
             if( SynapseServer.Config.Controller.SignPlan )
             {
                 SynapseServer.Logger.Debug( $"Signing Plan {plan.Name}/{plan.InstanceId}." );
@@ -58,7 +59,9 @@ namespace Synapse.Services
                 plan.Sign( SynapseServer.Config.SignatureKeyContainerName, SynapseServer.Config.SignatureKeyFile, SynapseServer.Config.SignatureCspProviderFlags );
                 //plan.Name += "foo";  //testing: intentionally crash the sig
             }
-            _nodeClient.StartPlan( plan.InstanceId, dryRun, plan );
+
+            _nodeClient.StartPlan( plan, plan.InstanceId, dryRun, dynamicParameters );
+
             return plan.InstanceId;
         }
 

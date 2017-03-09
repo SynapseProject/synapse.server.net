@@ -76,11 +76,12 @@ namespace Synapse.Services
         [HttpPost]
         public void StartPlanAsync(long planInstanceId, bool dryRun, [FromBody]string planString)
         {
+            Uri uri = this.Url.Request.RequestUri;
             planString = CryptoHelpers.Decode( planString );
             Plan plan  = Plan.FromYaml( new StringReader( planString ) );
 
             string context = GetContext( nameof( StartPlanAsync ),
-                nameof( plan ), plan.Name, nameof( dryRun ), dryRun, nameof( planInstanceId ), planInstanceId );
+                nameof( plan ), plan.Name, nameof( dryRun ), dryRun, nameof( planInstanceId ), planInstanceId, "QueryString", uri.Query );
 
             try
             {
@@ -100,7 +101,9 @@ namespace Synapse.Services
                         SynapseServer.Logger.Debug( $"Plan signature validation succeeded on {plan.Name}/{planInstanceId}." );
                 }
 
-                PlanRuntimePod p = new PlanRuntimePod( plan, dryRun, null, plan.InstanceId );
+                Dictionary<string, string> dynamicParameters = uri.ParseQueryString();
+                if( dynamicParameters.ContainsKey( nameof( dryRun ) ) ) dynamicParameters.Remove( nameof( dryRun ) );
+                PlanRuntimePod p = new PlanRuntimePod( plan, dryRun, dynamicParameters, plan.InstanceId );
                 _scheduler.StartPlan( p );
             }
             catch( Exception ex )

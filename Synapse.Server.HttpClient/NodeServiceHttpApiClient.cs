@@ -35,56 +35,49 @@ namespace Synapse.Services
         }
 
 
-        public ExecuteResult StartPlanFile(long planInstanceId, bool dryRun, string filePath)
+        public ExecuteResult StartPlanFile(string filePath, long planInstanceId, bool dryRun = false, Dictionary<string, string> dynamicParameters = null)
         {
-            return StartPlanFileAsync( planInstanceId, dryRun, filePath ).Result;
+            return StartPlanAsync( filePath, planInstanceId, dryRun, dynamicParameters ).Result;
         }
 
-        public async Task<ExecuteResult> StartPlanFileAsync(long planInstanceId, bool dryRun, string filePath)
+        public async Task<ExecuteResult> StartPlanFileAsync(string filePath, long planInstanceId, bool dryRun = false, Dictionary<string, string> dynamicParameters = null)
         {
-            if( File.Exists( filePath ) )
-            {
-                Plan plan = YamlHelpers.DeserializeFile<Plan>( filePath );
-                string planString = plan.ToYaml();
-                planString = CryptoHelpers.Encode( planString );
-                string requestUri = $"{_rootPath}/{planInstanceId}/?dryRun={dryRun}";
-                return await PostAsync<string, ExecuteResult>( planString, requestUri );
-            }
-            else
-                throw new FileNotFoundException( "Unable to start Plan.", filePath );
+            return await StartPlanAsync( filePath, planInstanceId, dryRun, dynamicParameters );
         }
 
-        public ExecuteResult StartPlan(long planInstanceId, bool dryRun, string filePath)
+        public ExecuteResult StartPlan(string filePath, long planInstanceId, bool dryRun = false, Dictionary<string, string> dynamicParameters = null)
         {
-            return StartPlanAsync( planInstanceId, dryRun, filePath ).Result;
+            return StartPlanAsync( filePath, planInstanceId, dryRun, dynamicParameters ).Result;
         }
 
-        public async Task<ExecuteResult> StartPlanAsync(long planInstanceId, bool dryRun, string filePath)
+        public async Task<ExecuteResult> StartPlanAsync(string filePath, long planInstanceId, bool dryRun = false, Dictionary<string, string> dynamicParameters = null)
         {
             if( File.Exists( filePath ) )
             {
                 Plan plan = YamlHelpers.DeserializeFile<Plan>( filePath );
                 string planString = plan.ToYaml();
                 planString = CryptoHelpers.Encode( planString );
-                string requestUri = $"{_rootPath}/{planInstanceId}/?dryRun={dryRun}";
+                string requestUri = $"{_rootPath}/{planInstanceId}/?dryRun={dryRun}{dynamicParameters?.ToQueryString( asPartialQueryString: true )}";
                 return await PostAsync<string, ExecuteResult>( planString, requestUri );
             }
             else
                 throw new FileNotFoundException( "Unable to start Plan.", filePath );
         }
 
-        public ExecuteResult StartPlan(long planInstanceId, bool dryRun, Plan plan)
+
+        public ExecuteResult StartPlan(Plan plan, long planInstanceId, bool dryRun = false, Dictionary<string, string> dynamicParameters = null)
         {
-            return StartPlanAsync( planInstanceId, dryRun, plan ).Result;
+            return StartPlanAsync( plan, planInstanceId, dryRun, dynamicParameters ).Result;
         }
 
-        public async Task<ExecuteResult> StartPlanAsync(long planInstanceId, bool dryRun, Plan plan)
+        public async Task<ExecuteResult> StartPlanAsync(Plan plan, long planInstanceId, bool dryRun = false, Dictionary<string, string> dynamicParameters = null)
         {
             string planString = plan.ToYaml();
             planString = CryptoHelpers.Encode( planString );
-            string requestUri = $"{_rootPath}/{planInstanceId}/?dryRun={dryRun}";
+            string requestUri = $"{_rootPath}/{planInstanceId}/?dryRun={dryRun}{dynamicParameters?.ToQueryString( asPartialQueryString: true )}";
             return await PostAsync<string, ExecuteResult>( planString, requestUri );
         }
+
 
         public void CancelPlan(long planInstanceId)
         {
