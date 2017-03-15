@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Synapse.Common.WebApi;
 using Synapse.Core;
+using Synapse.Core.Utilities;
 
 namespace Synapse.Services
 {
@@ -90,7 +91,9 @@ namespace Synapse.Services
         public async Task SetPlanStatusAsync(string planName, long planInstanceId, Plan plan)
         {
             string requestUri = $"{_rootPath}/{planName}/{planInstanceId}/";
-            await PostAsyncVoid<Plan>( plan, requestUri );
+            string planString = plan.ToYaml();
+            planString = CryptoHelpers.Encode( planString );
+            await PostAsyncVoid<string>( planString, requestUri );
         }
 
 

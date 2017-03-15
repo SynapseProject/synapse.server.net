@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Web.Http;
 
 using Synapse.Core;
 using Synapse.Common.WebApi;
-
+using Synapse.Core.Utilities;
 
 namespace Synapse.Services
 {
@@ -135,11 +136,14 @@ namespace Synapse.Services
 
         [Route( "{planUniqueName}/{planInstanceId}/" )]
         [HttpPost]
-        public void SetStatus(string planUniqueName, long planInstanceId, [FromBody]Plan plan)
+        public void SetStatus(string planUniqueName, long planInstanceId, [FromBody]string planString)
         {
             string context = GetContext( nameof( SetStatus ),
                 nameof( planUniqueName ), planUniqueName, nameof( planInstanceId ), planInstanceId,
-                nameof( plan ), plan );
+                nameof( planString ), planString );
+
+            planString = CryptoHelpers.Decode( planString );
+            Plan plan = Plan.FromYaml( new StringReader( planString ) );
 
             try
             {
