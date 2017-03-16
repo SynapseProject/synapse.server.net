@@ -65,16 +65,32 @@ namespace Synapse.Services
         }
 
 
-        public ExecuteResult StartPlan(Plan plan, long planInstanceId, bool dryRun = false, Dictionary<string, string> dynamicParameters = null)
+        public ExecuteResult StartPlan(Plan plan, long planInstanceId, bool dryRun = false, Dictionary<string, string> dynamicParameters = null, bool postDynamicParameters = false)
         {
-            return StartPlanAsync( plan, planInstanceId, dryRun, dynamicParameters ).Result;
+            if( postDynamicParameters )
+                return StartPlanAsyncWithParametersAsPost( plan, planInstanceId, dryRun, dynamicParameters ).Result;
+            else
+                return StartPlanAsyncWithParametersAsQueryString( plan, planInstanceId, dryRun, dynamicParameters ).Result;
         }
 
-        public async Task<ExecuteResult> StartPlanAsync(Plan plan, long planInstanceId, bool dryRun = false, Dictionary<string, string> dynamicParameters = null)
+        public async Task<ExecuteResult> StartPlanAsyncWithParametersAsQueryString(Plan plan, long planInstanceId, bool dryRun = false, Dictionary<string, string> dynamicParameters = null)
         {
             string planString = plan.ToYaml();
             planString = CryptoHelpers.Encode( planString );
             string requestUri = $"{_rootPath}/{planInstanceId}/?dryRun={dryRun}{dynamicParameters?.ToQueryString( asPartialQueryString: true )}";
+            return await PostAsync<string, ExecuteResult>( planString, requestUri );
+        }
+
+        public async Task<ExecuteResult> StartPlanAsyncWithParametersAsPost(Plan plan, long planInstanceId, bool dryRun = false, Dictionary<string, string> dynamicParameters = null)
+        {
+            StartPlanEnvelope planEnvelope = new StartPlanEnvelope()
+            {
+                Plan = plan,
+                DynamicParameters = dynamicParameters
+            };
+
+            string planString = planEnvelope.ToYaml( encode: true );
+            string requestUri = $"{_rootPath}/{planInstanceId}/p/?dryRun={dryRun}";
             return await PostAsync<string, ExecuteResult>( planString, requestUri );
         }
 

@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
-
+using Synapse.Core;
 using Synapse.Core.Utilities;
 
 namespace Synapse.Services.Controller.Cli
@@ -129,9 +130,13 @@ namespace Synapse.Services.Controller.Cli
                 Dictionary<string, Type> parms = new Dictionary<string, Type>();
                 parms.Add( "planName", typeof( string ) );
                 parms.Add( "dryRun", typeof( bool ) );
+                parms.Add( "asPost", typeof( string ) );
                 Console.WriteLine( $"Parameter options for {methodName}:\r\n" );
                 WriteMethodParametersHelp( parms );
-                Console.WriteLine( $"Remaining argname:argvalue pairs will be passed as dynamic parameters.\r\n" );
+                Console.WriteLine( "\r\nRemaining argname:argvalue pairs will be passed as dynamic parameters, unless" );
+                Console.WriteLine( "'asPost' is specified, in which case a file of {key: value} pairs is posted" );
+                Console.WriteLine( "and remaining parameters are ignored.  Layout of 'asPost' file is:\r\n" );
+                Console.WriteLine( "DynamicParameters:\r\n  key0: value0\r\n  key1: value1\r\n  key2: value2\r\n" );
             }
             else
             {
@@ -153,10 +158,35 @@ namespace Synapse.Services.Controller.Cli
                     parameters.Remove( dr );
                 }
 
+                bool postDynamicParameters = false;
+                string asPost = null;
+                string ap = nameof( asPost ).ToLower();
+                if( parameters.ContainsKey( ap ) )
+                {
+                    string fileName = parameters[ap];
+                    try
+                    {
+                        if( !File.Exists( fileName ) )
+                            throw new FileNotFoundException( "Could not file DynamicParameters file.", fileName );
+
+                        string yaml = File.ReadAllText( fileName );
+                        StartPlanEnvelope planEnvelope = StartPlanEnvelope.FromYaml( yaml );
+                        parameters = planEnvelope.DynamicParameters;
+
+                        postDynamicParameters = true;
+                    }
+                    catch(Exception ex)
+                    {
+                        WriteException( ex );
+                        Environment.Exit( 1 );
+                    }
+                    parameters.Remove( ap );
+                }
+
 
                 try
                 {
-                    long result = instance.StartPlan( planName, dryRun, parameters );
+                    long result = instance.StartPlan( planName, dryRun, parameters, postDynamicParameters );
                     Console.WriteLine( result );
                 }
                 catch( Exception ex )

@@ -58,9 +58,12 @@ namespace Synapse.Services
         }
 
 
-        public long StartPlan(string planName, bool dryRun = false, Dictionary<string, string> dynamicParameters = null)
+        public long StartPlan(string planName, bool dryRun = false, Dictionary<string, string> dynamicParameters = null, bool postDynamicParameters = false)
         {
-            return StartPlanAsync( planName, dryRun, dynamicParameters ).Result;
+            if( postDynamicParameters )
+                return StartPlanAsyncAsPost( planName, dryRun, dynamicParameters ).Result;
+            else
+                return StartPlanAsync( planName, dryRun, dynamicParameters ).Result;
         }
 
         public async Task<long> StartPlanAsync(string planName, bool dryRun = false, Dictionary<string, string> dynamicParameters = null)
@@ -68,6 +71,16 @@ namespace Synapse.Services
             string qs = $"?dryRun={dryRun}{dynamicParameters?.ToQueryString( asPartialQueryString: true )}";
             string requestUri = $"{_rootPath}/{planName}/start/{qs}";
             return await GetAsync<long>( requestUri );
+        }
+
+
+        public async Task<long> StartPlanAsyncAsPost(string planName, bool dryRun = false, Dictionary<string, string> dynamicParameters = null)
+        {
+            StartPlanEnvelope planEnvelope = new StartPlanEnvelope() { DynamicParameters = dynamicParameters };
+
+            string qs = $"?dryRun={dryRun}";
+            string requestUri = $"{_rootPath}/{planName}/start/{qs}";
+            return await PostAsync<StartPlanEnvelope, long>( planEnvelope, requestUri );
         }
 
 

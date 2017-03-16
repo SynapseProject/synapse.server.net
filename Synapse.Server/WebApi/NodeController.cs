@@ -88,18 +88,7 @@ namespace Synapse.Services
                 SynapseServer.Logger.Debug( context );
                 plan.InstanceId = planInstanceId;
 
-                if( SynapseServer.Config.Node.ValidatePlanSignature )
-                {
-                    SynapseServer.Logger.Debug( $"Checking Plan signature on {plan.Name}/{planInstanceId}." );
-
-                    if( !File.Exists( SynapseServer.Config.SignatureKeyFile ) )
-                        throw new FileNotFoundException( SynapseServer.Config.SignatureKeyFile );
-
-                    if( !plan.VerifySignature( SynapseServer.Config.SignatureKeyContainerName, SynapseServer.Config.SignatureKeyFile, SynapseServer.Config.SignatureCspProviderFlags ) )
-                        throw new System.Security.SecurityException( $"Plan signature validation failed on {plan.Name}/{planInstanceId}." );
-                    else
-                        SynapseServer.Logger.Debug( $"Plan signature validation succeeded on {plan.Name}/{planInstanceId}." );
-                }
+                ValidatePlanSignature( plan );
 
                 Dictionary<string, string> dynamicParameters = uri.ParseQueryString();
                 if( dynamicParameters.ContainsKey( nameof( dryRun ) ) ) dynamicParameters.Remove( nameof( dryRun ) );
@@ -111,6 +100,50 @@ namespace Synapse.Services
                 SynapseServer.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
+            }
+        }
+
+        [Route( "{planInstanceId}/p/" )]
+        [HttpPost]
+        public void StartPlanAsyncWithParametersAsPost(long planInstanceId, bool dryRun, [FromBody]string planString)
+        {
+            StartPlanEnvelope spe = StartPlanEnvelope.FromYaml( planString, isEncoded: true );
+            Plan plan = spe.Plan;
+
+            string context = GetContext( nameof( StartPlanAsyncWithParametersAsPost ),
+                nameof( plan ), plan.Name, nameof( dryRun ), dryRun, nameof( planInstanceId ), planInstanceId );
+
+            try
+            {
+                SynapseServer.Logger.Debug( context );
+                plan.InstanceId = planInstanceId;
+
+                ValidatePlanSignature( plan );
+
+                PlanRuntimePod p = new PlanRuntimePod( plan, dryRun, spe.DynamicParameters, plan.InstanceId );
+                _scheduler.StartPlan( p );
+            }
+            catch( Exception ex )
+            {
+                SynapseServer.Logger.Error(
+                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
+                throw;
+            }
+        }
+
+        void ValidatePlanSignature(Plan plan)
+        {
+            if( SynapseServer.Config.Node.ValidatePlanSignature )
+            {
+                SynapseServer.Logger.Debug( $"Checking Plan signature on {plan.Name}/{plan.InstanceId}." );
+
+                if( !File.Exists( SynapseServer.Config.SignatureKeyFile ) )
+                    throw new FileNotFoundException( SynapseServer.Config.SignatureKeyFile );
+
+                if( !plan.VerifySignature( SynapseServer.Config.SignatureKeyContainerName, SynapseServer.Config.SignatureKeyFile, SynapseServer.Config.SignatureCspProviderFlags ) )
+                    throw new System.Security.SecurityException( $"Plan signature validation failed on {plan.Name}/{plan.InstanceId}." );
+                else
+                    SynapseServer.Logger.Debug( $"Plan signature validation succeeded on {plan.Name}/{plan.InstanceId}." );
             }
         }
 

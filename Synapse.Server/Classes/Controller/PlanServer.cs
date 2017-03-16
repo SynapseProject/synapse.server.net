@@ -45,7 +45,7 @@ namespace Synapse.Services
             return _dal.GetPlanInstanceIdList( planUniqueName );
         }
 
-        public long StartPlan(string planUniqueName, bool dryRun = false, Dictionary<string, string> dynamicParameters = null)
+        public long StartPlan(string planUniqueName, bool dryRun = false, Dictionary<string, string> dynamicParameters = null, bool postDynamicParameters = false)
         {
             Plan plan = _dal.CreatePlanInstance( planUniqueName );
 
@@ -60,7 +60,7 @@ namespace Synapse.Services
                 //plan.Name += "foo";  //testing: intentionally crash the sig
             }
 
-            _nodeClient.StartPlan( plan, plan.InstanceId, dryRun, dynamicParameters );
+            _nodeClient.StartPlan( plan, plan.InstanceId, dryRun, dynamicParameters, postDynamicParameters );
 
             return plan.InstanceId;
         }

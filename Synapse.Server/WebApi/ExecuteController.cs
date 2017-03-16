@@ -114,6 +114,28 @@ namespace Synapse.Services
             }
         }
 
+        [Route( "{planUniqueName}/start/" )]
+        [HttpPost]
+        public long StartPlan([FromBody]StartPlanEnvelope planEnvelope, string planUniqueName, bool dryRun = false)
+        {
+            Dictionary<string, string> dynamicParameters = planEnvelope.DynamicParameters;
+
+            string context = GetContext( nameof( StartPlan ),
+                nameof( planUniqueName ), planUniqueName, nameof( dryRun ), dryRun, "planParameters", dynamicParameters );
+
+            try
+            {
+                SynapseServer.Logger.Debug( context );
+                return _server.StartPlan( planUniqueName, dryRun, dynamicParameters, postDynamicParameters: true );
+            }
+            catch( Exception ex )
+            {
+                SynapseServer.Logger.Error(
+                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
+                throw;
+            }
+        }
+
         [Route( "{planUniqueName}/{planInstanceId}/" )]
         [HttpGet]
         public Plan GetPlanStatus(string planUniqueName, long planInstanceId)
