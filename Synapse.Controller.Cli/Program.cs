@@ -216,7 +216,7 @@ namespace Synapse.Services.Controller.Cli
                     string message = string.Empty;
                     bool error = false;
                     Dictionary<string, string> values = ParseCmdLine( args, 2, ref error, true );
-                    if( !InstallUtility.InstallAndStartService( configValues: values, message: out message ) )
+                    if( !InstallUtility.InstallAndStartService( serverRole: ServerRole.Controller, configValues: values, message: out message ) )
                     {
                         Console.WriteLine( message );
                         Environment.Exit( 1 );
@@ -261,7 +261,7 @@ namespace Synapse.Services.Controller.Cli
         #region Help
         protected override void WriteHelpAndExit(string errorMessage = null)
         {
-            Dictionary<string, string> cdf = SynapseServerConfig.GetConfigDefaultValues();
+            Dictionary<string, string> cdf = SynapseServerConfig.GetConfigDefaultValues( serverRole: ServerRole.Controller );
             StringBuilder df = new StringBuilder();
             df.AppendFormat( "{0,-15}- Optional install args, use argname:value.  Defaults shown.\r\n", "" );
             foreach( string key in cdf.Keys )

@@ -9,13 +9,17 @@ namespace Synapse.Services
 {
     public class InstallUtility
     {
-        public static bool InstallAndStartService(Dictionary<string, string> configValues, out string message)
+        public static bool InstallAndStartService(ServerRole serverRole, Dictionary<string, string> configValues, out string message)
         {
             message = null;
 
-            bool ok = InstallService( install: true, configValues: configValues, message: out message );
+            bool ok = InstallService( install: true, serverRole: serverRole, configValues: configValues, message: out message );
 
-            if( ok && !(configValues.ContainsKey( "run" ) && configValues["run"] == "false") )
+            bool startService = true;
+            if( configValues.ContainsKey( "run" ) )
+                bool.TryParse( configValues["run"], out startService );
+
+            if( ok && startService )
                 try
                 {
                     string sn = SynapseServerConfig.Deserialze().ServiceName;
@@ -57,16 +61,17 @@ namespace Synapse.Services
                 ok = false;
             }
 
-            if( ok )
-                ok = InstallService( install: false, configValues: null, message: out message );
+            if( ok )  //serverRole is ignored on an uninstall
+                ok = InstallService( install: false, serverRole: ServerRole.Controller, configValues: null, message: out message );
 
             return ok;
         }
 
-        public static bool InstallService(bool install, Dictionary<string, string> configValues, out string message)
+        //serverRole is ignored on an uninstall
+        public static bool InstallService(bool install, ServerRole serverRole, Dictionary<string, string> configValues, out string message)
         {
             if( configValues != null )
-                SynapseServerConfig.Configure( configValues );
+                SynapseServerConfig.Configure( serverRole, configValues );
 
             string fullFilePath = typeof( SynapseServerServiceInstaller ).Assembly.Location;
             string logFile = $"Synapse.Server.InstallLog.txt";

@@ -68,7 +68,7 @@ namespace Synapse.Services
                         bool error = false;
                         Dictionary<string, string> values = CmdLineUtilities.ParseCmdLine( args, 1, ref error, ref message, null );
                         if( !error )
-                            ok = InstallUtility.InstallAndStartService( configValues: values, message: out message );
+                            ok = InstallUtility.InstallAndStartService( serverRole: ServerRole.Controller, configValues: values, message: out message );
                     }
                     else if( arg0 == "/uninstall" || arg0 == "/u" )
                     {
@@ -230,7 +230,7 @@ namespace Synapse.Services
             bool haveError = !string.IsNullOrWhiteSpace( errorMessage );
 
             MessageBoxIcon icon = MessageBoxIcon.Information;
-            Dictionary<string, string> cdf = SynapseServerConfig.GetConfigDefaultValues();
+            Dictionary<string, string> cdf = SynapseServerConfig.GetConfigDefaultValues( serverRole: ServerRole.Controller );
             StringBuilder df = new StringBuilder();
             df.AppendLine( $"Optional args for configuring /install, use argname:value.  Defaults shown." );
             foreach( string key in cdf.Keys )

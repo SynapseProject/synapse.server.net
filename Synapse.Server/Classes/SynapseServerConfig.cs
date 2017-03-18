@@ -66,8 +66,8 @@ namespace Synapse.Services
         }
         internal bool ServerIsController { get { return ServerRole == ServerRole.Controller; } }
 
-        public int WebApiPort { get; set; } = 8008;
-        internal string WebApiPortString { get; set; } = "8008";
+        public int WebApiPort { get; set; } = 20000;
+        internal string WebApiPortString { get; set; } = "20000";
         internal bool TestSetWebApiPortString
         {
             get
@@ -133,11 +133,16 @@ namespace Synapse.Services
             return YamlHelpers.DeserializeFile<SynapseServerConfig>( FileName );
         }
 
-        public static Dictionary<string, string> GetConfigDefaultValues()
+        public static Dictionary<string, string> GetConfigDefaultValues(ServerRole serverRole)
         {
             Dictionary<string, string> values = new Dictionary<string, string>();
 
             SynapseServerConfig c = new SynapseServerConfig();
+            c.ServerRole = serverRole;
+            c.ServiceName = $"Synapse.{serverRole}";
+            c.ServiceDisplayName = $"Synapse {serverRole}";
+            if( !c.ServerIsController )
+                c.WebApiPort = 20001;
 
             values[nameof( c.ServiceName )] = c.ServiceName;
             values[nameof( c.ServiceDisplayName )] = c.ServiceDisplayName;
@@ -157,8 +162,13 @@ namespace Synapse.Services
             return values;
         }
 
-        public static SynapseServerConfig Configure(Dictionary<string, string> values)
+        public static SynapseServerConfig Configure(ServerRole serverRole, Dictionary<string, string> values)
         {
+            Dictionary<string, string> defaults = GetConfigDefaultValues( serverRole );
+            foreach( string key in defaults.Keys )
+                if( !values.ContainsKey( key.ToLower() ) )
+                    values.Add( key.ToLower(), defaults[key] );
+
             SynapseServerConfig c = new SynapseServerConfig();
 
             if( values.ContainsKey( nameof( c.ServiceName ).ToLower() ) )

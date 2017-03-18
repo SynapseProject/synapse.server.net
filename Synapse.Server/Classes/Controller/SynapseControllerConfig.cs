@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using Synapse.Core.Utilities;
 
 
 namespace Synapse.Services
@@ -17,7 +14,7 @@ namespace Synapse.Services
         }
 
 
-        public string NodeUrl { get; set; } = "http://localhost:8000/synapse/node";
+        public string NodeUrl { get; set; } = "http://localhost:20001/synapse/node";
         internal bool HasNodeUrl { get { return !string.IsNullOrWhiteSpace( NodeUrl ); } }
 
         public string Dal { get; set; } = "Synapse.Controller.Dal.FileSystem:FileSystemDal";
@@ -44,7 +41,7 @@ namespace Synapse.Services
 
             SynapseControllerConfig c = new SynapseControllerConfig();
 
-            string n = "c.";
+            string n = "c_";
             values[n + nameof( c.NodeUrl )] = c.NodeUrl;
             values[n + nameof( c.Dal )] = c.Dal;
             values[n + nameof( c.SignPlan )] = c.SignPlan.ToString();
@@ -56,7 +53,7 @@ namespace Synapse.Services
         {
             SynapseControllerConfig c = new SynapseControllerConfig();
 
-            string n = "c.";
+            string n = "c_";
             if( values.ContainsKey( n + nameof( c.NodeUrl ).ToLower() ) )
                 c.NodeUrl = values[n + nameof( c.NodeUrl ).ToLower()];
 

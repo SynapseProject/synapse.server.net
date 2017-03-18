@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 
-using Synapse.Core.Utilities;
-
 
 namespace Synapse.Services
 {
@@ -67,7 +65,7 @@ namespace Synapse.Services
             }
         }
 
-        public string ControllerUrl { get; set; } = "http://localhost:8008/synapse/execute";
+        public string ControllerUrl { get; set; } = "http://localhost:20000/synapse/execute";
         internal bool HasControllerUrl { get { return !string.IsNullOrWhiteSpace( ControllerUrl ); } }
 
 
@@ -116,7 +114,7 @@ namespace Synapse.Services
             Dictionary<string, string> values = new Dictionary<string, string>();
 
             SynapseNodeConfig c = new SynapseNodeConfig();
-            string n = "n.";
+            string n = "n_";
             values[n + nameof( c.MaxServerThreads )] = c.MaxServerThreads.ToString();
             values[n + nameof( c.AuditLogRootPath )] = c.AuditLogRootPath;
             values[n + nameof( c.Log4NetConversionPattern )] = c.Log4NetConversionPattern;
@@ -131,7 +129,7 @@ namespace Synapse.Services
         {
             SynapseNodeConfig c = new SynapseNodeConfig();
 
-            string n = "n.";
+            string n = "n_";
 
             if( values.ContainsKey( n + nameof( c.MaxServerThreads ).ToLower() ) )
                 c.MaxServerThreadsString = values[n + nameof( c.MaxServerThreads ).ToLower()];
