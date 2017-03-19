@@ -107,8 +107,8 @@ namespace Synapse.Services
         [HttpPost]
         public void StartPlanAsyncWithParametersAsPost(long planInstanceId, bool dryRun, [FromBody]string planString)
         {
-            StartPlanEnvelope spe = StartPlanEnvelope.FromYaml( planString, isEncoded: true );
-            Plan plan = spe.Plan;
+            StartPlanEnvelope planEnvelope = StartPlanEnvelope.FromYaml( planString, isEncoded: true );
+            Plan plan = planEnvelope.Plan;
 
             string context = GetContext( nameof( StartPlanAsyncWithParametersAsPost ),
                 nameof( plan ), plan.Name, nameof( dryRun ), dryRun, nameof( planInstanceId ), planInstanceId );
@@ -120,7 +120,7 @@ namespace Synapse.Services
 
                 ValidatePlanSignature( plan );
 
-                PlanRuntimePod p = new PlanRuntimePod( plan, dryRun, spe.DynamicParameters, plan.InstanceId );
+                PlanRuntimePod p = new PlanRuntimePod( plan, dryRun, planEnvelope.DynamicParameters, plan.InstanceId );
                 _scheduler.StartPlan( p );
             }
             catch( Exception ex )

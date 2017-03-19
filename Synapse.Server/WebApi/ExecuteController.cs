@@ -118,7 +118,7 @@ namespace Synapse.Services
         [HttpPost]
         public long StartPlan([FromBody]StartPlanEnvelope planEnvelope, string planUniqueName, bool dryRun = false)
         {
-            Dictionary<string, string> dynamicParameters = planEnvelope.DynamicParameters;
+            Dictionary<string, string> dynamicParameters = planEnvelope?.DynamicParameters;
 
             string context = GetContext( nameof( StartPlan ),
                 nameof( planUniqueName ), planUniqueName, nameof( dryRun ), dryRun, "planParameters", dynamicParameters );

@@ -164,23 +164,28 @@ namespace Synapse.Services.Controller.Cli
                 if( parameters.ContainsKey( ap ) )
                 {
                     string fileName = parameters[ap];
+                    parameters.Remove( ap );
+
                     try
                     {
                         if( !File.Exists( fileName ) )
-                            throw new FileNotFoundException( "Could not file DynamicParameters file.", fileName );
+                            throw new FileNotFoundException( $"Could not find DynamicParameters file: {fileName}.", fileName );
 
                         string yaml = File.ReadAllText( fileName );
                         StartPlanEnvelope planEnvelope = StartPlanEnvelope.FromYaml( yaml );
+
+                        if( planEnvelope == null )
+                            throw new Exception( $"Could not deserialize DynamicParameters file: {fileName}." );
+
                         parameters = planEnvelope.DynamicParameters;
 
                         postDynamicParameters = true;
                     }
-                    catch(Exception ex)
+                    catch( Exception ex )
                     {
                         WriteException( ex );
                         Environment.Exit( 1 );
                     }
-                    parameters.Remove( ap );
                 }
 
 
