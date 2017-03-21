@@ -28,6 +28,9 @@ namespace Synapse.Services
                 defaults: new { id = RouteParameter.Optional }
             );
 
+            config.MessageHandlers
+                   .Add( new RawContentHandler() );
+
             var appXmlType = config.Formatters.XmlFormatter.SupportedMediaTypes.FirstOrDefault( t => t.MediaType == "application/xml" );
             config.Formatters.XmlFormatter.SupportedMediaTypes.Remove( appXmlType );
 

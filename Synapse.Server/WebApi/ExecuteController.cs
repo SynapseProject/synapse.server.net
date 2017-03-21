@@ -118,14 +118,37 @@ namespace Synapse.Services
         [HttpPost]
         public long StartPlan([FromBody]StartPlanEnvelope planEnvelope, string planUniqueName, bool dryRun = false)
         {
+            bool failedToDeserialize = false;
             Dictionary<string, string> dynamicParameters = planEnvelope?.DynamicParameters;
 
+            StringBuilder parms = new StringBuilder();
+            if( dynamicParameters != null )
+            {
+                string s = string.Empty;
+                foreach( string key in dynamicParameters.Keys )
+                {
+                    parms.Append( $"{s}{key}: {dynamicParameters[key]}" );
+                    s = ", ";
+                }
+            }
+            else
+            {
+                string rawBody = Request.Properties["body"].ToString();
+                failedToDeserialize = !string.IsNullOrWhiteSpace( rawBody );
+                if( failedToDeserialize )
+                    parms.Append( rawBody );
+            }
+
             string context = GetContext( nameof( StartPlan ),
-                nameof( planUniqueName ), planUniqueName, nameof( dryRun ), dryRun, "planParameters", dynamicParameters );
+                nameof( planUniqueName ), planUniqueName, nameof( dryRun ), dryRun, "planParameters", parms.ToString() );
 
             try
             {
                 SynapseServer.Logger.Debug( context );
+
+                if( failedToDeserialize )
+                    throw new Exception( $"Failed to deserialize message body:\r\n{parms.ToString()}" );
+
                 return _server.StartPlan( planUniqueName, dryRun, dynamicParameters, postDynamicParameters: true );
             }
             catch( Exception ex )

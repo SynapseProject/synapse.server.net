@@ -102,6 +102,7 @@
     <Compile Include="Classes\ServerRole.cs" />
     <Compile Include="Classes\SynapseServerConfig.cs" />
     <Compile Include="Classes\Node\SynapseNodeConfig.cs" />
+    <Compile Include="WebApi\RawContentHandler.cs" />
     <Compile Include="WebApi\NodeController.cs" />
     <Compile Include="WebApi\WebServerConfig.cs" />
     <Compile Include="WebApi\ExecuteController.cs" />
