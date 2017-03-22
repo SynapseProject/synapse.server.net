@@ -236,22 +236,18 @@ namespace Synapse.Services.Controller.Dal
                     throw new Exception( $"Could not find security element {uniqueName}." );
 
 
-                SecureContainer parent = null;
+                ISecureControl curr = context;
                 IObjectModel parentObj = uie.ParentObject;
                 while( parentObj != null )
                 {
-                    uniqueName = ((splxApi.UIElement)parentObj).UniqueName;
-                    parent = new SecureContainer() { UniqueName = uniqueName };
-                    parent.Children.Add( context );
-
-                    context = new SplxRecordManager() { UniqueName = uniqueName };
-                    if( aceType == AceType.FileSystem )
-                        context = new SplxFileSystemManager() { UniqueName = uniqueName };
+                    SecureContainer par = new SecureContainer() { UniqueName = ((splxApi.UIElement)parentObj).UniqueName };
+                    par.Children.Add( curr );
+                    curr = par;
 
                     parentObj = parentObj.ParentObject;
                 }
 
-                parent.Security.Load( _splxStore, slp );
+                curr.Security.Load( _splxStore, slp );
             }
             #endregion
             #region IsFileStore = false
