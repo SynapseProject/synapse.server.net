@@ -45,8 +45,10 @@ namespace Synapse.Services
             return _dal.GetPlanInstanceIdList( planUniqueName );
         }
 
-        public long StartPlan(string planUniqueName, bool dryRun = false, Dictionary<string, string> dynamicParameters = null, bool postDynamicParameters = false)
+        public long StartPlan(string securityContext, string planUniqueName, bool dryRun = false, Dictionary<string, string> dynamicParameters = null, bool postDynamicParameters = false)
         {
+            _dal.HasAccessOrException( securityContext, planUniqueName );
+
             Plan plan = _dal.CreatePlanInstance( planUniqueName );
 
             if( SynapseServer.Config.Controller.SignPlan )

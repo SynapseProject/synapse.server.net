@@ -96,7 +96,7 @@ namespace Synapse.Services
         public long StartPlan(string planUniqueName, bool dryRun = false)
         {
             Uri uri = this.Url.Request.RequestUri;
-            string context = GetContext( nameof( StartPlan ),
+            string context = GetContext( nameof( StartPlan ), nameof( CurrentUser ), CurrentUser,
                 nameof( planUniqueName ), planUniqueName, nameof( dryRun ), dryRun, "QueryString", uri.Query );
 
             try
@@ -104,7 +104,7 @@ namespace Synapse.Services
                 SynapseServer.Logger.Debug( context );
                 Dictionary<string, string> dynamicParameters = uri.ParseQueryString();
                 if( dynamicParameters.ContainsKey( nameof( dryRun ) ) ) dynamicParameters.Remove( nameof( dryRun ) );
-                return _server.StartPlan( planUniqueName, dryRun, dynamicParameters );
+                return _server.StartPlan( CurrentUser, planUniqueName, dryRun, dynamicParameters );
             }
             catch( Exception ex )
             {
@@ -139,7 +139,7 @@ namespace Synapse.Services
                     parms.Append( rawBody );
             }
 
-            string context = GetContext( nameof( StartPlan ),
+            string context = GetContext( nameof( StartPlan ), nameof( CurrentUser ), CurrentUser,
                 nameof( planUniqueName ), planUniqueName, nameof( dryRun ), dryRun, "planParameters", parms.ToString() );
 
             try
@@ -149,7 +149,7 @@ namespace Synapse.Services
                 if( failedToDeserialize )
                     throw new Exception( $"Failed to deserialize message body:\r\n{parms.ToString()}" );
 
-                return _server.StartPlan( planUniqueName, dryRun, dynamicParameters, postDynamicParameters: true );
+                return _server.StartPlan( CurrentUser, planUniqueName, dryRun, dynamicParameters, postDynamicParameters: true );
             }
             catch( Exception ex )
             {

@@ -73,6 +73,43 @@ public partial class FileSystemDal : IControllerDal
     public bool ProcessActionsOnSingleton { get; set; }
 
 
+    public bool HasAccess(string securityContext, string planUniqueName, FileSystemRight right = FileSystemRight.Execute)
+    {
+        bool ok = false;
+        try
+        {
+            _splxDal?.TrySecurityOrException( securityContext, planUniqueName, AceType.FileSystem, right, "Plan" );
+            ok = true;
+        }
+        catch { }
+
+        return ok;
+    }
+
+    public bool HasAccess(string securityContext, string planUniqueName, AceType aceType, object right)
+    {
+        bool ok = false;
+        try
+        {
+            _splxDal?.TrySecurityOrException( securityContext, planUniqueName, aceType, right, "Plan" );
+            ok = true;
+        }
+        catch { }
+
+        return ok;
+    }
+
+    public void HasAccessOrException(string securityContext, string planUniqueName, FileSystemRight right = FileSystemRight.Execute)
+    {
+        _splxDal?.TrySecurityOrException( securityContext, planUniqueName, AceType.FileSystem, right, "Plan" );
+    }
+
+    public void HasAccessOrException(string securityContext, string planUniqueName, AceType aceType, object right)
+    {
+        _splxDal?.TrySecurityOrException( securityContext, planUniqueName, aceType, right, "Plan" );
+    }
+
+
     public IEnumerable<string> GetPlanList()
     {
         return new string[] { "Hello,", "World,", "from", "FileSystemDal!" };
@@ -85,7 +122,7 @@ public partial class FileSystemDal : IControllerDal
 
     public Plan GetPlan(string planUniqueName)
     {
-        _splxDal?.TrySecurityOrException( planUniqueName, AceType.FileSystem, FileSystemRight.Execute, "Plan" );
+        //_splxDal?.TrySecurityOrException( securityContext, planUniqueName, AceType.FileSystem, FileSystemRight.Execute, "Plan" );
 
         string planFile = $"{_planPath}{planUniqueName}.yaml";
         return YamlHelpers.DeserializeFile<Plan>( planFile );

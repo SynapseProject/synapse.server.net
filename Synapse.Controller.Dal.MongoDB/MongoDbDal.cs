@@ -7,6 +7,7 @@ using MongoDB.Bson.Serialization;
 
 using Synapse.Core;
 using Synapse.Core.Utilities;
+using Suplex.Security;
 
 namespace Synapse.Services.Controller.Dal
 {
@@ -60,6 +61,51 @@ namespace Synapse.Services.Controller.Dal
 
         public bool ProcessPlansOnSingleton { get; set; }
         public bool ProcessActionsOnSingleton { get; set; }
+
+
+        public bool HasAccess(string securityContext, string planUniqueName, FileSystemRight right = FileSystemRight.Execute)
+        {
+            throw new NotImplementedException();
+
+            bool ok = false;
+            try
+            {
+                //_splxDal?.TrySecurityOrException( securityContext, planUniqueName, AceType.FileSystem, right, "Plan" );
+                ok = true;
+            }
+            catch { }
+
+            return ok;
+        }
+
+        public bool HasAccess(string securityContext, string planUniqueName, AceType aceType, object right)
+        {
+            throw new NotImplementedException();
+
+            bool ok = false;
+            try
+            {
+                //_splxDal?.TrySecurityOrException( securityContext, planUniqueName, aceType, right, "Plan" );
+                ok = true;
+            }
+            catch { }
+
+            return ok;
+        }
+
+        public void HasAccessOrException(string securityContext, string planUniqueName, FileSystemRight right = FileSystemRight.Execute)
+        {
+            throw new NotImplementedException();
+
+            //_splxDal?.TrySecurityOrException( securityContext, planUniqueName, AceType.FileSystem, right, "Plan" );
+        }
+
+        public void HasAccessOrException(string securityContext, string planUniqueName, AceType aceType, object right)
+        {
+            throw new NotImplementedException();
+
+            //_splxDal?.TrySecurityOrException( securityContext, planUniqueName, aceType, right, "Plan" );
+        }
 
 
         public IEnumerable<string> GetPlanList()

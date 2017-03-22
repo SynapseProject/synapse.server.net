@@ -1,10 +1,22 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+
+using Suplex.Security;
 using Synapse.Core;
 
 namespace Synapse.Services.Controller.Dal
 {
     public interface IControllerDal
     {
+        bool HasAccess(string securityContext, string planUniqueName, FileSystemRight right = FileSystemRight.Execute);
+
+        bool HasAccess(string securityContext, string planUniqueName, AceType aceType, object right);
+
+        void HasAccessOrException(string securityContext, string planUniqueName, FileSystemRight right = FileSystemRight.Execute);
+
+        void HasAccessOrException(string securityContext, string planUniqueName, AceType aceType, object right);
+
+
         IEnumerable<string> GetPlanList();
 
         IEnumerable<long> GetPlanInstanceIdList(string planUniqueName);
