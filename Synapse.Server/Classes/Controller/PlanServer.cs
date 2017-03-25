@@ -15,25 +15,20 @@ namespace Synapse.Services
 
         public PlanServer()
         {
-            try
-            {
-                LoadDal();
-            }
-            catch( Exception ex )
-            {
-                SynapseServer.Logger.Fatal( "Failed to load Dal.", ex );
-                throw;
-            }
+            if( SynapseServer.Config.ServerIsController )
+                try
+                {
+                    _dal = AssemblyLoader.Load<IControllerDal>(
+                        SynapseServer.Config.Controller.Dal.Type, SynapseServer.Config.Controller.Dal.DefaultType );
+                    _dal.Configure( SynapseServer.Config.Controller.Dal );
+                }
+                catch( Exception ex )
+                {
+                    SynapseServer.Logger.Fatal( "Failed to load Dal.", ex );
+                    throw;
+                }
         }
 
-        void LoadDal()
-        {
-            if( SynapseServer.Config.ServerIsController )
-            {
-                string defaultType = "Synapse.Controller.Dal.FileSystem:Synapse.Services.Controller.Dal.FileSystemDal";
-                _dal = AssemblyLoader.Load<IControllerDal>( SynapseServer.Config.Controller.Dal, defaultType );
-            }
-        }
 
         public IEnumerable<string> GetPlanList()
         {

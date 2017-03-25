@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace Synapse.Services
 {
     /// <summary>
-    /// Hold the startup config for Synapse.Node; written as an independent class (not using .NET config) for cross-platform compatibility.
+    /// Hold the startup config for Synapse.Controller; written as an independent class (not using .NET config) for cross-platform compatibility.
     /// </summary>
     public class SynapseControllerConfig
     {
@@ -16,9 +16,6 @@ namespace Synapse.Services
 
         public string NodeUrl { get; set; } = "http://localhost:20001/synapse/node";
         internal bool HasNodeUrl { get { return !string.IsNullOrWhiteSpace( NodeUrl ); } }
-
-        public string Dal { get; set; } = "Synapse.Controller.Dal.FileSystem:FileSystemDal";
-        internal bool HasDal { get { return !string.IsNullOrWhiteSpace( Dal ); } }
 
         public bool SignPlan { get; set; } = true;
         internal string SignPlanString { get; set; } = "true";
@@ -34,6 +31,8 @@ namespace Synapse.Services
             }
         }
 
+        public SynapseDalConfig Dal { get; set; } = new SynapseDalConfig();
+
 
         public static Dictionary<string, string> GetConfigDefaultValues()
         {
@@ -43,8 +42,10 @@ namespace Synapse.Services
 
             string n = "c_";
             values[n + nameof( c.NodeUrl )] = c.NodeUrl;
-            values[n + nameof( c.Dal )] = c.Dal;
             values[n + nameof( c.SignPlan )] = c.SignPlan.ToString();
+
+            foreach( KeyValuePair<string, string> kvp in SynapseDalConfig.GetConfigDefaultValues() )
+                values[kvp.Key] = kvp.Value;
 
             return values;
         }
@@ -57,11 +58,10 @@ namespace Synapse.Services
             if( values.ContainsKey( n + nameof( c.NodeUrl ).ToLower() ) )
                 c.NodeUrl = values[n + nameof( c.NodeUrl ).ToLower()];
 
-            if( values.ContainsKey( n + nameof( c.Dal ).ToLower() ) )
-                c.Dal = values[n + nameof( c.Dal ).ToLower()];
-
             if( values.ContainsKey( n + nameof( c.SignPlan ).ToLower() ) )
                 c.SignPlanString = values[n + nameof( c.SignPlan ).ToLower()];
+
+            c.Dal.Configure( values );
 
             Configure( c );
         }
@@ -72,11 +72,10 @@ namespace Synapse.Services
             if( value.HasNodeUrl )
                 NodeUrl = value.NodeUrl;
 
-            if( value.HasDal )
-                Dal = value.Dal;
-
             if( value.TestSetSignPlanString )
                 SignPlan = value.SignPlan;
+
+            //xxx.Dal.Configure( value.Dal );
         }
     }
 }

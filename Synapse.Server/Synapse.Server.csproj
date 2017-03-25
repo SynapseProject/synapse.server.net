@@ -103,6 +103,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Classes\Controller\SynapseDalConfig.cs" />
     <Compile Include="Classes\Node\IPlanRuntimeContainer.cs" />
     <Compile Include="Classes\Node\PlanRuntimePod.cs" />
     <Compile Include="Classes\Controller\PlanServer.cs" />

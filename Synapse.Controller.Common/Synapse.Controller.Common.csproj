@@ -51,6 +51,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Classes\Interfaces\IConfigurationProvider.cs" />
+    <Compile Include="Classes\Interfaces\ISynapseDalConfig.cs" />
     <Compile Include="Classes\PermissionSet.cs" />
     <Compile Include="Classes\SuplexSecurity.cs" />
     <Compile Include="Suplex\SuplexSecurity.cs" />

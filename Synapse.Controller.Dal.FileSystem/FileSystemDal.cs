@@ -7,6 +7,7 @@ using Suplex.Security;
 
 using Synapse.Core;
 using Synapse.Core.Utilities;
+using Synapse.Services;
 using Synapse.Services.Controller.Dal;
 
 
@@ -53,6 +54,19 @@ public partial class FileSystemDal : IControllerDal
         ProcessActionsOnSingleton = processActionsOnSingleton;
 
         LoadSuplex();
+    }
+
+
+    public void Configure(ISynapseDalConfig conifg)
+    {
+        string s = YamlHelpers.Serialize( conifg.Config );
+        FileSystemDalSettings fsds = YamlHelpers.Deserialize<FileSystemDalSettings>( s );
+
+        if( _splxDal != null )
+        {
+            _splxDal.LdapRoot = conifg.LdapRoot;
+            _splxDal.GlobalExternalGroupsCsv = fsds.GlobalExternalGroupsCsv;
+        }
     }
 
     void EnsurePaths()

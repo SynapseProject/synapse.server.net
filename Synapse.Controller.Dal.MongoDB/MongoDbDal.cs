@@ -58,6 +58,10 @@ namespace Synapse.Services.Controller.Dal
             ProcessActionsOnSingleton = processActionsOnSingleton;
         }
 
+        public void Configure(ISynapseDalConfig conifg)
+        {
+        }
+
 
         public bool ProcessPlansOnSingleton { get; set; }
         public bool ProcessActionsOnSingleton { get; set; }

@@ -2,12 +2,16 @@
 using System.Collections.Generic;
 
 using Suplex.Security;
+
 using Synapse.Core;
 
 namespace Synapse.Services.Controller.Dal
 {
     public interface IControllerDal
     {
+        void Configure(ISynapseDalConfig conifg);
+
+
         bool HasAccess(string securityContext, string planUniqueName, FileSystemRight right = FileSystemRight.Execute);
 
         bool HasAccess(string securityContext, string planUniqueName, AceType aceType, object right);
