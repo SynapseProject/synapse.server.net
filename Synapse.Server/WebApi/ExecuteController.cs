@@ -93,7 +93,7 @@ namespace Synapse.Services
 
         [Route( "{planUniqueName}/start/" )]
         [HttpGet]
-        public long StartPlan(string planUniqueName, bool dryRun = false)
+        public long StartPlan(string planUniqueName, bool dryRun = false, string requestNumber = null)
         {
             Uri uri = this.Url.Request.RequestUri;
             string context = GetContext( nameof( StartPlan ), nameof( CurrentUser ), CurrentUser,
@@ -104,7 +104,7 @@ namespace Synapse.Services
                 SynapseServer.Logger.Debug( context );
                 Dictionary<string, string> dynamicParameters = uri.ParseQueryString();
                 if( dynamicParameters.ContainsKey( nameof( dryRun ) ) ) dynamicParameters.Remove( nameof( dryRun ) );
-                return _server.StartPlan( CurrentUser, planUniqueName, dryRun, dynamicParameters );
+                return _server.StartPlan( CurrentUser, planUniqueName, dryRun, requestNumber, dynamicParameters );
             }
             catch( Exception ex )
             {
@@ -116,7 +116,7 @@ namespace Synapse.Services
 
         [Route( "{planUniqueName}/start/" )]
         [HttpPost]
-        public long StartPlan([FromBody]StartPlanEnvelope planEnvelope, string planUniqueName, bool dryRun = false)
+        public long StartPlan([FromBody]StartPlanEnvelope planEnvelope, string planUniqueName, bool dryRun = false, string requestNumber = null)
         {
             bool failedToDeserialize = false;
             Dictionary<string, string> dynamicParameters = planEnvelope?.DynamicParameters;
@@ -149,7 +149,7 @@ namespace Synapse.Services
                 if( failedToDeserialize )
                     throw new Exception( $"Failed to deserialize message body:\r\n{parms.ToString()}" );
 
-                return _server.StartPlan( CurrentUser, planUniqueName, dryRun, dynamicParameters, postDynamicParameters: true );
+                return _server.StartPlan( CurrentUser, planUniqueName, dryRun, requestNumber, dynamicParameters, postDynamicParameters: true );
             }
             catch( Exception ex )
             {
