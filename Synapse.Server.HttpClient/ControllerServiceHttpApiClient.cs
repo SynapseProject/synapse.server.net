@@ -58,27 +58,29 @@ namespace Synapse.Services
         }
 
 
-        public long StartPlan(string planName, bool dryRun = false, Dictionary<string, string> dynamicParameters = null, bool postDynamicParameters = false)
+        public long StartPlan(string planName, bool dryRun = false, string requestNumber = null, Dictionary<string, string> dynamicParameters = null, bool postDynamicParameters = false)
         {
             if( postDynamicParameters )
-                return StartPlanAsyncAsPost( planName, dryRun, dynamicParameters ).Result;
+                return StartPlanAsyncAsPost( planName, dryRun, requestNumber, dynamicParameters ).Result;
             else
-                return StartPlanAsync( planName, dryRun, dynamicParameters ).Result;
+                return StartPlanAsync( planName, dryRun, requestNumber, dynamicParameters ).Result;
         }
 
-        public async Task<long> StartPlanAsync(string planName, bool dryRun = false, Dictionary<string, string> dynamicParameters = null)
+        public async Task<long> StartPlanAsync(string planName, bool dryRun = false, string requestNumber = null, Dictionary<string, string> dynamicParameters = null)
         {
-            string qs = $"?dryRun={dryRun}{dynamicParameters?.ToQueryString( asPartialQueryString: true )}";
+            requestNumber = !string.IsNullOrWhiteSpace( requestNumber ) ? $"&requestNumber={requestNumber}" : null;
+            string qs = $"?dryRun={dryRun}{requestNumber}{dynamicParameters?.ToQueryString( asPartialQueryString: true )}";
             string requestUri = $"{_rootPath}/{planName}/start/{qs}";
             return await GetAsync<long>( requestUri );
         }
 
 
-        public async Task<long> StartPlanAsyncAsPost(string planName, bool dryRun = false, Dictionary<string, string> dynamicParameters = null)
+        public async Task<long> StartPlanAsyncAsPost(string planName, bool dryRun = false, string requestNumber = null, Dictionary<string, string> dynamicParameters = null)
         {
             StartPlanEnvelope planEnvelope = new StartPlanEnvelope() { DynamicParameters = dynamicParameters };
 
-            string qs = $"?dryRun={dryRun}";
+            requestNumber = !string.IsNullOrWhiteSpace( requestNumber ) ? $"&requestNumber={requestNumber}" : null;
+            string qs = $"?dryRun={dryRun}{requestNumber}";
             string requestUri = $"{_rootPath}/{planName}/start/{qs}";
             return await PostAsync<StartPlanEnvelope, long>( planEnvelope, requestUri );
         }

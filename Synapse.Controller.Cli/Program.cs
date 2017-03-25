@@ -130,6 +130,7 @@ namespace Synapse.Services.Controller.Cli
                 Dictionary<string, Type> parms = new Dictionary<string, Type>();
                 parms.Add( "planName", typeof( string ) );
                 parms.Add( "dryRun", typeof( bool ) );
+                parms.Add( "requestNumber", typeof( string ) );
                 parms.Add( "asPost", typeof( string ) );
                 Console.WriteLine( $"Parameter options for {methodName}:\r\n" );
                 WriteMethodParametersHelp( parms );
@@ -156,6 +157,14 @@ namespace Synapse.Services.Controller.Cli
                 {
                     bool.TryParse( parameters[dr], out dryRun );
                     parameters.Remove( dr );
+                }
+
+                string requestNumber = null;
+                string rn = nameof( requestNumber ).ToLower();
+                if( parameters.ContainsKey( rn ) )
+                {
+                    requestNumber = parameters[rn];
+                    parameters.Remove( rn );
                 }
 
                 bool postDynamicParameters = false;
@@ -191,7 +200,7 @@ namespace Synapse.Services.Controller.Cli
 
                 try
                 {
-                    long result = instance.StartPlan( planName, dryRun, parameters, postDynamicParameters );
+                    long result = instance.StartPlan( planName, dryRun, requestNumber, parameters, postDynamicParameters );
                     Console.WriteLine( result );
                 }
                 catch( Exception ex )
