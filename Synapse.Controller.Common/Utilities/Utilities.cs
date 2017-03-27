@@ -5,6 +5,7 @@ using Suplex.Forms.SecureManager;
 using Suplex.Security;
 using System.Text;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Synapse.Services.Controller.Dal
 {
@@ -135,6 +136,35 @@ namespace Synapse.Services.Controller.Dal
 		{
 			return new DateTimeOffset( datetime, offset );
 		}
+
+
+        /// <summary>
+        /// A wrapper on Path.Combine to correct for fronting/trailing backslashes that otherwise fail in Path.Combine.
+        /// </summary>
+        /// <param name="paths">An array of parts of the path.</param>
+        /// <returns>The combined path</returns>
+        public static string PathCombine(params string[] paths)
+        {
+            if( paths.Length > 0 )
+            {
+                int last = paths.Length - 1;
+                for( int c = 0; c <= last; c++ )
+                {
+                    if( c != 0 )
+                        paths[c] = paths[c].Trim( Path.DirectorySeparatorChar );
+
+                    if( c != last )
+                        paths[c] = string.Format( "{0}\\", paths[c] );
+                }
+            }
+            else
+            {
+                return string.Empty;
+            }
+
+            return Path.Combine( paths );
+        }
+
 
         //public static string UnwindException(string method, Exception ex)
         //{

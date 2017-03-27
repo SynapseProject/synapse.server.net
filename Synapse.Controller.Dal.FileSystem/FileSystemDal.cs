@@ -27,19 +27,9 @@ public partial class FileSystemDal : IControllerDal
 
     public FileSystemDal()
     {
-        _planPath = $"{CurrentPath}\\Plans\\";
-        _histPath = $"{CurrentPath}\\History\\";
-        _splxPath = $"{CurrentPath}\\Security\\";
-
-        EnsurePaths();
-
-        ProcessPlansOnSingleton = false;
-        ProcessActionsOnSingleton = true;
-
-        LoadSuplex();
     }
 
-    public FileSystemDal(string basePath, bool processPlansOnSingleton = false, bool processActionsOnSingleton = true) : this()
+    internal FileSystemDal(string basePath, bool processPlansOnSingleton = false, bool processActionsOnSingleton = true) : this()
     {
         if( string.IsNullOrWhiteSpace( basePath ) )
             basePath = CurrentPath;
@@ -59,18 +49,65 @@ public partial class FileSystemDal : IControllerDal
 
     public void Configure(ISynapseDalConfig conifg)
     {
-        string s = YamlHelpers.Serialize( conifg.Config );
-        FileSystemDalSettings fsds = YamlHelpers.Deserialize<FileSystemDalSettings>( s );
-
-        if( _splxDal != null )
+        if( conifg != null )
         {
-            _splxDal.LdapRoot = conifg.LdapRoot;
-            _splxDal.GlobalExternalGroupsCsv = fsds.GlobalExternalGroupsCsv;
+            string s = YamlHelpers.Serialize( conifg.Config );
+            FileSystemDalSettings fsds = YamlHelpers.Deserialize<FileSystemDalSettings>( s );
+
+            _planPath = fsds.PlanFolderPath;
+            _histPath = fsds.HistoryFolderPath;
+            _splxPath = fsds.Security.FilePath;
+
+            EnsurePaths();
+
+            ProcessPlansOnSingleton = fsds.ProcessPlansOnSingleton;
+            ProcessActionsOnSingleton = fsds.ProcessActionsOnSingleton;
+
+            LoadSuplex();
+
+            if( _splxDal == null && fsds.Security.IsRequired )
+                throw new Exception( $"Security is required.  Could not load security file: {fsds.Security.FilePath}." );
+
+            if( _splxDal != null )
+            {
+                _splxDal.LdapRoot = conifg.LdapRoot;
+                _splxDal.GlobalExternalGroupsCsv = fsds.Security.GlobalExternalGroupsCsv;
+            }
         }
+        else
+        {
+            ConfigureDefaults();
+        }
+    }
+
+    internal void ConfigureDefaults()
+    {
+        _planPath = $"{CurrentPath}\\Plans\\";
+        _histPath = $"{CurrentPath}\\History\\";
+        _splxPath = $"{CurrentPath}\\Security\\";
+
+        EnsurePaths();
+
+        ProcessPlansOnSingleton = false;
+        ProcessActionsOnSingleton = true;
+
+        LoadSuplex();
     }
 
     void EnsurePaths()
     {
+        //GetFullPath tests below validate the paths are /complete/ paths.  IsPathRooted returns 'true'
+        //in a few undesriable cases
+
+        if( Path.GetFullPath( _planPath ) != _planPath )
+            _planPath = Utilities.PathCombine( CurrentPath, _planPath, "\\" );
+
+        if( Path.GetFullPath( _histPath ) != _histPath )
+            _histPath = Utilities.PathCombine( CurrentPath, _histPath, "\\" );
+
+        if( Path.GetFullPath( _splxPath ) != _splxPath )
+            _splxPath = Utilities.PathCombine( CurrentPath, _splxPath, "\\" );
+
         Directory.CreateDirectory( _planPath );
         Directory.CreateDirectory( _histPath );
     }
