@@ -144,7 +144,7 @@ namespace Synapse.Services
 
             try
             {
-                SynapseServer.Logger.Debug( context );
+                SynapseServer.Logger.Info( context );
 
                 if( failedToDeserialize )
                     throw new Exception( $"Failed to deserialize message body:\r\n{parms.ToString()}" );

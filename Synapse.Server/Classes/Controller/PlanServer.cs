@@ -13,14 +13,24 @@ namespace Synapse.Services
         NodeServiceHttpApiClient _nodeClient = new NodeServiceHttpApiClient( SynapseServer.Config.Controller.NodeUrl );
         IControllerDal _dal = null;
 
+        static bool once = false;
+
         public PlanServer()
         {
-            if( SynapseServer.Config.ServerIsController )
+            if( SynapseServer.Config.ServerIsController && _dal == null )
                 try
                 {
                     _dal = AssemblyLoader.Load<IControllerDal>(
                         SynapseServer.Config.Controller.Dal.Type, SynapseServer.Config.Controller.Dal.DefaultType );
-                    _dal.Configure( SynapseServer.Config.Controller.Dal );
+                    Dictionary<string, string> props = _dal.Configure( SynapseServer.Config.Controller.Dal );
+
+                    if( !once )
+                    {
+                        if( props != null )
+                            foreach( string key in props.Keys )
+                                SynapseServer.Logger.Info( $"{key}: {props[key]}" );
+                        once = true;
+                    }
                 }
                 catch( Exception ex )
                 {

@@ -19,7 +19,7 @@ namespace Synapse.Services
         public string Type { get; set; } = "Synapse.Controller.Dal.FileSystem:FileSystemDal";
         internal bool HasType { get { return !string.IsNullOrWhiteSpace( Type ); } }
 
-        public string LdapRoot { get; set; } = "http://localhost:20001/synapse/node";
+        public string LdapRoot { get; set; }
         internal bool HasLdapRoot { get { return !string.IsNullOrWhiteSpace( LdapRoot ); } }
 
         public object Config { get; set; } = true;

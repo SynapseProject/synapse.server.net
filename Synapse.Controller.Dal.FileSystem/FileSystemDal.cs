@@ -47,7 +47,7 @@ public partial class FileSystemDal : IControllerDal
     }
 
 
-    public void Configure(ISynapseDalConfig conifg)
+    public Dictionary<string, string> Configure(ISynapseDalConfig conifg)
     {
         if( conifg != null )
         {
@@ -66,7 +66,7 @@ public partial class FileSystemDal : IControllerDal
             LoadSuplex();
 
             if( _splxDal == null && fsds.Security.IsRequired )
-                throw new Exception( $"Security is required.  Could not load security file: {fsds.Security.FilePath}." );
+                throw new Exception( $"Security is required.  Could not load security file: {_splxPath}." );
 
             if( _splxDal != null )
             {
@@ -78,6 +78,14 @@ public partial class FileSystemDal : IControllerDal
         {
             ConfigureDefaults();
         }
+
+        Dictionary<string, string> props = new Dictionary<string, string>();
+        string name = nameof( FileSystemDal );
+        props.Add( name, CurrentPath );
+        props.Add( $"{name} Plan path", _planPath );
+        props.Add( $"{name} History path", _histPath );
+        props.Add( $"{name} Security path", _splxPath );
+        return props;
     }
 
     internal void ConfigureDefaults()
@@ -114,7 +122,7 @@ public partial class FileSystemDal : IControllerDal
 
     void LoadSuplex()
     {
-        string splx = $"{_splxPath}security.splx";
+        string splx = Utilities.PathCombine( _splxPath, "security.splx" );
         if( File.Exists( splx ) )
             _splxDal = new SuplexDal( splx );
     }
@@ -175,13 +183,13 @@ public partial class FileSystemDal : IControllerDal
     {
         //_splxDal?.TrySecurityOrException( securityContext, planUniqueName, AceType.FileSystem, FileSystemRight.Execute, "Plan" );
 
-        string planFile = $"{_planPath}{planUniqueName}.yaml";
+        string planFile = Utilities.PathCombine( _planPath, $"{planUniqueName}.yaml" );
         return YamlHelpers.DeserializeFile<Plan>( planFile );
     }
 
     public Plan CreatePlanInstance(string planUniqueName)
     {
-        string planFile = $"{_planPath}{planUniqueName}.yaml";
+        string planFile = Utilities.PathCombine( _planPath, $"{planUniqueName}.yaml" );
         Plan plan = YamlHelpers.DeserializeFile<Plan>( planFile );
 
         if( string.IsNullOrWhiteSpace( plan.UniqueName ) )
@@ -193,7 +201,7 @@ public partial class FileSystemDal : IControllerDal
 
     public Plan GetPlanStatus(string planUniqueName, long planInstanceId)
     {
-        string planFile = $"{_histPath}{planUniqueName}_{planInstanceId}.yaml";
+        string planFile = Utilities.PathCombine( _histPath, $"{planUniqueName}_{planInstanceId}.yaml" );
         return YamlHelpers.DeserializeFile<Plan>( planFile );
     }
 
@@ -211,7 +219,7 @@ public partial class FileSystemDal : IControllerDal
     {
         try
         {
-            YamlHelpers.SerializeFile( $"{_histPath}{item.Plan.UniqueName}_{item.Plan.InstanceId}.yaml",
+            YamlHelpers.SerializeFile( Utilities.PathCombine( _histPath, $"{item.Plan.UniqueName}_{item.Plan.InstanceId}.yaml" ),
                 item.Plan, emitDefaultValues: true );
         }
         catch( Exception ex )
@@ -247,7 +255,7 @@ public partial class FileSystemDal : IControllerDal
             Plan plan = GetPlanStatus( item.PlanUniqueName, item.PlanInstanceId );
             bool ok = DalUtilities.FindActionAndReplace( plan.Actions, item.ActionItem );
             if( ok )
-                YamlHelpers.SerializeFile( $"{_histPath}{plan.UniqueName}_{plan.InstanceId}.yaml", plan, emitDefaultValues: true );
+                YamlHelpers.SerializeFile( Utilities.PathCombine( _histPath, $"{plan.UniqueName}_{plan.InstanceId}.yaml" ), plan, emitDefaultValues: true );
             else
                 throw new Exception( $"Could not find Plan.InstanceId = [{item.PlanInstanceId}], Action:{item.ActionItem.Name}.ParentInstanceId = [{item.ActionItem.ParentInstanceId}] in Plan outfile." );
         }

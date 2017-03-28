@@ -29,17 +29,17 @@ namespace Synapse.Services.Controller.Dal
 
             if( !BsonClassMap.IsClassMapRegistered( typeof( Plan ) ) )
             {
-                BsonClassMap.RegisterClassMap<Plan>( x =>
-                {
-                    x.AutoMap();
-                    x.GetMemberMap( m => m._id ).SetIgnoreIfDefault( true );
-                } );
+                //BsonClassMap.RegisterClassMap<Plan>( x =>
+                //{
+                //    x.AutoMap();
+                //    x.GetMemberMap( m => m._id ).SetIgnoreIfDefault( true );
+                //} );
 
-                BsonClassMap.RegisterClassMap<ActionItem>( x =>
-                {
-                    x.AutoMap();
-                    x.GetMemberMap( m => m._id ).SetIgnoreIfDefault( true );
-                } );
+                //BsonClassMap.RegisterClassMap<ActionItem>( x =>
+                //{
+                //    x.AutoMap();
+                //    x.GetMemberMap( m => m._id ).SetIgnoreIfDefault( true );
+                //} );
 
                 BsonClassMap.RegisterClassMap<ActionPath>( x =>
                 {
@@ -58,8 +58,9 @@ namespace Synapse.Services.Controller.Dal
             ProcessActionsOnSingleton = processActionsOnSingleton;
         }
 
-        public void Configure(ISynapseDalConfig conifg)
+        public Dictionary<string, string> Configure(ISynapseDalConfig conifg)
         {
+            return null;
         }
 
 

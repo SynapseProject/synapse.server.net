@@ -9,7 +9,7 @@ namespace Synapse.Services.Controller.Dal
 {
     public interface IControllerDal
     {
-        void Configure(ISynapseDalConfig conifg);
+        Dictionary<string, string> Configure(ISynapseDalConfig conifg);
 
 
         bool HasAccess(string securityContext, string planUniqueName, FileSystemRight right = FileSystemRight.Execute);
