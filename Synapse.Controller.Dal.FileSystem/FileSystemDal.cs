@@ -174,18 +174,26 @@ public partial class FileSystemDal : IControllerDal
     {
         if( string.IsNullOrEmpty( filter ) )
         {
-            return Directory.GetFiles( _planPath );
+            return Directory.GetFiles( _planPath, "*.yaml" ).Select( f => Path.GetFileNameWithoutExtension( f ) );
         }
         else
         {
             Regex regex = new Regex( filter, RegexOptions.IgnoreCase );
+
             if( !isRegexFilter )
             {
                 foreach( char x in @"\+?|{[()^$.#" )
                     filter = filter.Replace( x.ToString(), @"\" + x.ToString() );
                 regex = new Regex( string.Format( "^{0}$", filter.Replace( "*", ".*" ) ), RegexOptions.IgnoreCase );
             }
-            return Directory.GetFiles( _planPath ).Where( f => regex.IsMatch( f ) );
+
+            if( !filter.EndsWith( ".yaml", StringComparison.OrdinalIgnoreCase ) )
+            {
+                filter = $@"{filter}.*\.yaml";
+                regex = new Regex( filter, RegexOptions.IgnoreCase );
+            }
+
+            return Directory.GetFiles( _planPath ).Where( f => regex.IsMatch( f ) ).Select( f => Path.GetFileNameWithoutExtension( f ) );
         }
     }
 
