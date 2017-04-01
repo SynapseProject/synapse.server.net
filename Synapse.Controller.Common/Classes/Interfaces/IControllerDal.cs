@@ -21,7 +21,7 @@ namespace Synapse.Services.Controller.Dal
         void HasAccessOrException(string securityContext, string planUniqueName, AceType aceType, object right);
 
 
-        IEnumerable<string> GetPlanList();
+        IEnumerable<string> GetPlanList(string filter = null, bool isRegexFilter = true);
 
         IEnumerable<long> GetPlanInstanceIdList(string planUniqueName);
 

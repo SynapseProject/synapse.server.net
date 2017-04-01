@@ -55,14 +55,14 @@ namespace Synapse.Services
 
         [HttpGet]
         [Route( "" )]
-        public IEnumerable<string> GetPlanList()
+        public IEnumerable<string> GetPlanList(string filter = null, bool isRegexFilter = true)
         {
             string context = GetContext( nameof( GetPlanList ) );
 
             try
             {
                 SynapseServer.Logger.Debug( context );
-                return _server.GetPlanList();
+                return _server.GetPlanList( filter, isRegexFilter );
             }
             catch( Exception ex )
             {

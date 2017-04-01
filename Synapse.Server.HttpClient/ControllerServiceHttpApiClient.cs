@@ -34,14 +34,15 @@ namespace Synapse.Services
         }
 
 
-        public List<string> GetPlanList()
+        public List<string> GetPlanList(string filter = null, bool isRegexFilter = true)
         {
-            return GetPlanListAsync().Result;
+            return GetPlanListAsync( filter, isRegexFilter ).Result;
         }
 
-        public async Task<List<string>> GetPlanListAsync()
+        public async Task<List<string>> GetPlanListAsync(string filter = null, bool isRegexFilter = true)
         {
-            string requestUri = $"{_rootPath}";
+            filter = !string.IsNullOrWhiteSpace( filter ) ? $"/?filter={filter}&isRegexFilter={isRegexFilter}" : null;
+            string requestUri = $"{_rootPath}{filter}";
             return await GetAsync<List<string>>( requestUri );
         }
 

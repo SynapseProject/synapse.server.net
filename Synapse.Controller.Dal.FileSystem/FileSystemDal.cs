@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 using Suplex.Security;
 
@@ -169,9 +170,27 @@ public partial class FileSystemDal : IControllerDal
     }
 
 
-    public IEnumerable<string> GetPlanList()
+    public IEnumerable<string> GetPlanList(string filter = null, bool isRegexFilter = true)
     {
-        return new string[] { "Hello,", "World,", "from", "FileSystemDal!" };
+        if( string.IsNullOrEmpty( filter ) )
+        {
+            return Directory.GetFiles( _planPath );
+        }
+        else
+        {
+            if( isRegexFilter )
+            {
+                Regex regex = new Regex( filter, RegexOptions.IgnoreCase );
+                return Directory.GetFiles( _planPath ).Where( f => regex.IsMatch( f ) );
+            }
+            else
+            {
+                foreach( char x in @"\+?|{[()^$.#" )
+                    filter = filter.Replace( x.ToString(), @"\" + x.ToString() );
+                Regex regex = new Regex( string.Format( "^{0}$", filter.Replace( "*", ".*" ) ), RegexOptions.IgnoreCase );
+                return Directory.GetFiles( _planPath ).Where( f => regex.IsMatch( f ) );
+            }
+        }
     }
 
     public IEnumerable<long> GetPlanInstanceIdList(string planUniqueName)

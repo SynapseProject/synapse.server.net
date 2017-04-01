@@ -113,7 +113,7 @@ namespace Synapse.Services.Controller.Dal
         }
 
 
-        public IEnumerable<string> GetPlanList()
+        public IEnumerable<string> GetPlanList(string filter = null, bool isRegexFilter = true)
         {
             return new string[] { "Hello,", "World,", "from", "MongoDBDal!" };
         }

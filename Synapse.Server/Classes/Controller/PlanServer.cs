@@ -40,9 +40,9 @@ namespace Synapse.Services
         }
 
 
-        public IEnumerable<string> GetPlanList()
+        public IEnumerable<string> GetPlanList(string filter = null, bool isRegexFilter = true)
         {
-            return _dal.GetPlanList();
+            return _dal.GetPlanList( filter, isRegexFilter );
         }
 
         public IEnumerable<long> GetPlanInstanceIdList(string planUniqueName)
