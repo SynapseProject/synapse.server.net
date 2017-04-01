@@ -178,18 +178,14 @@ public partial class FileSystemDal : IControllerDal
         }
         else
         {
-            if( isRegexFilter )
-            {
-                Regex regex = new Regex( filter, RegexOptions.IgnoreCase );
-                return Directory.GetFiles( _planPath ).Where( f => regex.IsMatch( f ) );
-            }
-            else
+            Regex regex = new Regex( filter, RegexOptions.IgnoreCase );
+            if( !isRegexFilter )
             {
                 foreach( char x in @"\+?|{[()^$.#" )
                     filter = filter.Replace( x.ToString(), @"\" + x.ToString() );
-                Regex regex = new Regex( string.Format( "^{0}$", filter.Replace( "*", ".*" ) ), RegexOptions.IgnoreCase );
-                return Directory.GetFiles( _planPath ).Where( f => regex.IsMatch( f ) );
+                regex = new Regex( string.Format( "^{0}$", filter.Replace( "*", ".*" ) ), RegexOptions.IgnoreCase );
             }
+            return Directory.GetFiles( _planPath ).Where( f => regex.IsMatch( f ) );
         }
     }
 

@@ -57,7 +57,7 @@ namespace Synapse.Services
         [Route( "" )]
         public IEnumerable<string> GetPlanList(string filter = null, bool isRegexFilter = true)
         {
-            string context = GetContext( nameof( GetPlanList ) );
+            string context = GetContext( nameof( GetPlanList ), nameof( filter ), filter, nameof( isRegexFilter ), isRegexFilter );
 
             try
             {
