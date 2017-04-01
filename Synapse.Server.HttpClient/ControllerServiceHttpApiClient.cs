@@ -47,15 +47,15 @@ namespace Synapse.Services
         }
 
 
-        public List<int> GetPlanInstanceIdList(string planName)
+        public List<long> GetPlanInstanceIdList(string planName)
         {
             return GetPlanInstanceIdListAsync( planName ).Result;
         }
 
-        public async Task<List<int>> GetPlanInstanceIdListAsync(string planName)
+        public async Task<List<long>> GetPlanInstanceIdListAsync(string planName)
         {
             string requestUri = $"{_rootPath}/{planName}";
-            return await GetAsync<List<int>>( requestUri );
+            return await GetAsync<List<long>>( requestUri );
         }
 
 
