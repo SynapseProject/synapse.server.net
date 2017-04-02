@@ -199,12 +199,16 @@ public partial class FileSystemDal : IControllerDal
 
     public IEnumerable<long> GetPlanInstanceIdList(string planUniqueName)
     {
-        IEnumerable<string> files = Directory.GetFiles( _histPath, "*.yaml" )
-            .Select( f => Path.GetFileNameWithoutExtension( f ).ToLower().Replace( $"{planUniqueName.ToLower()}_", string.Empty ) );
+        IEnumerable<string> files = Directory.GetFiles( _histPath, "*.yaml" ).Select( f => Path.GetFileNameWithoutExtension( f ) );
 
         List<long> ids = new List<long>();
-        foreach( string s in files )
-            ids.Add( long.Parse( s ) );
+        foreach( string file in files )
+        {
+            Match m = Regex.Match( file, @"(?<instanceId>\d+)" );
+            string iid = m.Groups["instanceId"].Value;
+            if( !string.IsNullOrWhiteSpace( iid ) )
+                ids.Add( long.Parse( iid ) );
+        }
 
         return ids;
     }
