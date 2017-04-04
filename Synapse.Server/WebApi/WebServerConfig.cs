@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Net;
 using System.Web.Http;
+using System.Web.Http.Dispatcher;
 using Owin;
 
 namespace Synapse.Services
@@ -15,6 +16,8 @@ namespace Synapse.Services
 
             // Configure Web API for self-host. 
             HttpConfiguration config = new HttpConfiguration();
+
+            config.Services.Replace( typeof( IAssembliesResolver ), new CustomAssembliesResolver() );
 
             // Web API configuration and services
             config.IncludeErrorDetailPolicy = IncludeErrorDetailPolicy.Always;

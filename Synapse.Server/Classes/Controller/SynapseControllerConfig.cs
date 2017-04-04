@@ -31,6 +31,8 @@ namespace Synapse.Services
             }
         }
 
+        public List<string> Assemblies { get; set; }
+
         public SynapseDalConfig Dal { get; set; } = new SynapseDalConfig();
 
 
