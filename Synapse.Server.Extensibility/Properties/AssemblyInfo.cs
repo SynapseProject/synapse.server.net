@@ -5,16 +5,14 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle( "Synapse.ControllerService.Cli" )]
+[assembly: AssemblyTitle( "Synapse.Server.Extensibility" )]
 [assembly: AssemblyDescription( "" )]
 [assembly: AssemblyConfiguration( "" )]
 [assembly: AssemblyCompany( "" )]
-[assembly: AssemblyProduct( "Synapse.ControllerService.Cli" )]
+[assembly: AssemblyProduct( "Synapse.Server.Extensibility" )]
 [assembly: AssemblyCopyright( "Copyright ©  Steve Shortt, 2016 - 2017" )]
 [assembly: AssemblyTrademark( "" )]
 [assembly: AssemblyCulture( "" )]
-
-//[assembly: log4net.Config.XmlConfigurator( Watch = true )]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
 // to COM components.  If you need to access a type in this assembly from 
@@ -22,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible( false )]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid( "8fb2ebe2-edbf-4cb9-8f85-3771f59e8a51" )]
+[assembly: Guid( "0d7ed137-55c0-4d6f-9e9b-f526f86dd2f8" )]
 
 // Version information for an assembly consists of the following four values:
 //

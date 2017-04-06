@@ -11,7 +11,7 @@ using Synapse.Core.Utilities;
 namespace Synapse.Services
 {
     [RoutePrefix( "synapse/execute" )]
-    public class ExecuteController : ApiController
+    public class ExecuteController : ApiController, IExecuteController
     {
         PlanServer _server = new PlanServer();
 

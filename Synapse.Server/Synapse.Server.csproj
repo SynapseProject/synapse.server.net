@@ -140,6 +140,10 @@
       <Project>{c2d081ef-8454-4d63-8d36-ea67bb9183ea}</Project>
       <Name>Synapse.Controller.Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Synapse.Server.Extensibility\Synapse.Server.Extensibility.csproj">
+      <Project>{0d7ed137-55c0-4d6f-9e9b-f526f86dd2f8}</Project>
+      <Name>Synapse.Server.Extensibility</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Synapse.Server.HttpClient\Synapse.Server.HttpClient.csproj">
       <Project>{059d8c9c-6397-422c-9ae1-9206a6c3d324}</Project>
       <Name>Synapse.Server.HttpClient</Name>

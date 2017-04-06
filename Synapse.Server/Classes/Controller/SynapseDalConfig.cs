@@ -13,7 +13,7 @@ namespace Synapse.Services
         {
         }
 
-        public string DefaultType { get { return "Synapse.Controller.Dal.FileSystem:FileSystemDal"; } }
+        internal string DefaultType { get { return "Synapse.Controller.Dal.FileSystem:FileSystemDal"; } }
 
 
         public string Type { get; set; } = "Synapse.Controller.Dal.FileSystem:FileSystemDal";
