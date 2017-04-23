@@ -244,6 +244,26 @@ namespace Synapse.Services
             }
         }
 
+        [Route( "{planUniqueName}/{planInstanceId}/" )]
+        [HttpGet]
+        public object GetPlanElements(string planUniqueName, long planInstanceId, string elementPath)
+        {
+            string context = GetContext( nameof( GetPlanStatus ),
+                nameof( planUniqueName ), planUniqueName, nameof( planInstanceId ), planInstanceId );
+
+            try
+            {
+                SynapseServer.Logger.Debug( context );
+                return _server.GetPlanElements( planUniqueName, planInstanceId, elementPath );
+            }
+            catch( Exception ex )
+            {
+                SynapseServer.Logger.Error(
+                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
+                throw;
+            }
+        }
+
 
         #region utility methods
         string GetContext(string context, params object[] parms)

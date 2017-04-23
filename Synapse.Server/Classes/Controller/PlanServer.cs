@@ -93,5 +93,11 @@ namespace Synapse.Services
         {
             _dal.UpdatePlanActionStatus( planUniqueName, planInstanceId, actionItem );
         }
+
+        public object GetPlanElements(string planUniqueName, long planInstanceId, string elementPath)
+        {
+            Plan plan = _dal.GetPlanStatus( planUniqueName, planInstanceId );
+            return YamlHelpers.SelectElements( plan, new string[] { elementPath } );
+        }
     }
 }
