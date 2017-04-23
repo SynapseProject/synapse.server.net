@@ -244,7 +244,7 @@ namespace Synapse.Services
             }
         }
 
-        [Route( "{planUniqueName}/{planInstanceId}/" )]
+        [Route( "{planUniqueName}/{planInstanceId}/el/" )]
         [HttpGet]
         public object GetPlanElements(string planUniqueName, long planInstanceId, string elementPath)
         {

@@ -97,7 +97,9 @@ namespace Synapse.Services
         public object GetPlanElements(string planUniqueName, long planInstanceId, string elementPath)
         {
             Plan plan = _dal.GetPlanStatus( planUniqueName, planInstanceId );
-            return YamlHelpers.SelectElements( plan, new string[] { elementPath } );
+            object result = YamlHelpers.SelectElements( plan, new string[] { elementPath } );
+            Newtonsoft.Json.Linq.JObject json = Newtonsoft.Json.Linq.JObject.Parse( result.ToString() );
+            return json;
         }
     }
 }
