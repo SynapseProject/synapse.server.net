@@ -245,8 +245,8 @@ namespace Synapse.Services
         }
 
         [Route( "{planUniqueName}/{planInstanceId}/el/" )]
-        [HttpGet]
-        public object GetPlanElements(string planUniqueName, long planInstanceId, string elementPath)
+        [HttpPost]
+        public object GetPlanElements(string planUniqueName, long planInstanceId, [FromBody]PlanElementParms elementParms)
         {
             string context = GetContext( nameof( GetPlanStatus ),
                 nameof( planUniqueName ), planUniqueName, nameof( planInstanceId ), planInstanceId );
@@ -254,7 +254,7 @@ namespace Synapse.Services
             try
             {
                 SynapseServer.Logger.Debug( context );
-                return _server.GetPlanElements( planUniqueName, planInstanceId, elementPath );
+                return _server.GetPlanElements( planUniqueName, planInstanceId, elementParms );
             }
             catch( Exception ex )
             {

@@ -94,12 +94,48 @@ namespace Synapse.Services
             _dal.UpdatePlanActionStatus( planUniqueName, planInstanceId, actionItem );
         }
 
-        public object GetPlanElements(string planUniqueName, long planInstanceId, string elementPath)
+        public object GetPlanElements(string planUniqueName, long planInstanceId, PlanElementParms elementParms)
         {
             Plan plan = _dal.GetPlanStatus( planUniqueName, planInstanceId );
-            object result = YamlHelpers.SelectElements( plan, new string[] { elementPath } );
-            Newtonsoft.Json.Linq.JObject json = Newtonsoft.Json.Linq.JObject.Parse( result.ToString() );
-            return json;
+            object result = YamlHelpers.SelectElements( plan, elementParms.ElementPaths );
+
+            List<object> results = new List<object>();
+            if( result is List<object> )
+                result = (List<object>)result;
+            else
+                results.Add( result );
+
+            for( int i = 0; i < results.Count; i++ )
+                switch( elementParms.Type )
+                {
+                    case SerializationType.Yaml:
+                    {
+                        results[i] = YamlHelpers.Deserialize( results[i].ToString() );
+                        break;
+                    }
+                    case SerializationType.Json:
+                    {
+                        results[i] = Newtonsoft.Json.Linq.JObject.Parse( results[i].ToString() );
+                        break;
+                    }
+                    case SerializationType.Xml:
+                    {
+                        System.Xml.XmlDocument xml = new System.Xml.XmlDocument();
+                        xml.LoadXml( results[i].ToString() );
+                        results[i] = xml;
+                        break;
+                    }
+                    case SerializationType.Unspecified:
+                    {
+                        results[i] = results[i].ToString();
+                        break;
+                    }
+                }
+
+            if( results.Count == 1 )
+                return results[0];
+            else
+                return results;
         }
     }
 }
