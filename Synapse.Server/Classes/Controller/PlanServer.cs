@@ -106,31 +106,32 @@ namespace Synapse.Services
                 results.Add( result );
 
             for( int i = 0; i < results.Count; i++ )
-                switch( elementParms.Type )
-                {
-                    case SerializationType.Yaml:
+                if( results[i] != null )
+                    switch( elementParms.Type )
                     {
-                        results[i] = YamlHelpers.Deserialize( results[i].ToString() );
-                        break;
+                        case SerializationType.Yaml:
+                        {
+                            results[i] = YamlHelpers.Deserialize( results[i].ToString() );
+                            break;
+                        }
+                        case SerializationType.Json:
+                        {
+                            results[i] = Newtonsoft.Json.Linq.JObject.Parse( results[i].ToString() );
+                            break;
+                        }
+                        case SerializationType.Xml:
+                        {
+                            System.Xml.XmlDocument xml = new System.Xml.XmlDocument();
+                            xml.LoadXml( results[i].ToString() );
+                            results[i] = xml;
+                            break;
+                        }
+                        case SerializationType.Unspecified:
+                        {
+                            results[i] = results[i].ToString();
+                            break;
+                        }
                     }
-                    case SerializationType.Json:
-                    {
-                        results[i] = Newtonsoft.Json.Linq.JObject.Parse( results[i].ToString() );
-                        break;
-                    }
-                    case SerializationType.Xml:
-                    {
-                        System.Xml.XmlDocument xml = new System.Xml.XmlDocument();
-                        xml.LoadXml( results[i].ToString() );
-                        results[i] = xml;
-                        break;
-                    }
-                    case SerializationType.Unspecified:
-                    {
-                        results[i] = results[i].ToString();
-                        break;
-                    }
-                }
 
             if( results.Count == 1 )
                 return results[0];

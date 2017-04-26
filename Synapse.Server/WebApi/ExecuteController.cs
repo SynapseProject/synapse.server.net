@@ -244,7 +244,33 @@ namespace Synapse.Services
             }
         }
 
-        [Route( "{planUniqueName}/{planInstanceId}/el/" )]
+        [Route( "{planUniqueName}/{planInstanceId}/part/" )]
+        [HttpGet]
+        public object GetPlanElements(string planUniqueName, long planInstanceId, string elementPath, SerializationType serializationType = SerializationType.Json)
+        {
+            string context = GetContext( nameof( GetPlanStatus ),
+                nameof( planUniqueName ), planUniqueName, nameof( planInstanceId ), planInstanceId,
+                nameof( elementPath ), elementPath, nameof( serializationType ), serializationType );
+
+            try
+            {
+                SynapseServer.Logger.Debug( context );
+
+                PlanElementParms pep = new PlanElementParms();
+                pep.Type = serializationType;
+                pep.ElementPaths.Add( elementPath );
+
+                return _server.GetPlanElements( planUniqueName, planInstanceId, pep );
+            }
+            catch( Exception ex )
+            {
+                SynapseServer.Logger.Error(
+                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
+                throw;
+            }
+        }
+
+        [Route( "{planUniqueName}/{planInstanceId}/part/" )]
         [HttpPost]
         public object GetPlanElements(string planUniqueName, long planInstanceId, [FromBody]PlanElementParms elementParms)
         {

@@ -32,6 +32,7 @@ namespace Synapse.Services
         }
 
         public List<string> Assemblies { get; set; }
+        internal bool HasAssemblies { get { return Assemblies != null && Assemblies.Count > 0; } }
 
         public SynapseDalConfig Dal { get; set; } = new SynapseDalConfig();
 

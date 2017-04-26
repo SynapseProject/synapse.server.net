@@ -17,7 +17,8 @@ namespace Synapse.Services
             // Configure Web API for self-host. 
             HttpConfiguration config = new HttpConfiguration();
 
-            config.Services.Replace( typeof( IAssembliesResolver ), new CustomAssembliesResolver() );
+            if( SynapseServer.Config.ServerIsController && SynapseServer.Config.Controller.HasAssemblies )
+                config.Services.Replace( typeof( IAssembliesResolver ), new CustomAssembliesResolver() );
 
             // Web API configuration and services
             config.IncludeErrorDetailPolicy = IncludeErrorDetailPolicy.Always;
