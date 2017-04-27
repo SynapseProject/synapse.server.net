@@ -111,12 +111,18 @@ namespace Synapse.Services
                     {
                         case SerializationType.Yaml:
                         {
-                            results[i] = YamlHelpers.Deserialize( results[i].ToString() );
+                            string yaml = results[i] is Dictionary<object, object> ?
+                                YamlHelpers.Serialize( results[i] ) : results[i].ToString();
+                            try { results[i] = YamlHelpers.Deserialize( yaml ); }
+                            catch { results[i] = yaml; }
                             break;
                         }
                         case SerializationType.Json:
                         {
-                            results[i] = Newtonsoft.Json.Linq.JObject.Parse( results[i].ToString() );
+                            string json = results[i] is Dictionary<object, object> ?
+                                YamlHelpers.Serialize( results[i], serializeAsJson: true ) : results[i].ToString();
+                            try { results[i] = Newtonsoft.Json.Linq.JObject.Parse( json ); }
+                            catch { results[i] = json; }
                             break;
                         }
                         case SerializationType.Xml:
@@ -128,7 +134,7 @@ namespace Synapse.Services
                         }
                         case SerializationType.Unspecified:
                         {
-                            results[i] = results[i].ToString();
+                            //results[i] = results[i].ToString();
                             break;
                         }
                     }
