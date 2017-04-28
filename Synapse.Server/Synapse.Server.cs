@@ -125,9 +125,9 @@ namespace Synapse.Services
                 }
 
                 string protocol = Config.WebApiIsSecure ? "https" : "http";
-                string url = Environment.UserInteractive ?
-                    $"{protocol}://localhost:{Config.WebApiPort}" :
-                    $"{protocol}://*:{Config.WebApiPort}";
+                string host = Environment.UserInteractive ? "localhost" : "*";
+                string url = $"{protocol}://{host}:{Config.WebApiPort}";
+
                 _webapp = WebApp.Start<WebServerConfig>( url );
                 Logger.Info( $"Listening on {url}" );
 
