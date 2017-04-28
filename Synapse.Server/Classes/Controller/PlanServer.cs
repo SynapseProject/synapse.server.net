@@ -127,13 +127,18 @@ namespace Synapse.Services
                         }
                         case SerializationType.Xml:
                         {
-                            System.Xml.XmlDocument xml = new System.Xml.XmlDocument();
-                            xml.LoadXml( results[i].ToString() );
-                            results[i] = xml;
+                            try
+                            {
+                                System.Xml.XmlDocument xml = new System.Xml.XmlDocument();
+                                xml.LoadXml( results[i].ToString() );
+                                results[i] = xml;
+                            }
+                            catch { }
                             break;
                         }
                         case SerializationType.Unspecified:
                         {
+                            //no-op
                             //results[i] = results[i].ToString();
                             break;
                         }
