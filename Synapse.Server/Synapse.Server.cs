@@ -124,9 +124,10 @@ namespace Synapse.Services
                     NodeController.DrainstopCallback = () => StopCallback();
                 }
 
+                string protocol = Config.WebApiIsSecure ? "https" : "http";
                 string url = Environment.UserInteractive ?
-                    $"http://localhost:{Config.WebApiPort}" :
-                    $"http://*:{Config.WebApiPort}";
+                    $"{protocol}://localhost:{Config.WebApiPort}" :
+                    $"{protocol}://*:{Config.WebApiPort}";
                 _webapp = WebApp.Start<WebServerConfig>( url );
                 Logger.Info( $"Listening on {url}" );
 

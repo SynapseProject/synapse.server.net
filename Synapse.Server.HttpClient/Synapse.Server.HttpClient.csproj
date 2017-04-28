@@ -34,8 +34,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\synapse.core.net\Synapse.Common\bin\Debug\Synapse.Common.dll</HintPath>
     </Reference>
-    <Reference Include="Synapse.Core, Version=0.0.0.5, Culture=neutral, PublicKeyToken=a6de1cc56b73f982, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="Synapse.Core">
       <HintPath>..\..\synapse.core.net\Synapse.Core\bin\Debug\Synapse.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />

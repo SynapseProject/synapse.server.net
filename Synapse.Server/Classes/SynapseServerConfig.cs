@@ -80,6 +80,21 @@ namespace Synapse.Services
             }
         }
 
+        public bool WebApiIsSecure { get; set; }
+        internal string WebApiIsSecureString { get; set; } = "false";
+        internal bool TestSetWebApiIsSecureString
+        {
+            get
+            {
+                bool v = WebApiIsSecure;
+                bool ok = bool.TryParse( WebApiIsSecureString, out v );
+                if( ok )
+                    WebApiIsSecure = v;
+                return ok;
+            }
+        }
+
+
         public AuthenticationSchemes AuthenticationScheme { get; set; } = AuthenticationSchemes.IntegratedWindowsAuthentication;
         internal string AuthenticationSchemeString { get; set; } = AuthenticationSchemes.IntegratedWindowsAuthentication.ToString();
         internal bool TestSetAuthenticationSchemeString
@@ -148,6 +163,7 @@ namespace Synapse.Services
             values[nameof( c.ServiceDisplayName )] = c.ServiceDisplayName;
             values[nameof( c.ServerRole )] = c.ServerRole.ToString();
             values[nameof( c.WebApiPort )] = c.WebApiPort.ToString();
+            values[nameof( c.WebApiIsSecure )] = c.WebApiIsSecure.ToString();
             values[nameof( c.AuthenticationScheme )] = c.AuthenticationScheme.ToString();
             values[nameof( c.SignatureKeyFile )] = c.SignatureKeyFile;
             values[nameof( c.SignatureKeyContainerName )] = c.SignatureKeyContainerName;
@@ -182,6 +198,9 @@ namespace Synapse.Services
 
             if( values.ContainsKey( nameof( c.WebApiPort ).ToLower() ) )
                 c.WebApiPortString = values[nameof( c.WebApiPort ).ToLower()];
+
+            if( values.ContainsKey( nameof( c.WebApiIsSecure ).ToLower() ) )
+                c.WebApiIsSecureString = values[nameof( c.WebApiIsSecure ).ToLower()];
 
             if( values.ContainsKey( nameof( c.AuthenticationScheme ).ToLower() ) )
                 c.AuthenticationSchemeString = values[nameof( c.AuthenticationScheme ).ToLower()];
@@ -223,6 +242,9 @@ namespace Synapse.Services
 
             if( value.TestSetWebApiPortString && !(value.WebApiPort == config.WebApiPort) )
                 config.WebApiPort = value.WebApiPort;
+
+            if( value.TestSetWebApiIsSecureString && !(value.WebApiIsSecure == config.WebApiIsSecure) )
+                config.WebApiIsSecure = value.WebApiIsSecure;
 
             if( value.TestSetAuthenticationSchemeString && !(value.AuthenticationScheme == config.AuthenticationScheme) )
                 config.AuthenticationScheme = value.AuthenticationScheme;
