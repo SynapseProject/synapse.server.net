@@ -15,11 +15,15 @@ namespace Synapse.Services
         DirectoryInfo _logRootPath = null;
         bool _wantsCancel = false;
 
-        ControllerServiceHttpApiClient _controllerService =
-            new ControllerServiceHttpApiClient( SynapseServer.Config.Node.ControllerUrl );
+        ControllerServiceHttpApiClient _controllerService = null;
 
-        public PlanRuntimePod(Plan plan, bool isDryRun = false, Dictionary<string, string> dynamicParameters = null, long planInstanceId = 0)
+        public PlanRuntimePod(Plan plan, bool isDryRun = false, Dictionary<string, string> dynamicParameters = null, long planInstanceId = 0, Uri referrer = null)
         {
+            string url = $"{referrer.Scheme}://{referrer.Host}:{referrer.Port}/synapse/execute";
+            if( !string.IsNullOrWhiteSpace( SynapseServer.Config.Node.ControllerUrl ) )
+                url = SynapseServer.Config.Node.ControllerUrl;
+            _controllerService = new ControllerServiceHttpApiClient( url );
+
             Plan = plan;
             IsDryRun = isDryRun;
             DynamicParameters = dynamicParameters;

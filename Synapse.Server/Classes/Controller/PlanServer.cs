@@ -10,7 +10,6 @@ namespace Synapse.Services
 {
     public class PlanServer
     {
-        NodeServiceHttpApiClient _nodeClient = new NodeServiceHttpApiClient( SynapseServer.Config.Controller.NodeUrl );
         IControllerDal _dal = null;
 
         static bool once = false;
@@ -50,7 +49,9 @@ namespace Synapse.Services
             return _dal.GetPlanInstanceIdList( planUniqueName );
         }
 
-        public long StartPlan(string securityContext, string planUniqueName, bool dryRun = false, string requestNumber = null, Dictionary<string, string> dynamicParameters = null, bool postDynamicParameters = false)
+        public long StartPlan(string securityContext, string planUniqueName, bool dryRun = false,
+            string requestNumber = null, Dictionary<string, string> dynamicParameters = null, bool postDynamicParameters = false,
+            string nodeUrl = null)
         {
             _dal.HasAccessOrException( securityContext, planUniqueName );
 
@@ -68,14 +69,20 @@ namespace Synapse.Services
                 //plan.Name += "foo";  //testing: intentionally crash the sig
             }
 
-            _nodeClient.StartPlan( plan, plan.InstanceId, dryRun, dynamicParameters, postDynamicParameters );
+            if( !string.IsNullOrWhiteSpace( nodeUrl ) )
+                nodeUrl = SynapseServer.Config.Controller.NodeUrl;
+
+            new NodeServiceHttpApiClient( nodeUrl ).StartPlan( plan, plan.InstanceId, dryRun, dynamicParameters, postDynamicParameters );
 
             return plan.InstanceId;
         }
 
-        public void CancelPlan(long instanceId)
+        public void CancelPlan(long instanceId, string nodeUrl = null)
         {
-            _nodeClient.CancelPlanAsync( instanceId );
+            if( !string.IsNullOrWhiteSpace( nodeUrl ) )
+                nodeUrl = SynapseServer.Config.Controller.NodeUrl;
+
+            new NodeServiceHttpApiClient( nodeUrl ).CancelPlanAsync( instanceId );
         }
 
         public Plan GetPlanStatus(string planUniqueName, long planInstanceId)

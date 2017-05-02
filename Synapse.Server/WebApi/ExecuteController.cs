@@ -13,7 +13,7 @@ namespace Synapse.Services
     [RoutePrefix( "synapse/execute" )]
     public class ExecuteController : ApiController, IExecuteController
     {
-        PlanServer _server = new PlanServer();
+        PlanServer _server = null;
 
         [HttpGet]
         [Route( "hello" )]
@@ -57,6 +57,8 @@ namespace Synapse.Services
         [Route( "" )]
         public IEnumerable<string> GetPlanList(string filter = null, bool isRegexFilter = true)
         {
+            InitPlanServer();
+
             string context = GetContext( nameof( GetPlanList ), nameof( filter ), filter, nameof( isRegexFilter ), isRegexFilter );
 
             try
@@ -76,6 +78,8 @@ namespace Synapse.Services
         [HttpGet]
         public IEnumerable<long> GetPlanInstanceIdList(string planUniqueName)
         {
+            InitPlanServer();
+
             string context = GetContext( nameof( GetPlanInstanceIdList ), nameof( planUniqueName ), planUniqueName );
 
             try
@@ -93,8 +97,10 @@ namespace Synapse.Services
 
         [Route( "{planUniqueName}/start/" )]
         [HttpGet]
-        public long StartPlan(string planUniqueName, bool dryRun = false, string requestNumber = null)
+        public long StartPlan(string planUniqueName, bool dryRun = false, string requestNumber = null, string nodeUrl = null)
         {
+            InitPlanServer( nodeUrl );
+
             Uri uri = this.Url.Request.RequestUri;
             string context = GetContext( nameof( StartPlan ), nameof( CurrentUser ), CurrentUser,
                 nameof( planUniqueName ), planUniqueName, nameof( dryRun ), dryRun, "QueryString", uri.Query );
@@ -104,7 +110,7 @@ namespace Synapse.Services
                 SynapseServer.Logger.Debug( context );
                 Dictionary<string, string> dynamicParameters = uri.ParseQueryString();
                 if( dynamicParameters.ContainsKey( nameof( dryRun ) ) ) dynamicParameters.Remove( nameof( dryRun ) );
-                return _server.StartPlan( CurrentUser, planUniqueName, dryRun, requestNumber, dynamicParameters );
+                return _server.StartPlan( CurrentUser, planUniqueName, dryRun, requestNumber, dynamicParameters, nodeUrl: nodeUrl );
             }
             catch( Exception ex )
             {
@@ -116,8 +122,10 @@ namespace Synapse.Services
 
         [Route( "{planUniqueName}/start/" )]
         [HttpPost]
-        public long StartPlan([FromBody]StartPlanEnvelope planEnvelope, string planUniqueName, bool dryRun = false, string requestNumber = null)
+        public long StartPlan([FromBody]StartPlanEnvelope planEnvelope, string planUniqueName, bool dryRun = false, string requestNumber = null, string nodeUrl = null)
         {
+            InitPlanServer( nodeUrl );
+
             bool failedToDeserialize = false;
             Dictionary<string, string> dynamicParameters = planEnvelope?.DynamicParameters;
 
@@ -149,7 +157,8 @@ namespace Synapse.Services
                 if( failedToDeserialize )
                     throw new Exception( $"Failed to deserialize message body:\r\n{parms.ToString()}" );
 
-                return _server.StartPlan( CurrentUser, planUniqueName, dryRun, requestNumber, dynamicParameters, postDynamicParameters: true );
+                return _server.StartPlan( CurrentUser, planUniqueName, dryRun, requestNumber, dynamicParameters,
+                    postDynamicParameters: true, nodeUrl: nodeUrl );
             }
             catch( Exception ex )
             {
@@ -163,6 +172,8 @@ namespace Synapse.Services
         [HttpGet]
         public Plan GetPlanStatus(string planUniqueName, long planInstanceId)
         {
+            InitPlanServer();
+
             string context = GetContext( nameof( GetPlanStatus ),
                 nameof( planUniqueName ), planUniqueName, nameof( planInstanceId ), planInstanceId );
 
@@ -183,6 +194,8 @@ namespace Synapse.Services
         [HttpPost]
         public void SetStatus(string planUniqueName, long planInstanceId, [FromBody]string planString)
         {
+            InitPlanServer();
+
             string context = GetContext( nameof( SetStatus ),
                 nameof( planUniqueName ), planUniqueName, nameof( planInstanceId ), planInstanceId,
                 nameof( planString ), planString );
@@ -207,6 +220,8 @@ namespace Synapse.Services
         [HttpPost]
         public void SetStatus(string planUniqueName, long planInstanceId, [FromBody]ActionItem actionItem)
         {
+            InitPlanServer();
+
             string context = GetContext( nameof( SetStatus ),
                 nameof( planUniqueName ), planUniqueName, nameof( planInstanceId ), planInstanceId,
                 nameof( actionItem ), actionItem );
@@ -226,15 +241,17 @@ namespace Synapse.Services
 
         [Route( "{planUniqueName}/{planInstanceId}/" )]
         [HttpDelete]
-        public void CancelPlan(string planUniqueName, long planInstanceId)
+        public void CancelPlan(string planUniqueName, long planInstanceId, string nodeUrl = null)
         {
+            InitPlanServer();
+
             string context = GetContext( nameof( GetPlanStatus ),
                 nameof( planUniqueName ), planUniqueName, nameof( planInstanceId ), planInstanceId );
 
             try
             {
                 SynapseServer.Logger.Debug( context );
-                _server.CancelPlan( planInstanceId );
+                _server.CancelPlan( planInstanceId, nodeUrl );
             }
             catch( Exception ex )
             {
@@ -248,6 +265,8 @@ namespace Synapse.Services
         [HttpGet]
         public object GetPlanElements(string planUniqueName, long planInstanceId, string elementPath, SerializationType serializationType = SerializationType.Json)
         {
+            InitPlanServer();
+
             string context = GetContext( nameof( GetPlanStatus ),
                 nameof( planUniqueName ), planUniqueName, nameof( planInstanceId ), planInstanceId,
                 nameof( elementPath ), elementPath, nameof( serializationType ), serializationType );
@@ -274,6 +293,8 @@ namespace Synapse.Services
         [HttpPost]
         public object GetPlanElements(string planUniqueName, long planInstanceId, [FromBody]PlanElementParms elementParms)
         {
+            InitPlanServer();
+
             string context = GetContext( nameof( GetPlanStatus ),
                 nameof( planUniqueName ), planUniqueName, nameof( planInstanceId ), planInstanceId );
 
@@ -292,6 +313,12 @@ namespace Synapse.Services
 
 
         #region utility methods
+        void InitPlanServer(string nodeUrl = null)
+        {
+            if( _server == null )
+                _server = new PlanServer();
+        }
+
         string GetContext(string context, params object[] parms)
         {
             StringBuilder c = new StringBuilder();

@@ -92,7 +92,7 @@ namespace Synapse.Services
 
                 Dictionary<string, string> dynamicParameters = uri.ParseQueryString();
                 if( dynamicParameters.ContainsKey( nameof( dryRun ) ) ) dynamicParameters.Remove( nameof( dryRun ) );
-                PlanRuntimePod p = new PlanRuntimePod( plan, dryRun, dynamicParameters, plan.InstanceId );
+                PlanRuntimePod p = new PlanRuntimePod( plan, dryRun, dynamicParameters, plan.InstanceId, this.Url.Request.Headers.Referrer );
                 _scheduler.StartPlan( p );
             }
             catch( Exception ex )
@@ -120,7 +120,7 @@ namespace Synapse.Services
 
                 ValidatePlanSignature( plan );
 
-                PlanRuntimePod p = new PlanRuntimePod( plan, dryRun, planEnvelope.DynamicParameters, plan.InstanceId );
+                PlanRuntimePod p = new PlanRuntimePod( plan, dryRun, planEnvelope.DynamicParameters, plan.InstanceId, this.Url.Request.Headers.Referrer );
                 _scheduler.StartPlan( p );
             }
             catch( Exception ex )
