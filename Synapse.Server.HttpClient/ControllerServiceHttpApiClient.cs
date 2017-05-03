@@ -59,29 +59,34 @@ namespace Synapse.Services
         }
 
 
-        public long StartPlan(string planName, bool dryRun = false, string requestNumber = null, Dictionary<string, string> dynamicParameters = null, bool postDynamicParameters = false)
+        public long StartPlan(string planName, bool dryRun = false, string requestNumber = null,
+            Dictionary<string, string> dynamicParameters = null, bool postDynamicParameters = false, string nodeUrlSchemeHostPort = null)
         {
             if( postDynamicParameters )
-                return StartPlanAsyncAsPost( planName, dryRun, requestNumber, dynamicParameters ).Result;
+                return StartPlanAsyncAsPost( planName, dryRun, requestNumber, dynamicParameters, nodeUrlSchemeHostPort ).Result;
             else
-                return StartPlanAsync( planName, dryRun, requestNumber, dynamicParameters ).Result;
+                return StartPlanAsync( planName, dryRun, requestNumber, dynamicParameters, nodeUrlSchemeHostPort ).Result;
         }
 
-        public async Task<long> StartPlanAsync(string planName, bool dryRun = false, string requestNumber = null, Dictionary<string, string> dynamicParameters = null)
+        public async Task<long> StartPlanAsync(string planName, bool dryRun = false, string requestNumber = null,
+            Dictionary<string, string> dynamicParameters = null, string nodeUrlSchemeHostPort = null)
         {
             requestNumber = !string.IsNullOrWhiteSpace( requestNumber ) ? $"&requestNumber={requestNumber}" : null;
-            string qs = $"?dryRun={dryRun}{requestNumber}{dynamicParameters?.ToQueryString( asPartialQueryString: true )}";
+            nodeUrlSchemeHostPort = !string.IsNullOrWhiteSpace( nodeUrlSchemeHostPort ) ? $"&nodeUrlSchemeHostPort={nodeUrlSchemeHostPort}" : null;
+            string qs = $"?dryRun={dryRun}{requestNumber}{nodeUrlSchemeHostPort}{dynamicParameters?.ToQueryString( asPartialQueryString: true )}";
             string requestUri = $"{_rootPath}/{planName}/start/{qs}";
             return await GetAsync<long>( requestUri );
         }
 
 
-        public async Task<long> StartPlanAsyncAsPost(string planName, bool dryRun = false, string requestNumber = null, Dictionary<string, string> dynamicParameters = null)
+        public async Task<long> StartPlanAsyncAsPost(string planName, bool dryRun = false, string requestNumber = null,
+            Dictionary<string, string> dynamicParameters = null, string nodeUrlSchemeHostPort = null)
         {
             StartPlanEnvelope planEnvelope = new StartPlanEnvelope() { DynamicParameters = dynamicParameters };
 
             requestNumber = !string.IsNullOrWhiteSpace( requestNumber ) ? $"&requestNumber={requestNumber}" : null;
-            string qs = $"?dryRun={dryRun}{requestNumber}";
+            nodeUrlSchemeHostPort = !string.IsNullOrWhiteSpace( nodeUrlSchemeHostPort ) ? $"&nodeUrlSchemeHostPort={nodeUrlSchemeHostPort}" : null;
+            string qs = $"?dryRun={dryRun}{requestNumber}{nodeUrlSchemeHostPort}";
             string requestUri = $"{_rootPath}/{planName}/start/{qs}";
             return await PostAsync<StartPlanEnvelope, long>( planEnvelope, requestUri );
         }
@@ -125,14 +130,14 @@ namespace Synapse.Services
         }
 
 
-        public void CancelPlan(string planName, long planInstanceId)
+        public void CancelPlan(string planName, long planInstanceId, string nodeUrlSchemeHostPort = null)
         {
-            CancelPlanAsync( planName, planInstanceId ).Wait();
+            CancelPlanAsync( planName, planInstanceId, nodeUrlSchemeHostPort ).Wait();
         }
 
-        public async Task CancelPlanAsync(string planName, long planInstanceId)
+        public async Task CancelPlanAsync(string planName, long planInstanceId, string nodeUrlSchemeHostPort = null)
         {
-            string requestUri = $"{_rootPath}/{planName}/{planInstanceId}/";
+            string requestUri = $"{_rootPath}/{planName}/{planInstanceId}/?nodeUrlSchemeHostPort={nodeUrlSchemeHostPort}";
             await DeleteAsync( requestUri );
         }
     }

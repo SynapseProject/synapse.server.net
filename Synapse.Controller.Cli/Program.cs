@@ -131,6 +131,7 @@ namespace Synapse.Services.Controller.Cli
                 parms.Add( "planName", typeof( string ) );
                 parms.Add( "dryRun", typeof( bool ) );
                 parms.Add( "requestNumber", typeof( string ) );
+                parms.Add( "nodeUrlSchemeHostPort", typeof( string ) );
                 parms.Add( "asPost", typeof( string ) );
                 Console.WriteLine( $"Parameter options for {methodName}:\r\n" );
                 WriteMethodParametersHelp( parms );
@@ -167,6 +168,14 @@ namespace Synapse.Services.Controller.Cli
                     parameters.Remove( rn );
                 }
 
+                string nodeUrlSchemeHostPort = null;
+                string nu = nameof( nodeUrlSchemeHostPort ).ToLower();
+                if( parameters.ContainsKey( nu ) )
+                {
+                    nodeUrlSchemeHostPort = parameters[nu];
+                    parameters.Remove( nu );
+                }
+
                 bool postDynamicParameters = false;
                 string asPost = null;
                 string ap = nameof( asPost ).ToLower();
@@ -200,7 +209,7 @@ namespace Synapse.Services.Controller.Cli
 
                 try
                 {
-                    long result = instance.StartPlan( planName, dryRun, requestNumber, parameters, postDynamicParameters );
+                    long result = instance.StartPlan( planName, dryRun, requestNumber, parameters, postDynamicParameters, nodeUrlSchemeHostPort );
                     Console.WriteLine( result );
                 }
                 catch( Exception ex )

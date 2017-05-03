@@ -19,10 +19,18 @@ namespace Synapse.Services
 
         public PlanRuntimePod(Plan plan, bool isDryRun = false, Dictionary<string, string> dynamicParameters = null, long planInstanceId = 0, Uri referrer = null)
         {
-            string url = $"{referrer.Scheme}://{referrer.Host}:{referrer.Port}/synapse/execute";
+            #region setup ControllerServiceHttpApiClient
+            string url = referrer != null ? $"{referrer.Scheme}://{referrer.Host}:{referrer.Port}/synapse/execute" : null;
+
             if( !string.IsNullOrWhiteSpace( SynapseServer.Config.Node.ControllerUrl ) )
                 url = SynapseServer.Config.Node.ControllerUrl;
-            _controllerService = new ControllerServiceHttpApiClient( url );
+
+            if( !string.IsNullOrWhiteSpace( url ) )
+                _controllerService = new ControllerServiceHttpApiClient( url );
+            else
+                throw new Exception( "Could not initialize ControllerServiceHttpApiClient from Referrer or Config.Node.ControllerUrl." );
+            #endregion
+
 
             Plan = plan;
             IsDryRun = isDryRun;

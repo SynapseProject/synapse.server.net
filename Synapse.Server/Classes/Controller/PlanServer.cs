@@ -51,7 +51,7 @@ namespace Synapse.Services
 
         public long StartPlan(string securityContext, string planUniqueName, bool dryRun = false,
             string requestNumber = null, Dictionary<string, string> dynamicParameters = null, bool postDynamicParameters = false,
-            string nodeUrl = null)
+            string nodeUrlSchemeHostPort = null, Uri referrer = null)
         {
             _dal.HasAccessOrException( securityContext, planUniqueName );
 
@@ -69,20 +69,14 @@ namespace Synapse.Services
                 //plan.Name += "foo";  //testing: intentionally crash the sig
             }
 
-            if( !string.IsNullOrWhiteSpace( nodeUrl ) )
-                nodeUrl = SynapseServer.Config.Controller.NodeUrl;
-
-            new NodeServiceHttpApiClient( nodeUrl ).StartPlan( plan, plan.InstanceId, dryRun, dynamicParameters, postDynamicParameters );
+            GetNodeClientInstance( nodeUrlSchemeHostPort, referrer ).StartPlan( plan, plan.InstanceId, dryRun, dynamicParameters, postDynamicParameters );
 
             return plan.InstanceId;
         }
 
-        public void CancelPlan(long instanceId, string nodeUrl = null)
+        public void CancelPlan(long instanceId, string nodeUrlSchemeHostPort = null, Uri referrer = null)
         {
-            if( !string.IsNullOrWhiteSpace( nodeUrl ) )
-                nodeUrl = SynapseServer.Config.Controller.NodeUrl;
-
-            new NodeServiceHttpApiClient( nodeUrl ).CancelPlanAsync( instanceId );
+            GetNodeClientInstance( nodeUrlSchemeHostPort, referrer ).CancelPlanAsync( instanceId );
         }
 
         public Plan GetPlanStatus(string planUniqueName, long planInstanceId)
@@ -155,6 +149,18 @@ namespace Synapse.Services
                 return results[0];
             else
                 return results;
+        }
+
+        NodeServiceHttpApiClient GetNodeClientInstance(string nodeUrlSchemeHostPort, Uri referrer)
+        {
+            if( string.IsNullOrWhiteSpace( nodeUrlSchemeHostPort ) )
+                nodeUrlSchemeHostPort = SynapseServer.Config.Controller.NodeUrl;
+            else
+                nodeUrlSchemeHostPort = $"{nodeUrlSchemeHostPort}/synapse/node";
+
+            NodeServiceHttpApiClient nodeClient = new NodeServiceHttpApiClient( nodeUrlSchemeHostPort );
+            nodeClient.Headers.Referrer = referrer;
+            return nodeClient;
         }
     }
 }
