@@ -14,19 +14,20 @@ namespace Synapse.Services
         LogUtility _log = new LogUtility();
         DirectoryInfo _logRootPath = null;
         bool _wantsCancel = false;
+        string _url = null;
 
         ControllerServiceHttpApiClient _controllerService = null;
 
         public PlanRuntimePod(Plan plan, bool isDryRun = false, Dictionary<string, string> dynamicParameters = null, long planInstanceId = 0, Uri referrer = null)
         {
             #region setup ControllerServiceHttpApiClient
-            string url = referrer != null ? $"{referrer.Scheme}://{referrer.Host}:{referrer.Port}/synapse/execute" : null;
+            _url = referrer != null ? $"{referrer.Scheme}://{referrer.Host}:{referrer.Port}/synapse/execute" : null;
 
             if( !string.IsNullOrWhiteSpace( SynapseServer.Config.Node.ControllerUrl ) )
-                url = SynapseServer.Config.Node.ControllerUrl;
+                _url = SynapseServer.Config.Node.ControllerUrl;
 
-            if( !string.IsNullOrWhiteSpace( url ) )
-                _controllerService = new ControllerServiceHttpApiClient( url );
+            if( !string.IsNullOrWhiteSpace( _url ) )
+                _controllerService = new ControllerServiceHttpApiClient( _url );
             else
                 throw new Exception( "Could not initialize ControllerServiceHttpApiClient from Referrer or Config.Node.ControllerUrl." );
             #endregion
@@ -67,6 +68,8 @@ namespace Synapse.Services
 
         public void Start(CancellationToken token, Action<IPlanRuntimeContainer> callback)
         {
+            SynapseServer.Logger.Info( $"Starting {PlanInstanceId}_{Plan.Name}, Responding to ControllerService: {_url}" );
+
             token.Register( () => CancelPlanExecution() );
             Plan.Start( DynamicParameters, IsDryRun );
 
