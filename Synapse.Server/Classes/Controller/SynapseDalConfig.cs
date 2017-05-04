@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using Synapse.Core.Utilities;
+using Synapse.Services.Controller.Dal;
 
 namespace Synapse.Services
 {
@@ -22,7 +23,7 @@ namespace Synapse.Services
         public string LdapRoot { get; set; }
         internal bool HasLdapRoot { get { return !string.IsNullOrWhiteSpace( LdapRoot ); } }
 
-        public object Config { get; set; } = true;
+        public object Config { get; set; }
         internal bool HasConfig { get { return Config != null; } }
 
 
@@ -40,7 +41,7 @@ namespace Synapse.Services
             string n = "c_";
             values[n + nameof( c.LdapRoot )] = c.LdapRoot;
             values[n + nameof( c.Type )] = c.Type;
-            values[n + nameof( c.Config )] = c.Config.ToString();
+            values[n + nameof( c.Config )] = c.Config?.ToString();
 
             return values;
         }
@@ -76,10 +77,19 @@ namespace Synapse.Services
             if( value.HasLdapRoot )
                 LdapRoot = value.LdapRoot;
 
+            string type = DefaultType;
             if( value.HasType )
-                Type = value.Type;
+                Type = type = value.Type;
 
-            //if( value.TestSetSignPlanString )
+            try
+            {
+                IControllerDal dal = AssemblyLoader.Load<IControllerDal>( type, DefaultType );
+                Config = dal.GetDefaultConfig();
+            }
+            catch { }
+
+
+            //if( value.TestSetConfigString )
             //    Config = value.Config;
         }
     }

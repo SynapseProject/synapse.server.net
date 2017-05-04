@@ -51,7 +51,8 @@ namespace Synapse.Services
         internal bool HasServiceNameDefaults {get { return ServiceName == defaultServiceName || ServiceDisplayName == defaultServiceDisplayName; } }
 
 
-        public ServerRole ServerRole { get; set; } = ServerRole.Controller;
+        ServerRole _serverRole= ServerRole.Controller;
+        public ServerRole ServerRole { get { return _serverRole; } set { _serverRole = value; ServerRoleString = _serverRole.ToString(); } } 
         internal string ServerRoleString { get; set; } = "Controller";
         internal bool TestSetServerRoleString
         {
@@ -140,12 +141,16 @@ namespace Synapse.Services
             YamlHelpers.SerializeFile( FileName, this, serializeAsJson: false, emitDefaultValues: true );
         }
 
-        public static SynapseServerConfig Deserialze()
+        public static SynapseServerConfig Deserialze(ServerRole serverRole = ServerRole.Controller)
         {
-            if( !File.Exists( FileName ) )
-                new SynapseServerConfig().Serialize();
+            SynapseServerConfig config = null;
 
-            return YamlHelpers.DeserializeFile<SynapseServerConfig>( FileName );
+            if( !File.Exists( FileName ) )
+                config = Configure( new SynapseServerConfig() { ServerRole = serverRole } );
+            else
+                config = YamlHelpers.DeserializeFile<SynapseServerConfig>( FileName );
+
+            return config;
         }
 
         public static Dictionary<string, string> GetConfigDefaultValues(ServerRole serverRole)
@@ -215,9 +220,15 @@ namespace Synapse.Services
                 c.SignatureCspProviderFlagsString = values[nameof( c.SignatureCspProviderFlags ).ToLower()];
 
 
-            c.Controller.Configure( values );
+            if( (serverRole & ServerRole.Controller) == ServerRole.Controller )
+                c.Controller.Configure( values );
+            else
+                c.Controller = null;
 
-            c.Node.Configure( values );
+            if( (serverRole & ServerRole.Node) == ServerRole.Node )
+                c.Node.Configure( values );
+            else
+                c.Node = null;
 
             return Configure( c );
         }
@@ -259,9 +270,16 @@ namespace Synapse.Services
                 config.SignatureCspProviderFlags = value.SignatureCspProviderFlags;
 
 
-            config.Controller.Configure( value.Controller );
+            if( (value.ServerRole & ServerRole.Controller) == ServerRole.Controller )
+                config.Controller.Configure( value.Controller );
+            else
+                config.Controller = null;
 
-            config.Node.Configure( value.Node );
+            if( (value.ServerRole & ServerRole.Node) == ServerRole.Node )
+                config.Node.Configure( value.Node );
+            else
+                config.Node = null;
+
 
             config.Serialize();
 

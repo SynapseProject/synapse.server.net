@@ -58,6 +58,11 @@ namespace Synapse.Services.Controller.Dal
             ProcessActionsOnSingleton = processActionsOnSingleton;
         }
 
+        public object GetDefaultConfig()
+        {
+            return null;
+        }
+
         public Dictionary<string, string> Configure(ISynapseDalConfig conifg)
         {
             return null;

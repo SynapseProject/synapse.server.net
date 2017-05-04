@@ -3,19 +3,19 @@ using System.Collections.Generic;
 
 namespace Synapse.Services.Controller.Dal
 {
-    public class FileSystemDalSettings
+    public class FileSystemDalConfig
     {
-        public string PlanFolderPath { get; set; } = "\\Plans";
-        public string HistoryFolderPath { get; set; } = "\\History";
+        public string PlanFolderPath { get; set; } = "Plans";
+        public string HistoryFolderPath { get; set; } = "History";
         public bool ProcessPlansOnSingleton { get; set; } = false;
         public bool ProcessActionsOnSingleton { get; set; } = true;
 
-        public SecuritySettings Security { get; set; } = new SecuritySettings();
+        public SecurityConfig Security { get; set; } = new SecurityConfig();
     }
 
-    public class SecuritySettings
+    public class SecurityConfig
     {
-        public string FilePath { get; set; }= "\\Security";
+        public string FilePath { get; set; }= "Security";
         public bool IsRequired { get; set; } = true;
         public bool ValidateSignature { get; set; } = false;
         public string SignaturePublicKeyFile { get; set; }
