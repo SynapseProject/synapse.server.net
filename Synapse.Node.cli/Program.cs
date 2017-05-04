@@ -60,7 +60,7 @@ namespace Synapse.Services.NodeService.Cli
             _methods.Add( "QueueItems", "GetCurrentQueueItems" );
             _methods.Add( "qi", "GetCurrentQueueItems" );
 
-            SynapseServerConfig config = SynapseServerConfig.Deserialze();
+            SynapseServerConfig config = SynapseServerConfig.Deserialze( ServerRole.Node );
             BaseUrl = $"http://localhost:{config.WebApiPort}/synapse/node";
         }
 

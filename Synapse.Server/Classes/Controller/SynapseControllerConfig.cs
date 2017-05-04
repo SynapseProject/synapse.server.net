@@ -78,7 +78,10 @@ namespace Synapse.Services
             if( value.TestSetSignPlanString )
                 SignPlan = value.SignPlan;
 
-            //xxx.Dal.Configure( value.Dal );
+            if( Dal == null )
+                Dal = new SynapseDalConfig();
+
+            Dal.Configure( value.Dal );
         }
     }
 }

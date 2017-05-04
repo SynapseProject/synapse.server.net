@@ -9,6 +9,7 @@ namespace Synapse.Services.Controller.Dal
 {
     public interface IControllerDal
     {
+        object GetDefaultConfig();
         Dictionary<string, string> Configure(ISynapseDalConfig conifg);
 
 
