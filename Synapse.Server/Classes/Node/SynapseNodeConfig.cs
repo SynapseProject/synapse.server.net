@@ -65,7 +65,7 @@ namespace Synapse.Services
             }
         }
 
-        public string ControllerUrl { get; set; } = "http://localhost:20000/synapse/execute";
+        public string ControllerUrl { get; set; }
         internal bool HasControllerUrl { get { return !string.IsNullOrWhiteSpace( ControllerUrl ); } }
 
 
