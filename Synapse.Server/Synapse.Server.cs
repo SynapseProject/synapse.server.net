@@ -94,6 +94,15 @@ namespace Synapse.Services
 
         public static void RunConsole()
         {
+            if( !Environment.UserInteractive )
+            {
+                string msg = "This is a Debug build of SynapseServer and will not run as Service.";
+                Logger.Fatal( msg );
+                new SynapseServer().WriteEventLog( msg );
+
+                Environment.Exit( 1 );
+            }
+
             Config = SynapseServerConfig.Deserialze();
             ConsoleColor current = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.Green;
