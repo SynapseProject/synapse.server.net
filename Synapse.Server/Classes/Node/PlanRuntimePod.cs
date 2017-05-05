@@ -23,6 +23,9 @@ namespace Synapse.Services
             #region setup ControllerServiceHttpApiClient
             _url = referrer != null ? $"{referrer.Scheme}://{referrer.Host}:{referrer.Port}/synapse/execute" : null;
 
+            string referrerMsg = referrer == null ? "Referrer is [null]" : $"Referrer is [{referrer.AbsoluteUri}]";
+            SynapseServer.Logger.Info( referrerMsg );
+
             if( !string.IsNullOrWhiteSpace( SynapseServer.Config.Node.ControllerUrl ) )
                 _url = SynapseServer.Config.Node.ControllerUrl;
 

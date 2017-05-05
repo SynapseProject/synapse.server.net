@@ -158,6 +158,8 @@ namespace Synapse.Services
             else
                 nodeUrlSchemeHostPort = $"{nodeUrlSchemeHostPort}/synapse/node";
 
+            SynapseServer.Logger.Info( $"nodeClient.Headers.Referrer: {referrer.AbsoluteUri}" );
+
             NodeServiceHttpApiClient nodeClient = new NodeServiceHttpApiClient( nodeUrlSchemeHostPort );
             nodeClient.Headers.Referrer = referrer;
             return nodeClient;
