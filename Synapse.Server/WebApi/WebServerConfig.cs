@@ -4,6 +4,7 @@ using System.Net;
 using System.Web.Http;
 using System.Web.Http.Dispatcher;
 using Owin;
+using Swashbuckle.Application;
 
 namespace Synapse.Services
 {
@@ -37,6 +38,9 @@ namespace Synapse.Services
 
             var appXmlType = config.Formatters.XmlFormatter.SupportedMediaTypes.FirstOrDefault( t => t.MediaType == "application/xml" );
             config.Formatters.XmlFormatter.SupportedMediaTypes.Remove( appXmlType );
+
+            config.EnableSwagger( x => x.SingleApiVersion( "v1", "Synapse Server" ) ).EnableSwaggerUi();
+
 
             app.UseWebApi( config );
         }
