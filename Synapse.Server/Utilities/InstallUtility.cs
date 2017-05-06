@@ -13,11 +13,19 @@ namespace Synapse.Services
         {
             message = null;
 
-            bool ok = InstallService( install: true, serverRole: serverRole, configValues: configValues, message: out message );
-
+            const string run = "run";
             bool startService = true;
-            if( configValues.ContainsKey( "run" ) )
-                bool.TryParse( configValues["run"], out startService );
+            if( configValues.ContainsKey( run ) )
+            {
+                bool.TryParse( configValues[run], out startService );
+
+                configValues.Remove( run );
+            }
+
+            if( configValues.Count == 0 )
+                configValues = null;
+
+            bool ok = InstallService( install: true, serverRole: serverRole, configValues: configValues, message: out message );
 
             if( ok && startService )
                 try

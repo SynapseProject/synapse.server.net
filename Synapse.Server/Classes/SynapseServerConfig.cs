@@ -145,8 +145,10 @@ namespace Synapse.Services
         {
             SynapseServerConfig config = null;
 
+            int port = serverRole == ServerRole.Controller ? 20000 : 20001;
+
             if( !File.Exists( FileName ) )
-                config = Configure( new SynapseServerConfig() { ServerRole = serverRole } );
+                config = Configure( new SynapseServerConfig() { ServerRole = serverRole, WebApiPortString = port.ToString() } );
             else
                 config = YamlHelpers.DeserializeFile<SynapseServerConfig>( FileName );
 
