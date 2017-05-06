@@ -110,6 +110,9 @@ namespace Synapse.Services
             }
         }
 
+        public object AuthenticationConfig { get; set; }
+
+
         public string SignatureKeyFile { get; set; }
         internal bool HasSignatureKeyFile { get { return !string.IsNullOrWhiteSpace( SignatureKeyFile ); } }
 

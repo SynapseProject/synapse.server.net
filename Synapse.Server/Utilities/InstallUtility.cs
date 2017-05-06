@@ -12,18 +12,21 @@ namespace Synapse.Services
         public static bool InstallAndStartService(ServerRole serverRole, Dictionary<string, string> configValues, out string message)
         {
             message = null;
-
-            const string run = "run";
             bool startService = true;
-            if( configValues.ContainsKey( run ) )
+
+            if( configValues != null )
             {
-                bool.TryParse( configValues[run], out startService );
+                const string run = "run";
+                if( configValues.ContainsKey( run ) )
+                {
+                    bool.TryParse( configValues[run], out startService );
+                    configValues.Remove( run );
+                }
 
-                configValues.Remove( run );
+                //InstallService expects configValues to be null to skip processing it
+                if( configValues.Count == 0 )
+                    configValues = null;
             }
-
-            if( configValues.Count == 0 )
-                configValues = null;
 
             bool ok = InstallService( install: true, serverRole: serverRole, configValues: configValues, message: out message );
 

@@ -33,8 +33,16 @@ namespace Synapse.Services
                 defaults: new { id = RouteParameter.Optional }
             );
 
-            config.MessageHandlers
-                   .Add( new RawContentHandler() );
+            config.MessageHandlers.Add( new RawContentHandler() );
+
+            if( SynapseServer.Config.ServerIsController && SynapseServer.Config.AuthenticationScheme == AuthenticationSchemes.Basic )
+            {
+                IAuthenticationProvider auth = AuthenticationProviderUtil.GetInstance(
+                    "Synapse.Authentication", "Synapse.Authentication.AuthenticationProvider", config );
+                string authConfig = Core.Utilities.YamlHelpers.Serialize( SynapseServer.Config.AuthenticationConfig );
+                BasicAuthenticationConfig ac = Core.Utilities.YamlHelpers.Deserialize<BasicAuthenticationConfig>( authConfig );
+                auth.ConfigureBasicAuthentication( ac.LdapRoot, ac.Domain, ac.RequireSsl );
+            }
 
             var appXmlType = config.Formatters.XmlFormatter.SupportedMediaTypes.FirstOrDefault( t => t.MediaType == "application/xml" );
             config.Formatters.XmlFormatter.SupportedMediaTypes.Remove( appXmlType );

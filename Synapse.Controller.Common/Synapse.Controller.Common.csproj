@@ -51,6 +51,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Classes\Interfaces\IAuthenticationProvider.cs" />
     <Compile Include="Classes\Interfaces\IConfigurationProvider.cs" />
     <Compile Include="Classes\Interfaces\ISynapseDalConfig.cs" />
     <Compile Include="Classes\PermissionSet.cs" />
