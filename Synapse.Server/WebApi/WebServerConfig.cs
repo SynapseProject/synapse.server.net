@@ -41,13 +41,15 @@ namespace Synapse.Services
                     "Synapse.Authentication", "Synapse.Authentication.AuthenticationProvider", config );
                 string authConfig = Core.Utilities.YamlHelpers.Serialize( SynapseServer.Config.AuthenticationConfig );
                 BasicAuthenticationConfig ac = Core.Utilities.YamlHelpers.Deserialize<BasicAuthenticationConfig>( authConfig );
-                auth.ConfigureBasicAuthentication( ac.LdapRoot, ac.Domain, ac.RequireSsl );
+                auth.ConfigureBasicAuthentication( ac.LdapRoot, ac.Domain, SynapseServer.Config.WebApiIsSecure );
             }
 
             var appXmlType = config.Formatters.XmlFormatter.SupportedMediaTypes.FirstOrDefault( t => t.MediaType == "application/xml" );
             config.Formatters.XmlFormatter.SupportedMediaTypes.Remove( appXmlType );
 
             config.EnableSwagger( x => x.SingleApiVersion( "v1", "Synapse Server" ) ).EnableSwaggerUi();
+            //didn't work :(.
+            //config.EnableSwagger( "synapse/{apiVersion}/swagger", x => x.SingleApiVersion( "v1", "Synapse Server" ) ).EnableSwaggerUi( "synapse/swagger/ui/{*assetPath}" );
 
 
             app.UseWebApi( config );

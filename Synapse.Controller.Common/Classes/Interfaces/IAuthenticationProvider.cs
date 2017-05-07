@@ -12,7 +12,7 @@ namespace Synapse.Services
     {
         public string LdapRoot { get; set; }
         public string Domain { get; set; }
-        public bool RequireSsl { get; set; } = true;
+        //public bool RequireSsl { get; set; } = true;
     }
 
     public class AuthenticationProviderUtil
