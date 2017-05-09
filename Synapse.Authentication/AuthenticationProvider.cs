@@ -30,7 +30,7 @@ namespace Synapse.Authentication
 
         public bool IsAuthenticated(string ldapRoot, string domain, string username, string password)
         {
-            string domainAndUsername = domain + @"\" + username;
+            string domainAndUsername = username.StartsWith( domain + @"\" ) ? username : domain + @"\" + username;
             DirectoryEntry entry = new DirectoryEntry( ldapRoot, domainAndUsername, password );
 
             try
