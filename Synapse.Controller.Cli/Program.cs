@@ -66,7 +66,7 @@ namespace Synapse.Services.Controller.Cli
             _methods.Add( "c", "CancelPlan" );
 
             SynapseServerConfig config = SynapseServerConfig.Deserialze( ServerRole.Controller );
-            BaseUrl = $"http://localhost:{config.WebApiPort}/synapse/execute";
+            BaseUrl = $"http://localhost:{config.WebApi.Port}/synapse/execute";
         }
 
 
@@ -284,11 +284,11 @@ namespace Synapse.Services.Controller.Cli
         #region Help
         protected override void WriteHelpAndExit(string errorMessage = null)
         {
-            Dictionary<string, string> cdf = SynapseServerConfig.GetConfigDefaultValues( serverRole: ServerRole.Controller );
             StringBuilder df = new StringBuilder();
-            df.AppendFormat( "{0,-15}- Optional install args, use argname:value.  Defaults shown.\r\n", "" );
-            foreach( string key in cdf.Keys )
-                df.AppendLine( $"                 - {key}:{cdf[key]}" );
+            ////Dictionary<string, string> cdf = SynapseServerConfig.GetConfigDefaultValues( serverRole: ServerRole.Controller );
+            ////df.AppendFormat( "{0,-15}- Optional install args, use argname:value.  Defaults shown.\r\n", "" );
+            ////foreach( string key in cdf.Keys )
+            ////    df.AppendLine( $"                 - {key}:{cdf[key]}" );
             df.AppendLine( $"                 - Run:true  (Optionally Starts the Windows Service)\r\n" );
 
             bool haveError = !string.IsNullOrWhiteSpace( errorMessage );

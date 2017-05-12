@@ -137,10 +137,10 @@ namespace Synapse.Services
             {
                 SynapseServer.Logger.Debug( $"Checking Plan signature on {plan.Name}/{plan.InstanceId}." );
 
-                if( !File.Exists( SynapseServer.Config.SignatureKeyFile ) )
-                    throw new FileNotFoundException( SynapseServer.Config.SignatureKeyFile );
+                if( !File.Exists( SynapseServer.Config.Signature.KeyUri ) )
+                    throw new FileNotFoundException( SynapseServer.Config.Signature.KeyUri );
 
-                if( !plan.VerifySignature( SynapseServer.Config.SignatureKeyContainerName, SynapseServer.Config.SignatureKeyFile, SynapseServer.Config.SignatureCspProviderFlags ) )
+                if( !plan.VerifySignature( SynapseServer.Config.Signature.KeyContainerName, SynapseServer.Config.Signature.KeyUri, SynapseServer.Config.Signature.CspProviderFlags ) )
                     throw new System.Security.SecurityException( $"Plan signature validation failed on {plan.Name}/{plan.InstanceId}." );
                 else
                     SynapseServer.Logger.Debug( $"Plan signature validation succeeded on {plan.Name}/{plan.InstanceId}." );

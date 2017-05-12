@@ -9,7 +9,7 @@ using Synapse.Core.Utilities;
 namespace Synapse.Services
 {
     /// <summary>
-    /// Hold the startup config for Synapse.Server; written as an independent class (not using .NET config) for cross-platform compatibility.
+    /// Holds the startup config for Synapse.Server; written as an independent class (not using .NET config) for cross-platform compatibility.
     /// </summary>
     public class SynapseServerConfig
     {
@@ -19,122 +19,9 @@ namespace Synapse.Services
         public static readonly string FileName = $"{Path.GetDirectoryName( typeof( SynapseServerConfig ).Assembly.Location )}\\Synapse.Server.config.yaml";
 
 
-        internal static readonly string defaultServiceName = "Synapse.[Controller/Node]";
-        public string ServiceName { get; set; } = defaultServiceName;
-        internal bool HasServiceName { get { return !string.IsNullOrWhiteSpace( ServiceName ); } }
-        internal string ServiceNameValue
-        {
-            get
-            {
-                if( ServiceName == defaultServiceName )
-                    return ServerIsController ? "Synapse.Controller" : "Synapse.Node";
-                else
-                    return ServiceName;
-            }
-        }
-
-
-        internal static readonly string defaultServiceDisplayName = "Synapse [Controller/Node]";
-        public string ServiceDisplayName { get; set; } = defaultServiceDisplayName;
-        internal bool HasServiceDisplayName { get { return !string.IsNullOrWhiteSpace( ServiceDisplayName ); } }
-        internal string ServiceDisplayNameValue
-        {
-            get
-            {
-                if( ServiceDisplayName == defaultServiceDisplayName )
-                    return ServerIsController ? "Synapse Controller" : "Synapse Node";
-                else
-                    return ServiceDisplayName;
-            }
-        }
-
-        internal bool HasServiceNameDefaults {get { return ServiceName == defaultServiceName || ServiceDisplayName == defaultServiceDisplayName; } }
-
-
-        ServerRole _serverRole= ServerRole.Controller;
-        public ServerRole ServerRole { get { return _serverRole; } set { _serverRole = value; ServerRoleString = _serverRole.ToString(); } } 
-        internal string ServerRoleString { get; set; } = "Controller";
-        internal bool TestSetServerRoleString
-        {
-            get
-            {
-                ServerRole v = ServerRole;
-                bool ok = Enum.TryParse( ServerRoleString, true, out v );
-                if( ok )
-                    ServerRole = v;
-                return ok;
-            }
-        }
-        internal bool ServerIsController { get { return ServerRole == ServerRole.Controller; } }
-
-        public int WebApiPort { get; set; } = 20000;
-        internal string WebApiPortString { get; set; } = "20000";
-        internal bool TestSetWebApiPortString
-        {
-            get
-            {
-                int port = WebApiPort;
-                bool ok = int.TryParse( WebApiPortString, out port );
-                if( ok )
-                    WebApiPort = port;
-                return ok;
-            }
-        }
-
-        public bool WebApiIsSecure { get; set; }
-        internal string WebApiIsSecureString { get; set; } = "false";
-        internal bool TestSetWebApiIsSecureString
-        {
-            get
-            {
-                bool v = WebApiIsSecure;
-                bool ok = bool.TryParse( WebApiIsSecureString, out v );
-                if( ok )
-                    WebApiIsSecure = v;
-                return ok;
-            }
-        }
-
-
-        public AuthenticationSchemes AuthenticationScheme { get; set; } = AuthenticationSchemes.IntegratedWindowsAuthentication;
-        internal string AuthenticationSchemeString { get; set; } = AuthenticationSchemes.IntegratedWindowsAuthentication.ToString();
-        internal bool TestSetAuthenticationSchemeString
-        {
-            get
-            {
-                AuthenticationSchemes scheme = AuthenticationScheme;
-                bool ok = Enum.TryParse( AuthenticationSchemeString, true, out scheme );
-                if( ok )
-                    AuthenticationScheme = scheme;
-                return ok;
-            }
-        }
-
-        public object AuthenticationConfig { get; set; }
-
-
-        public string SignatureKeyFile { get; set; }
-        internal bool HasSignatureKeyFile { get { return !string.IsNullOrWhiteSpace( SignatureKeyFile ); } }
-
-        public string SignatureKeyContainerName { get; set; } = "DefaultContainerName";
-        internal bool HasSignatureKeyContainerName { get { return !string.IsNullOrWhiteSpace( SignatureKeyContainerName ); } }
-
-        public CspProviderFlags SignatureCspProviderFlags { get; set; }
-        internal string SignatureCspProviderFlagsString { get; set; } = CspProviderFlags.NoFlags.ToString();
-        internal bool TestSignatureCspProviderFlagsString
-        {
-            get
-            {
-                CspProviderFlags flags = SignatureCspProviderFlags;
-                bool ok = Enum.TryParse( SignatureCspProviderFlagsString, true, out flags );
-                if( ok )
-                    SignatureCspProviderFlags = flags;
-                return ok;
-            }
-        }
-
-
-
+        public ServiceConfig Service { get; set; } = new ServiceConfig();
+        public WebApiConfig WebApi { get; set; } = new WebApiConfig();
+        public SignatureConfig Signature { get; set; } = new SignatureConfig();
         public SynapseControllerConfig Controller { get; set; } = new SynapseControllerConfig();
         public SynapseNodeConfig Node { get; set; } = new SynapseNodeConfig();
 
@@ -151,144 +38,75 @@ namespace Synapse.Services
             int port = serverRole == ServerRole.Controller ? 20000 : 20001;
 
             if( !File.Exists( FileName ) )
-                config = Configure( new SynapseServerConfig() { ServerRole = serverRole, WebApiPortString = port.ToString() } );
+            {
+                config = new SynapseServerConfig();
+                YamlHelpers.SerializeFile( FileName, config, emitDefaultValues: true );
+            }
             else
                 config = YamlHelpers.DeserializeFile<SynapseServerConfig>( FileName );
 
             return config;
         }
 
-        public static Dictionary<string, string> GetConfigDefaultValues(ServerRole serverRole)
+        //public static Dictionary<string, string> GetConfigDefaultValues(ServerRole serverRole)
+        //{
+        //    return new SynapseServerConfig();
+        //}
+    }
+
+    public class ServiceConfig
+    {
+        internal static readonly string defaultName = "Synapse.[Controller/Node]";
+        internal static readonly string defaultDisplayName = "Synapse [Controller/Node]";
+
+        public string Name { get; set; } = defaultName;
+        public string DisplayName { get; set; } = defaultDisplayName;
+
+        internal bool HasServiceNameDefaults { get { return Name == defaultName || DisplayName == defaultDisplayName; } }
+
+        public ServerRole Role { get; set; }
+        internal bool ServerIsController { get { return Role == ServerRole.Controller; } }
+    }
+
+    public class WebApiConfig
+    {
+        internal static string localhost = "localhost";
+        public string Host { get; set; } = localhost;
+        public string GetHost(bool isUserInteractive)
         {
-            Dictionary<string, string> values = new Dictionary<string, string>();
-
-            SynapseServerConfig c = new SynapseServerConfig();
-            c.ServerRole = serverRole;
-            c.ServiceName = $"Synapse.{serverRole}";
-            c.ServiceDisplayName = $"Synapse {serverRole}";
-            if( !c.ServerIsController )
-                c.WebApiPort = 20001;
-
-            values[nameof( c.ServiceName )] = c.ServiceName;
-            values[nameof( c.ServiceDisplayName )] = c.ServiceDisplayName;
-            values[nameof( c.ServerRole )] = c.ServerRole.ToString();
-            values[nameof( c.WebApiPort )] = c.WebApiPort.ToString();
-            values[nameof( c.WebApiIsSecure )] = c.WebApiIsSecure.ToString();
-            values[nameof( c.AuthenticationScheme )] = c.AuthenticationScheme.ToString();
-            values[nameof( c.SignatureKeyFile )] = c.SignatureKeyFile;
-            values[nameof( c.SignatureKeyContainerName )] = c.SignatureKeyContainerName;
-            values[nameof( c.SignatureCspProviderFlags )] = c.SignatureCspProviderFlags.ToString();
-
-            foreach( KeyValuePair<string, string> kvp in SynapseControllerConfig.GetConfigDefaultValues() )
-                values[kvp.Key] = kvp.Value;
-
-            foreach( KeyValuePair<string, string> kvp in SynapseNodeConfig.GetConfigDefaultValues() )
-                values[kvp.Key] = kvp.Value;
-
-            return values;
+            string host = Host.ToLower();
+            if( host == localhost || host == "*" )
+                Host = isUserInteractive ? localhost : "*";
+            return Host;
         }
 
-        public static SynapseServerConfig Configure(ServerRole serverRole, Dictionary<string, string> values)
+        public int Port { get; set; } = 20000;
+        public bool IsSecure { get; set; } = false;
+
+        public AuthenticationConfig Authentication { get; set; }
+
+
+        public string ToUri(bool isUserInteractive)
         {
-            Dictionary<string, string> defaults = GetConfigDefaultValues( serverRole );
-            foreach( string key in defaults.Keys )
-                if( !values.ContainsKey( key.ToLower() ) )
-                    values.Add( key.ToLower(), defaults[key] );
-
-            SynapseServerConfig c = new SynapseServerConfig();
-
-            if( values.ContainsKey( nameof( c.ServiceName ).ToLower() ) )
-                c.ServiceName = values[nameof( c.ServiceName ).ToLower()];
-
-            if( values.ContainsKey( nameof( c.ServiceDisplayName ).ToLower() ) )
-                c.ServiceDisplayName = values[nameof( c.ServiceDisplayName ).ToLower()];
-
-            if( values.ContainsKey( nameof( c.ServerRole ).ToLower() ) )
-                c.ServerRoleString = values[nameof( c.ServerRole ).ToLower()];
-
-            if( values.ContainsKey( nameof( c.WebApiPort ).ToLower() ) )
-                c.WebApiPortString = values[nameof( c.WebApiPort ).ToLower()];
-
-            if( values.ContainsKey( nameof( c.WebApiIsSecure ).ToLower() ) )
-                c.WebApiIsSecureString = values[nameof( c.WebApiIsSecure ).ToLower()];
-
-            if( values.ContainsKey( nameof( c.AuthenticationScheme ).ToLower() ) )
-                c.AuthenticationSchemeString = values[nameof( c.AuthenticationScheme ).ToLower()];
-
-            if( values.ContainsKey( nameof( c.SignatureKeyFile ).ToLower() ) )
-                c.SignatureKeyFile = values[nameof( c.SignatureKeyFile ).ToLower()];
-
-            if( values.ContainsKey( nameof( c.SignatureKeyContainerName ).ToLower() ) )
-                c.SignatureKeyContainerName = values[nameof( c.SignatureKeyContainerName ).ToLower()];
-
-            if( values.ContainsKey( nameof( c.SignatureCspProviderFlags ).ToLower() ) )
-                c.SignatureCspProviderFlagsString = values[nameof( c.SignatureCspProviderFlags ).ToLower()];
-
-
-            if( (serverRole & ServerRole.Controller) == ServerRole.Controller )
-                c.Controller.Configure( values );
-            else
-                c.Controller = null;
-
-            if( (serverRole & ServerRole.Node) == ServerRole.Node )
-                c.Node.Configure( values );
-            else
-                c.Node = null;
-
-            return Configure( c );
+            string protocol = IsSecure ? "https" : "http";
+            string host = GetHost( isUserInteractive );
+            return $"{protocol}://{host}:{Port}";
         }
+    }
 
-        public static SynapseServerConfig Configure(SynapseServerConfig value)
-        {
-            //initialize with defaults
-            SynapseServerConfig config = new SynapseServerConfig();
-            //ovrride defaults with file values
-            if( File.Exists( FileName ) )
-                config = YamlHelpers.DeserializeFile<SynapseServerConfig>( FileName );
+    public class AuthenticationConfig
+    {
+        public AuthenticationSchemes Scheme { get; set; } = AuthenticationSchemes.IntegratedWindowsAuthentication;
 
-            //configure with anything provided
-            if( value.HasServiceName && !(value.ServiceName == config.ServiceName) )
-                config.ServiceName = value.ServiceName;
+        public object Config { get; set; }
+    }
 
-            if( value.HasServiceDisplayName && !(value.ServiceDisplayName == config.ServiceDisplayName) )
-                config.ServiceDisplayName = value.ServiceDisplayName;
+    public class SignatureConfig
+    {
+        public string KeyUri { get; set; }
 
-            if( value.TestSetServerRoleString && !(value.ServerRole == config.ServerRole) )
-                config.ServerRole = value.ServerRole;
+        public string KeyContainerName { get; set; } = "DefaultContainerName";
 
-            if( value.TestSetWebApiPortString && !(value.WebApiPort == config.WebApiPort) )
-                config.WebApiPort = value.WebApiPort;
-
-            if( value.TestSetWebApiIsSecureString && !(value.WebApiIsSecure == config.WebApiIsSecure) )
-                config.WebApiIsSecure = value.WebApiIsSecure;
-
-            if( value.TestSetAuthenticationSchemeString && !(value.AuthenticationScheme == config.AuthenticationScheme) )
-                config.AuthenticationScheme = value.AuthenticationScheme;
-
-            if( value.HasSignatureKeyFile && !(value.SignatureKeyFile == config.SignatureKeyFile) )
-                config.SignatureKeyFile = value.SignatureKeyFile;
-
-            if( value.HasSignatureKeyContainerName && !(value.SignatureKeyContainerName == config.SignatureKeyContainerName) )
-                config.SignatureKeyContainerName = value.SignatureKeyContainerName;
-
-            if( value.TestSignatureCspProviderFlagsString && !(value.SignatureCspProviderFlags == config.SignatureCspProviderFlags) )
-                config.SignatureCspProviderFlags = value.SignatureCspProviderFlags;
-
-
-            if( (value.ServerRole & ServerRole.Controller) == ServerRole.Controller )
-                config.Controller.Configure( value.Controller );
-            else
-                config.Controller = null;
-
-            if( (value.ServerRole & ServerRole.Node) == ServerRole.Node )
-                config.Node.Configure( value.Node );
-            else
-                config.Node = null;
-
-
-            config.Serialize();
-
-            return config;
-        }
+        public CspProviderFlags CspProviderFlags { get; set; } = CspProviderFlags.NoFlags;
     }
 }

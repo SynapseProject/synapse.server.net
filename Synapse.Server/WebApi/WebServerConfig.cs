@@ -13,12 +13,12 @@ namespace Synapse.Services
         public void Configuration(IAppBuilder app)
         {
             HttpListener listener = (HttpListener)app.Properties["System.Net.HttpListener"];
-            listener.AuthenticationSchemes = SynapseServer.Config.AuthenticationScheme;
+            listener.AuthenticationSchemes = SynapseServer.Config.WebApi.Authentication.Scheme;
 
             // Configure Web API for self-host. 
             HttpConfiguration config = new HttpConfiguration();
 
-            if( SynapseServer.Config.ServerIsController && SynapseServer.Config.Controller.HasAssemblies )
+            if( SynapseServer.Config.Service.ServerIsController && SynapseServer.Config.Controller.HasAssemblies )
                 config.Services.Replace( typeof( IAssembliesResolver ), new CustomAssembliesResolver() );
 
             // Web API configuration and services
@@ -35,13 +35,13 @@ namespace Synapse.Services
 
             config.MessageHandlers.Add( new RawContentHandler() );
 
-            if( SynapseServer.Config.ServerIsController && SynapseServer.Config.AuthenticationScheme == AuthenticationSchemes.Basic )
+            if( SynapseServer.Config.Service.ServerIsController && SynapseServer.Config.WebApi.Authentication.Scheme == AuthenticationSchemes.Basic )
             {
                 IAuthenticationProvider auth = AuthenticationProviderUtil.GetInstance(
                     "Synapse.Authentication", "Synapse.Authentication.AuthenticationProvider", config );
-                string authConfig = Core.Utilities.YamlHelpers.Serialize( SynapseServer.Config.AuthenticationConfig );
+                string authConfig = Core.Utilities.YamlHelpers.Serialize( SynapseServer.Config.WebApi.Authentication.Config );
                 BasicAuthenticationConfig ac = Core.Utilities.YamlHelpers.Deserialize<BasicAuthenticationConfig>( authConfig );
-                auth.ConfigureBasicAuthentication( ac.LdapRoot, ac.Domain, SynapseServer.Config.WebApiIsSecure );
+                auth.ConfigureBasicAuthentication( ac.LdapRoot, ac.Domain, SynapseServer.Config.WebApi.IsSecure );
             }
 
             var appXmlType = config.Formatters.XmlFormatter.SupportedMediaTypes.FirstOrDefault( t => t.MediaType == "application/xml" );

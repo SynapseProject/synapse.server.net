@@ -33,7 +33,7 @@ namespace Synapse.Services
 
             InitializeComponent();
 
-            this.ServiceName = Config.ServiceNameValue;
+            this.ServiceName = Config.Service.Name;
         }
 
         public static void Main(string[] args)
@@ -106,7 +106,7 @@ namespace Synapse.Services
             Config = SynapseServerConfig.Deserialze();
             ConsoleColor current = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine( $"Starting Synapse.Server as {Config?.ServerRole}: Press Ctrl-C/Ctrl-Break to stop." );
+            Console.WriteLine( $"Starting Synapse.Server as {Config?.Service.Role}: Press Ctrl-C/Ctrl-Break to stop." );
             Console.ForegroundColor = current;
 
             using( SynapseServer s = new SynapseServer() )
@@ -127,20 +127,17 @@ namespace Synapse.Services
                 if( _serviceHost != null )
                     _serviceHost.Close();
 
-                if( !Config.ServerIsController )
+                if( !Config.Service.ServerIsController )
                 {
                     NodeController.InitPlanScheduler();
                     NodeController.DrainstopCallback = () => StopCallback();
                 }
 
-                string protocol = Config.WebApiIsSecure ? "https" : "http";
-                string host = Environment.UserInteractive ? "localhost" : "*";
-                string url = $"{protocol}://{host}:{Config.WebApiPort}";
-
+                string url = Config.WebApi.ToUri( Environment.UserInteractive );
                 _webapp = WebApp.Start<WebServerConfig>( url );
                 Logger.Info( $"Listening on {url}" );
 
-                _serviceHost = Config.ServerIsController ?
+                _serviceHost = Config.Service.ServerIsController ?
                     new ServiceHost( typeof( ExecuteController ) ) : new ServiceHost( typeof( NodeController ) );
                 _serviceHost.Open();
 
@@ -240,12 +237,12 @@ namespace Synapse.Services
             bool haveError = !string.IsNullOrWhiteSpace( errorMessage );
 
             MessageBoxIcon icon = MessageBoxIcon.Information;
-            Dictionary<string, string> cdf = SynapseServerConfig.GetConfigDefaultValues( serverRole: ServerRole.Controller );
             StringBuilder df = new StringBuilder();
-            df.AppendLine( $"Optional args for configuring /install, use argname:value.  Defaults shown." );
-            foreach( string key in cdf.Keys )
-                df.AppendLine( $" - {key}:{cdf[key]}" );
-            df.AppendLine( $" - Run:true  (Optionally Starts the Windows Service)" );
+            ////Dictionary<string, string> cdf = SynapseServerConfig.GetConfigDefaultValues( serverRole: ServerRole.Controller );
+            ////df.AppendLine( $"Optional args for configuring /install, use argname:value.  Defaults shown." );
+            ////foreach( string key in cdf.Keys )
+            ////    df.AppendLine( $" - {key}:{cdf[key]}" );
+            ////df.AppendLine( $" - Run:true  (Optionally Starts the Windows Service)" );
 
             string msg = $"synapse.server.exe, Version: {typeof( SynapseServer ).Assembly.GetName().Version}\r\nSyntax:\r\n  synapse.server.exe /install | /uninstall\r\n\r\n{df.ToString()}";
 

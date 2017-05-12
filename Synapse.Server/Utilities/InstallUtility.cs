@@ -33,7 +33,7 @@ namespace Synapse.Services
             if( ok && startService )
                 try
                 {
-                    string sn = SynapseServerConfig.Deserialze().ServiceName;
+                    string sn = SynapseServerConfig.Deserialze().Service.Name;
                     Console.Write( $"\r\nStarting {sn}... " );
                     ServiceController sc = new ServiceController( sn );
                     sc.Start();
@@ -57,7 +57,7 @@ namespace Synapse.Services
 
             try
             {
-                string sn = SynapseServerConfig.Deserialze().ServiceName;
+                string sn = SynapseServerConfig.Deserialze().Service.Name;
                 ServiceController sc = new ServiceController( sn );
                 if( sc.Status == ServiceControllerStatus.Running )
                 {
@@ -81,8 +81,8 @@ namespace Synapse.Services
         //serverRole is ignored on an uninstall
         public static bool InstallService(bool install, ServerRole serverRole, Dictionary<string, string> configValues, out string message)
         {
-            if( configValues != null )
-                SynapseServerConfig.Configure( serverRole, configValues );
+            //if( configValues != null )
+            //    SynapseServerConfig.Configure( serverRole, configValues );
 
             string fullFilePath = typeof( SynapseServerServiceInstaller ).Assembly.Location;
             string logFile = $"Synapse.Server.InstallLog.txt";
@@ -122,24 +122,24 @@ namespace Synapse.Services
             ServiceInstaller serviceInstaller = new ServiceInstaller();
 
             SynapseServerConfig config = SynapseServerConfig.Deserialze();
-            if( config.HasServiceNameDefaults )
-            {
-                config.ServiceName = config.ServiceNameValue;
-                config.ServiceDisplayName = config.ServiceDisplayNameValue;
-                config.Serialize();
-            }
+            ////if( config.HasServiceNameDefaults )
+            ////{
+            ////    config.ServiceName = config.ServiceNameValue;
+            ////    config.ServiceDisplayName = config.ServiceDisplayNameValue;
+            ////    config.Serialize();
+            ////}
 
             //set the privileges
             processInstaller.Account = ServiceAccount.LocalSystem;
 
-            serviceInstaller.DisplayName = config.ServiceDisplayName;
-            string desc = config.ServerIsController ?
+            serviceInstaller.DisplayName = config.Service.DisplayName;
+            string desc = config.Service.ServerIsController ?
                 "Serves Plan commands to and receives Plan status from Synapse Nodes." : "Runs Plans, proxies to other Synapse Nodes.";
             serviceInstaller.Description = $"{desc}  Use 'Synapse.Server /uninstall' to remove.  Information at http://synapse.readthedocs.io/en/latest/.";
             serviceInstaller.StartType = ServiceStartMode.Automatic;
 
             //must be the same as what was set in Program's constructor
-            serviceInstaller.ServiceName = config.ServiceName;
+            serviceInstaller.ServiceName = config.Service.Name;
             this.Installers.Add( processInstaller );
             this.Installers.Add( serviceInstaller );
         }

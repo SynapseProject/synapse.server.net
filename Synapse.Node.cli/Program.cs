@@ -61,7 +61,7 @@ namespace Synapse.Services.NodeService.Cli
             _methods.Add( "qi", "GetCurrentQueueItems" );
 
             SynapseServerConfig config = SynapseServerConfig.Deserialze( ServerRole.Node );
-            BaseUrl = $"http://localhost:{config.WebApiPort}/synapse/node";
+            BaseUrl = $"http://localhost:{config.WebApi.Port}/synapse/node";
         }
 
         public bool IsInteractive { get; set; }
@@ -211,11 +211,11 @@ namespace Synapse.Services.NodeService.Cli
         #region Help
         protected override void WriteHelpAndExit(string errorMessage = null)
         {
-            Dictionary<string, string> cdf = SynapseServerConfig.GetConfigDefaultValues( serverRole: ServerRole.Node );
             StringBuilder df = new StringBuilder();
-            df.AppendFormat( "{0,-15}- Optional install args, use argname:value.  Defaults shown.\r\n", "" );
-            foreach( string key in cdf.Keys )
-                df.AppendLine( $"                 - {key}:{cdf[key]}" );
+            ////Dictionary<string, string> cdf = SynapseServerConfig.GetConfigDefaultValues( serverRole: ServerRole.Node );
+            ////df.AppendFormat( "{0,-15}- Optional install args, use argname:value.  Defaults shown.\r\n", "" );
+            ////foreach( string key in cdf.Keys )
+            ////    df.AppendLine( $"                 - {key}:{cdf[key]}" );
             df.AppendLine( $"                 - Run:true  (Optionally Starts the Windows Service)\r\n" );
 
             bool haveError = !string.IsNullOrWhiteSpace( errorMessage );

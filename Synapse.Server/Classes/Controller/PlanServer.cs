@@ -16,7 +16,7 @@ namespace Synapse.Services
 
         public PlanServer()
         {
-            if( SynapseServer.Config.ServerIsController && _dal == null )
+            if( SynapseServer.Config.Service.ServerIsController && _dal == null )
                 try
                 {
                     _dal = AssemblyLoader.Load<IControllerDal>(
@@ -62,10 +62,10 @@ namespace Synapse.Services
             {
                 SynapseServer.Logger.Debug( $"Signing Plan {plan.Name}/{plan.InstanceId}." );
 
-                if( !File.Exists( SynapseServer.Config.SignatureKeyFile ) )
-                    throw new FileNotFoundException( SynapseServer.Config.SignatureKeyFile );
+                if( !File.Exists( SynapseServer.Config.Signature.KeyUri ) )
+                    throw new FileNotFoundException( SynapseServer.Config.Signature.KeyUri );
 
-                plan.Sign( SynapseServer.Config.SignatureKeyContainerName, SynapseServer.Config.SignatureKeyFile, SynapseServer.Config.SignatureCspProviderFlags );
+                plan.Sign( SynapseServer.Config.Signature.KeyContainerName, SynapseServer.Config.Signature.KeyUri, SynapseServer.Config.Signature.CspProviderFlags );
                 //plan.Name += "foo";  //testing: intentionally crash the sig
             }
 
