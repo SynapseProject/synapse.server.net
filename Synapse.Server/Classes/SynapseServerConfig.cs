@@ -53,15 +53,15 @@ namespace Synapse.Services
                 config.Service.DisplayName = $"Synapse {role}";
                 config.Service.Role = role;
 
-                if( config.Service.RoleIsController )
+                if( config.Service.IsRoleController )
                 {
                     WebApiConfig node = new Services.WebApiConfig() { Host = config.WebApi.Host, IsSecure = config.WebApi.IsSecure };
-                    node.Port = config.Service.RoleIsServer ? 20000 : 20001;
+                    node.Port = config.Service.IsRoleServer ? 20000 : 20001;
                     config.Controller.Configure( node.ToUri( Environment.UserInteractive ) );
                 }
-                if( !config.Service.RoleIsController )
+                if( !config.Service.IsRoleController )
                     config.Controller = null;
-                if( !config.Service.RoleIsNode )
+                if( !config.Service.IsRoleNode )
                     config.Node = null;
 
                 config.Serialize();
@@ -79,9 +79,9 @@ namespace Synapse.Services
         public string DisplayName { get; set; }
         public ServerRole Role { get; set; }
 
-        internal bool RoleIsController { get { return (Role & ServerRole.Controller) == ServerRole.Controller; } }
-        internal bool RoleIsNode { get { return (Role & ServerRole.Node) == ServerRole.Node; } }
-        internal bool RoleIsServer { get { return (Role & ServerRole.Server) == ServerRole.Server; } }
+        internal bool IsRoleController { get { return (Role & ServerRole.Controller) == ServerRole.Controller; } }
+        internal bool IsRoleNode { get { return (Role & ServerRole.Node) == ServerRole.Node; } }
+        internal bool IsRoleServer { get { return (Role & ServerRole.Server) == ServerRole.Server; } }
     }
 
     public class WebApiConfig

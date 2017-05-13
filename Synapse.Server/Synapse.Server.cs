@@ -74,6 +74,11 @@ namespace Synapse.Services
                     {
                         ok = InstallUtility.StopAndUninstallService( out message );
                     }
+                    else if( arg0 == "config" || arg0 == "c" )
+                    {
+                        SynapseServerConfig.DeserialzeOrNew( ServerRole.Server );
+                        ok = true;
+                    }
 
                     if( !ok )
                         WriteHelpAndExit( message );
@@ -127,7 +132,7 @@ namespace Synapse.Services
                 if( _serviceHost != null )
                     _serviceHost.Close();
 
-                if( !Config.Service.RoleIsController )
+                if( !Config.Service.IsRoleController )
                 {
                     NodeController.InitPlanScheduler();
                     NodeController.DrainstopCallback = () => StopCallback();
@@ -137,7 +142,7 @@ namespace Synapse.Services
                 _webapp = WebApp.Start<WebServerConfig>( url );
                 Logger.Info( $"Listening on {url}" );
 
-                _serviceHost = Config.Service.RoleIsController ?
+                _serviceHost = Config.Service.IsRoleController ?
                     new ServiceHost( typeof( ExecuteController ) ) : new ServiceHost( typeof( NodeController ) );
                 _serviceHost.Open();
 
@@ -238,7 +243,7 @@ namespace Synapse.Services
 
             MessageBoxIcon icon = MessageBoxIcon.Information;
 
-            string msg = $"synapse.server.exe, Version: {typeof( SynapseServer ).Assembly.GetName().Version}\r\nSyntax:\r\n  synapse.server.exe install [run:true|false] | uninstall";
+            string msg = $"synapse.server.exe, Version: {typeof( SynapseServer ).Assembly.GetName().Version}\r\nSyntax:\r\n  synapse.server.exe install [run:true|false] | uninstall | config";
 
             if( haveError )
             {

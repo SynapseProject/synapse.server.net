@@ -126,7 +126,7 @@ namespace Synapse.Services
             processInstaller.Account = ServiceAccount.LocalSystem;
 
             serviceInstaller.DisplayName = config.Service.DisplayName;
-            string desc = config.Service.RoleIsController ?
+            string desc = config.Service.IsRoleController ?
                 "Serves Plan commands to and receives Plan status from Synapse Nodes." : "Runs Plans, proxies to other Synapse Nodes.";
             serviceInstaller.Description = $"{desc}  Use 'Synapse.Server /uninstall' to remove.  Information at http://synapse.readthedocs.io/en/latest/.";
             serviceInstaller.StartType = ServiceStartMode.Automatic;

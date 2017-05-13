@@ -16,7 +16,7 @@ namespace Synapse.Services
 
         public PlanServer()
         {
-            if( SynapseServer.Config.Service.RoleIsController && _dal == null )
+            if( SynapseServer.Config.Service.IsRoleController && _dal == null )
                 try
                 {
                     _dal = AssemblyLoader.Load<IControllerDal>(
