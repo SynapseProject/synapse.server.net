@@ -31,66 +31,82 @@ namespace Synapse.Services
             YamlHelpers.SerializeFile( FileName, this, serializeAsJson: false, emitDefaultValues: true );
         }
 
-        public static SynapseServerConfig Deserialze(ServerRole serverRole = ServerRole.Controller)
+        public static SynapseServerConfig Deserialze()
+        {
+            if( !File.Exists( FileName ) )
+                throw new FileNotFoundException( $"Could not find {FileName}" );
+
+            return YamlHelpers.DeserializeFile<SynapseServerConfig>( FileName );
+        }
+
+        public static SynapseServerConfig DeserialzeOrNew(ServerRole role)
         {
             SynapseServerConfig config = null;
 
-            int port = serverRole == ServerRole.Controller ? 20000 : 20001;
+            int port = ((role & ServerRole.Controller) == ServerRole.Controller) ? 20000 : 20001;
 
             if( !File.Exists( FileName ) )
             {
                 config = new SynapseServerConfig();
-                YamlHelpers.SerializeFile( FileName, config, emitDefaultValues: true );
+                config.WebApi.Port = port;
+                config.Service.Name = $"Synapse.{role}";
+                config.Service.DisplayName = $"Synapse {role}";
+                config.Service.Role = role;
+
+                if( config.Service.RoleIsController )
+                {
+                    WebApiConfig node = new Services.WebApiConfig() { Host = config.WebApi.Host, IsSecure = config.WebApi.IsSecure };
+                    node.Port = config.Service.RoleIsServer ? 20000 : 20001;
+                    config.Controller.Configure( node.ToUri( Environment.UserInteractive ) );
+                }
+                if( !config.Service.RoleIsController )
+                    config.Controller = null;
+                if( !config.Service.RoleIsNode )
+                    config.Node = null;
+
+                config.Serialize();
             }
             else
                 config = YamlHelpers.DeserializeFile<SynapseServerConfig>( FileName );
 
             return config;
         }
-
-        //public static Dictionary<string, string> GetConfigDefaultValues(ServerRole serverRole)
-        //{
-        //    return new SynapseServerConfig();
-        //}
     }
 
     public class ServiceConfig
     {
-        internal static readonly string defaultName = "Synapse.[Controller/Node]";
-        internal static readonly string defaultDisplayName = "Synapse [Controller/Node]";
-
-        public string Name { get; set; } = defaultName;
-        public string DisplayName { get; set; } = defaultDisplayName;
-
-        internal bool HasServiceNameDefaults { get { return Name == defaultName || DisplayName == defaultDisplayName; } }
-
+        public string Name { get; set; }
+        public string DisplayName { get; set; }
         public ServerRole Role { get; set; }
-        internal bool ServerIsController { get { return Role == ServerRole.Controller; } }
+
+        internal bool RoleIsController { get { return (Role & ServerRole.Controller) == ServerRole.Controller; } }
+        internal bool RoleIsNode { get { return (Role & ServerRole.Node) == ServerRole.Node; } }
+        internal bool RoleIsServer { get { return (Role & ServerRole.Server) == ServerRole.Server; } }
     }
 
     public class WebApiConfig
     {
-        internal static string localhost = "localhost";
+        static string localhost = "localhost";
         public string Host { get; set; } = localhost;
+        public int Port { get; set; }
+        public bool IsSecure { get; set; } = false;
+
+        public AuthenticationConfig Authentication { get; set; } = new AuthenticationConfig();
+
+
         public string GetHost(bool isUserInteractive)
         {
             string host = Host.ToLower();
-            if( host == localhost || host == "*" )
+            if( host == localhost || host == "*" || string.IsNullOrWhiteSpace( host ) )
                 Host = isUserInteractive ? localhost : "*";
             return Host;
         }
 
-        public int Port { get; set; } = 20000;
-        public bool IsSecure { get; set; } = false;
-
-        public AuthenticationConfig Authentication { get; set; }
-
-
         public string ToUri(bool isUserInteractive)
         {
-            string protocol = IsSecure ? "https" : "http";
+            string scheme = IsSecure ? "https" : "http";
             string host = GetHost( isUserInteractive );
-            return $"{protocol}://{host}:{Port}";
+            return $"{scheme}://{host}:{Port}";
         }
     }
 
@@ -105,7 +121,7 @@ namespace Synapse.Services
     {
         public string KeyUri { get; set; }
 
-        public string KeyContainerName { get; set; } = "DefaultContainerName";
+        public string KeyContainerName { get; set; }
 
         public CspProviderFlags CspProviderFlags { get; set; } = CspProviderFlags.NoFlags;
     }

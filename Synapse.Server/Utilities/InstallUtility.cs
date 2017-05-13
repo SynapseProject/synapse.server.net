@@ -9,26 +9,23 @@ namespace Synapse.Services
 {
     public class InstallUtility
     {
-        public static bool InstallAndStartService(ServerRole serverRole, Dictionary<string, string> configValues, out string message)
+        public static bool InstallAndStartService(ServerRole serverRole, Dictionary<string, string> installOptions, out string message)
         {
             message = null;
             bool startService = true;
 
-            if( configValues != null )
+            if( installOptions != null )
             {
                 const string run = "run";
-                if( configValues.ContainsKey( run ) )
+                if( installOptions.ContainsKey( run ) )
                 {
-                    bool.TryParse( configValues[run], out startService );
-                    configValues.Remove( run );
+                    bool.TryParse( installOptions[run], out startService );
+                    installOptions.Remove( run );
                 }
-
-                //InstallService expects configValues to be null to skip processing it
-                if( configValues.Count == 0 )
-                    configValues = null;
             }
 
-            bool ok = InstallService( install: true, serverRole: serverRole, configValues: configValues, message: out message );
+            SynapseServerConfig.DeserialzeOrNew( serverRole );
+            bool ok = InstallOrUninstallService( install: true, message: out message );
 
             if( ok && startService )
                 try
@@ -72,18 +69,14 @@ namespace Synapse.Services
                 ok = false;
             }
 
-            if( ok )  //serverRole is ignored on an uninstall
-                ok = InstallService( install: false, serverRole: ServerRole.Controller, configValues: null, message: out message );
+            if( ok )
+                ok = InstallOrUninstallService( install: false, message: out message );
 
             return ok;
         }
 
-        //serverRole is ignored on an uninstall
-        public static bool InstallService(bool install, ServerRole serverRole, Dictionary<string, string> configValues, out string message)
+        public static bool InstallOrUninstallService(bool install, out string message)
         {
-            //if( configValues != null )
-            //    SynapseServerConfig.Configure( serverRole, configValues );
-
             string fullFilePath = typeof( SynapseServerServiceInstaller ).Assembly.Location;
             string logFile = $"Synapse.Server.InstallLog.txt";
 
@@ -133,7 +126,7 @@ namespace Synapse.Services
             processInstaller.Account = ServiceAccount.LocalSystem;
 
             serviceInstaller.DisplayName = config.Service.DisplayName;
-            string desc = config.Service.ServerIsController ?
+            string desc = config.Service.RoleIsController ?
                 "Serves Plan commands to and receives Plan status from Synapse Nodes." : "Runs Plans, proxies to other Synapse Nodes.";
             serviceInstaller.Description = $"{desc}  Use 'Synapse.Server /uninstall' to remove.  Information at http://synapse.readthedocs.io/en/latest/.";
             serviceInstaller.StartType = ServiceStartMode.Automatic;

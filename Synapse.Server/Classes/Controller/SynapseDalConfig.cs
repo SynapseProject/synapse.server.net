@@ -27,70 +27,39 @@ namespace Synapse.Services
         internal bool HasConfig { get { return Config != null; } }
 
 
-        public Dictionary<string, string> GetDefaultValues()
+        public object GetDefaultConfig()
         {
             return GetConfigDefaultValues();
         }
 
-        public static Dictionary<string, string> GetConfigDefaultValues()
-        {
-            Dictionary<string, string> values = new Dictionary<string, string>();
-
-            SynapseDalConfig c = new SynapseDalConfig();
-
-            string n = "c_";
-            values[n + nameof( c.LdapRoot )] = c.LdapRoot;
-            values[n + nameof( c.Type )] = c.Type;
-            values[n + nameof( c.Config )] = c.Config?.ToString();
-
-            return values;
-        }
-
-        public void Configure(Dictionary<string, string> values)
+        public static object GetConfigDefaultValues()
         {
             SynapseDalConfig c = new SynapseDalConfig();
+            c.ConfigureDalProvider();
 
-            string n = "c_";
-            if( values.ContainsKey( n + nameof( c.LdapRoot ).ToLower() ) )
-                c.LdapRoot = values[n + nameof( c.LdapRoot ).ToLower()];
-
-            if( values.ContainsKey( n + nameof( c.Type ).ToLower() ) )
-                c.Type = values[n + nameof( c.Type ).ToLower()];
-
-            //if( values.ContainsKey( n + nameof( c.Config ).ToLower() ) )
-                //c.SignPlanString = values[n + nameof( c.Config ).ToLower()];
-
-            Configure( c );
+            return c;
         }
 
-        public void Configure(IConfigurationProvider configProvider)
+        public void Configure(IConfigurationProvider config)
         {
-            Configure( configProvider as SynapseDalConfig );
+            if( config != null )
+            {
+                SynapseDalConfig c = config as SynapseDalConfig;
+                Type = c.Type;
+                LdapRoot = c.LdapRoot;
+                Config = c.Config;
+            }
+            ConfigureDalProvider();
         }
 
-        public void Configure(SynapseDalConfig value)
+        void ConfigureDalProvider()
         {
-            if( value == null )
-                throw new ArgumentNullException( nameof( value ), "DalConfig value is required." );
-
-            //configure with anything provided
-            if( value.HasLdapRoot )
-                LdapRoot = value.LdapRoot;
-
-            string type = DefaultType;
-            if( value.HasType )
-                Type = type = value.Type;
-
             try
             {
-                IControllerDal dal = AssemblyLoader.Load<IControllerDal>( type, DefaultType );
-                Config = dal.GetDefaultConfig();
+                IControllerDal dal = AssemblyLoader.Load<IControllerDal>( Type, DefaultType );
+                Config = dal?.GetDefaultConfig();
             }
             catch { }
-
-
-            //if( value.TestSetConfigString )
-            //    Config = value.Config;
         }
     }
 }

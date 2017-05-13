@@ -60,8 +60,8 @@ namespace Synapse.Services.NodeService.Cli
             _methods.Add( "QueueItems", "GetCurrentQueueItems" );
             _methods.Add( "qi", "GetCurrentQueueItems" );
 
-            SynapseServerConfig config = SynapseServerConfig.Deserialze( ServerRole.Node );
-            BaseUrl = $"http://localhost:{config.WebApi.Port}/synapse/node";
+            SynapseServerConfig config = SynapseServerConfig.DeserialzeOrNew( ServerRole.Node );
+            BaseUrl = $"{config.WebApi.ToUri( isUserInteractive: true )}/synapse/node";
         }
 
         public bool IsInteractive { get; set; }
@@ -178,7 +178,7 @@ namespace Synapse.Services.NodeService.Cli
                     string message = string.Empty;
                     bool error = false;
                     Dictionary<string, string> values = ParseCmdLine( args, 2, ref error, true );
-                    if( !InstallUtility.InstallAndStartService( serverRole: ServerRole.Node, configValues: values, message: out message ) )
+                    if( !InstallUtility.InstallAndStartService( serverRole: ServerRole.Node, installOptions: values, message: out message ) )
                     {
                         Console.WriteLine( message );
                         Environment.Exit( 1 );
@@ -211,13 +211,6 @@ namespace Synapse.Services.NodeService.Cli
         #region Help
         protected override void WriteHelpAndExit(string errorMessage = null)
         {
-            StringBuilder df = new StringBuilder();
-            ////Dictionary<string, string> cdf = SynapseServerConfig.GetConfigDefaultValues( serverRole: ServerRole.Node );
-            ////df.AppendFormat( "{0,-15}- Optional install args, use argname:value.  Defaults shown.\r\n", "" );
-            ////foreach( string key in cdf.Keys )
-            ////    df.AppendLine( $"                 - {key}:{cdf[key]}" );
-            df.AppendLine( $"                 - Run:true  (Optionally Starts the Windows Service)\r\n" );
-
             bool haveError = !string.IsNullOrWhiteSpace( errorMessage );
 
             ConsoleColor defaultColor = Console.ForegroundColor;
@@ -233,9 +226,9 @@ namespace Synapse.Services.NodeService.Cli
             Console.WriteLine( "{0,-15}All commands below work in standard or interactive modes.\r\n", "" );
             Console.WriteLine( "  service{0,-6}Install/Uninstall the Windows Service, or Run the Service", "" );
             Console.WriteLine( "{0,-15}as a cmdline-hosted daemon.", "" );
-            Console.WriteLine( "{0,-15}- Commands: install|uninstall|run", "" );
-            Console.WriteLine( "{0,-15}- Example:  synapse.node.cli service run", "" );
-            Console.WriteLine( df.ToString() );
+            Console.WriteLine( "{0,-15}- Commands: install [run:true|false] | uninstall | run", "" );
+            Console.WriteLine( "{0,-15}- Example:  synapse.node.cli service install run:false", "" );
+            Console.WriteLine( "{0,-15}            synapse.node.cli service run\r\n", "" );
             Console.WriteLine( "  httpAction{0,-3}Execute a command, optionally specify URL.", "" );
             Console.WriteLine( "{0,-15}Parm help: synapse.node.cli {1}httpAction{2} help.\r\n", "", "{", "}" );
             Console.WriteLine( "  - httpActions:", "" );

@@ -65,8 +65,8 @@ namespace Synapse.Services.Controller.Cli
             _methods.Add( "cancel", "CancelPlan" );
             _methods.Add( "c", "CancelPlan" );
 
-            SynapseServerConfig config = SynapseServerConfig.Deserialze( ServerRole.Controller );
-            BaseUrl = $"http://localhost:{config.WebApi.Port}/synapse/execute";
+            SynapseServerConfig config = SynapseServerConfig.DeserialzeOrNew( ServerRole.Controller );
+            BaseUrl = $"{config.WebApi.ToUri( isUserInteractive: true )}/synapse/execute";
         }
 
 
@@ -239,7 +239,7 @@ namespace Synapse.Services.Controller.Cli
                     string message = string.Empty;
                     bool error = false;
                     Dictionary<string, string> values = ParseCmdLine( args, 2, ref error, true );
-                    if( !InstallUtility.InstallAndStartService( serverRole: ServerRole.Controller, configValues: values, message: out message ) )
+                    if( !InstallUtility.InstallAndStartService( serverRole: ServerRole.Controller, installOptions: values, message: out message ) )
                     {
                         Console.WriteLine( message );
                         Environment.Exit( 1 );
@@ -306,9 +306,9 @@ namespace Synapse.Services.Controller.Cli
             Console.WriteLine( "{0,-15}All commands below work in standard or interactive modes.\r\n", "" );
             Console.WriteLine( "  service{0,-6}Install/Uninstall the Windows Service, or Run the Service", "" );
             Console.WriteLine( "{0,-15}as a cmdline-hosted daemon.", "" );
-            Console.WriteLine( "{0,-15}- Commands: install|uninstall|run", "" );
-            Console.WriteLine( "{0,-15}- Example:  synapse.controller.cli service run", "" );
-            Console.WriteLine( df.ToString() );
+            Console.WriteLine( "{0,-15}- Commands: install [run:true|false] | uninstall | run", "" );
+            Console.WriteLine( "{0,-15}- Example:  synapse.controller.cli service install run:false", "" );
+            Console.WriteLine( "{0,-15}            synapse.controller.cli service run\r\n", "" );
             Console.WriteLine( "  keygen{0,-7}Generate RSA key for signing Plans.", "" );
             Console.WriteLine( "{0,-15}- keyContainerName:  Key values storage Container.", "" );
             Console.WriteLine( "{0,-15}- filePath:          Path and filename to store key values.\r\n", "" );

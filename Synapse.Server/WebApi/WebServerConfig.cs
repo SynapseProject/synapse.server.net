@@ -18,7 +18,7 @@ namespace Synapse.Services
             // Configure Web API for self-host. 
             HttpConfiguration config = new HttpConfiguration();
 
-            if( SynapseServer.Config.Service.ServerIsController && SynapseServer.Config.Controller.HasAssemblies )
+            if( SynapseServer.Config.Service.RoleIsController && SynapseServer.Config.Controller.HasAssemblies )
                 config.Services.Replace( typeof( IAssembliesResolver ), new CustomAssembliesResolver() );
 
             // Web API configuration and services
@@ -35,7 +35,7 @@ namespace Synapse.Services
 
             config.MessageHandlers.Add( new RawContentHandler() );
 
-            if( SynapseServer.Config.Service.ServerIsController && SynapseServer.Config.WebApi.Authentication.Scheme == AuthenticationSchemes.Basic )
+            if( SynapseServer.Config.Service.RoleIsController && SynapseServer.Config.WebApi.Authentication.Scheme == AuthenticationSchemes.Basic )
             {
                 IAuthenticationProvider auth = AuthenticationProviderUtil.GetInstance(
                     "Synapse.Authentication", "Synapse.Authentication.AuthenticationProvider", config );

@@ -9,27 +9,11 @@ namespace Synapse.Services
     /// </summary>
     public class SynapseControllerConfig
     {
-        public SynapseControllerConfig()
-        {
-        }
+        public SynapseControllerConfig() { }
 
 
-        public string NodeUrl { get; set; } = "http://localhost:20001/synapse/node";
-        internal bool HasNodeUrl { get { return !string.IsNullOrWhiteSpace( NodeUrl ); } }
-
-        public bool SignPlan { get; set; } = true;
-        internal string SignPlanString { get; set; } = "true";
-        internal bool TestSetSignPlanString
-        {
-            get
-            {
-                bool v = SignPlan;
-                bool ok = bool.TryParse( SignPlanString, out v );
-                if( ok )
-                    SignPlan = v;
-                return ok;
-            }
-        }
+        public string NodeUrl { get; set; }
+        public bool SignPlan { get; set; } = false;
 
         public List<string> Assemblies { get; set; }
         internal bool HasAssemblies { get { return Assemblies != null && Assemblies.Count > 0; } }
@@ -37,51 +21,10 @@ namespace Synapse.Services
         public SynapseDalConfig Dal { get; set; } = new SynapseDalConfig();
 
 
-        public static Dictionary<string, string> GetConfigDefaultValues()
+        internal void Configure(string nodeUriRoot)
         {
-            Dictionary<string, string> values = new Dictionary<string, string>();
-
-            SynapseControllerConfig c = new SynapseControllerConfig();
-
-            string n = "c_";
-            values[n + nameof( c.NodeUrl )] = c.NodeUrl;
-            values[n + nameof( c.SignPlan )] = c.SignPlan.ToString();
-
-            foreach( KeyValuePair<string, string> kvp in SynapseDalConfig.GetConfigDefaultValues() )
-                values[kvp.Key] = kvp.Value;
-
-            return values;
-        }
-
-        public void Configure(Dictionary<string, string> values)
-        {
-            SynapseControllerConfig c = new SynapseControllerConfig();
-
-            string n = "c_";
-            if( values.ContainsKey( n + nameof( c.NodeUrl ).ToLower() ) )
-                c.NodeUrl = values[n + nameof( c.NodeUrl ).ToLower()];
-
-            if( values.ContainsKey( n + nameof( c.SignPlan ).ToLower() ) )
-                c.SignPlanString = values[n + nameof( c.SignPlan ).ToLower()];
-
-            c.Dal.Configure( values );
-
-            Configure( c );
-        }
-
-        public void Configure(SynapseControllerConfig value)
-        {
-            //configure with anything provided
-            if( value.HasNodeUrl )
-                NodeUrl = value.NodeUrl;
-
-            if( value.TestSetSignPlanString )
-                SignPlan = value.SignPlan;
-
-            if( Dal == null )
-                Dal = new SynapseDalConfig();
-
-            Dal.Configure( value.Dal );
+            NodeUrl = $"{nodeUriRoot}/synapse/node";
+            Dal.Configure( null );
         }
     }
 }

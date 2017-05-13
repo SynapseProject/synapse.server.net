@@ -63,14 +63,14 @@ namespace Synapse.Services
                     string message = string.Empty;
 
                     string arg0 = args[0].ToLower();
-                    if( arg0 == "/install" || arg0 == "/i" )
+                    if( arg0 == "install" || arg0 == "i" )
                     {
                         bool error = false;
-                        Dictionary<string, string> values = CmdLineUtilities.ParseCmdLine( args, 1, ref error, ref message, null );
+                        Dictionary<string, string> options = args.Length > 1 ? CmdLineUtilities.ParseCmdLine( args, 1, ref error, ref message, null, true ) : null;
                         if( !error )
-                            ok = InstallUtility.InstallAndStartService( serverRole: ServerRole.Controller, configValues: values, message: out message );
+                            ok = InstallUtility.InstallAndStartService( serverRole: ServerRole.Server, installOptions: options, message: out message );
                     }
-                    else if( arg0 == "/uninstall" || arg0 == "/u" )
+                    else if( arg0 == "uninstall" || arg0 == "u" )
                     {
                         ok = InstallUtility.StopAndUninstallService( out message );
                     }
@@ -127,7 +127,7 @@ namespace Synapse.Services
                 if( _serviceHost != null )
                     _serviceHost.Close();
 
-                if( !Config.Service.ServerIsController )
+                if( !Config.Service.RoleIsController )
                 {
                     NodeController.InitPlanScheduler();
                     NodeController.DrainstopCallback = () => StopCallback();
@@ -137,7 +137,7 @@ namespace Synapse.Services
                 _webapp = WebApp.Start<WebServerConfig>( url );
                 Logger.Info( $"Listening on {url}" );
 
-                _serviceHost = Config.Service.ServerIsController ?
+                _serviceHost = Config.Service.RoleIsController ?
                     new ServiceHost( typeof( ExecuteController ) ) : new ServiceHost( typeof( NodeController ) );
                 _serviceHost.Open();
 
@@ -237,14 +237,8 @@ namespace Synapse.Services
             bool haveError = !string.IsNullOrWhiteSpace( errorMessage );
 
             MessageBoxIcon icon = MessageBoxIcon.Information;
-            StringBuilder df = new StringBuilder();
-            ////Dictionary<string, string> cdf = SynapseServerConfig.GetConfigDefaultValues( serverRole: ServerRole.Controller );
-            ////df.AppendLine( $"Optional args for configuring /install, use argname:value.  Defaults shown." );
-            ////foreach( string key in cdf.Keys )
-            ////    df.AppendLine( $" - {key}:{cdf[key]}" );
-            ////df.AppendLine( $" - Run:true  (Optionally Starts the Windows Service)" );
 
-            string msg = $"synapse.server.exe, Version: {typeof( SynapseServer ).Assembly.GetName().Version}\r\nSyntax:\r\n  synapse.server.exe /install | /uninstall\r\n\r\n{df.ToString()}";
+            string msg = $"synapse.server.exe, Version: {typeof( SynapseServer ).Assembly.GetName().Version}\r\nSyntax:\r\n  synapse.server.exe install [run:true|false] | uninstall";
 
             if( haveError )
             {

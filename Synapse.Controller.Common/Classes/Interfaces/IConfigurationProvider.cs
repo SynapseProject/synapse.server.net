@@ -5,9 +5,7 @@ namespace Synapse.Services
 {
     public interface IConfigurationProvider
     {
-        Dictionary<string, string> GetDefaultValues();
-
-        void Configure(Dictionary<string, string> values);
+        object GetDefaultConfig();
 
         void Configure(IConfigurationProvider configProvider);
     }
