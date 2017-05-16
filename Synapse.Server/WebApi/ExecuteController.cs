@@ -161,7 +161,7 @@ namespace Synapse.Services
                     throw new Exception( $"Failed to deserialize message body:\r\n{parms.ToString()}" );
 
                 return _server.StartPlan( CurrentUser, planUniqueName, dryRun, requestNumber, dynamicParameters,
-                    postDynamicParameters: true, nodeUrlSchemeHostPort: nodeUrlSchemeHostPort, referrer: this.Url.Request.RequestUri );
+                    postDynamicParameters: true, nodeUrlSchemeHostPort: nodeUrlSchemeHostPort, referrer: this.Url?.Request?.RequestUri );
             }
             catch( Exception ex )
             {
