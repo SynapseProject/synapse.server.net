@@ -39,7 +39,7 @@ namespace Synapse.Services
             return YamlHelpers.DeserializeFile<SynapseServerConfig>( FileName );
         }
 
-        public static SynapseServerConfig DeserialzeOrNew(ServerRole role)
+        public static SynapseServerConfig DeserializeOrNew(ServerRole role)
         {
             SynapseServerConfig config = null;
 

@@ -76,7 +76,7 @@ namespace Synapse.Services
                     }
                     else if( arg0 == "config" || arg0 == "c" )
                     {
-                        SynapseServerConfig.DeserialzeOrNew( ServerRole.Server );
+                        SynapseServerConfig.DeserializeOrNew( ServerRole.Server );
                         ok = true;
                     }
 

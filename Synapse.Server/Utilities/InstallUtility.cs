@@ -24,7 +24,7 @@ namespace Synapse.Services
                 }
             }
 
-            SynapseServerConfig.DeserialzeOrNew( serverRole );
+            SynapseServerConfig.DeserializeOrNew( serverRole );
             bool ok = InstallOrUninstallService( install: true, message: out message );
 
             if( ok && startService )

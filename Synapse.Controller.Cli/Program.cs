@@ -65,7 +65,7 @@ namespace Synapse.Services.Controller.Cli
             _methods.Add( "cancel", "CancelPlan" );
             _methods.Add( "c", "CancelPlan" );
 
-            SynapseServerConfig config = SynapseServerConfig.DeserialzeOrNew( ServerRole.Controller );
+            SynapseServerConfig config = SynapseServerConfig.DeserializeOrNew( ServerRole.Controller );
             BaseUrl = $"{config.WebApi.ToUri( isUserInteractive: true )}/synapse/execute";
         }
 

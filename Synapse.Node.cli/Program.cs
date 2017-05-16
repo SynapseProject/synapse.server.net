@@ -60,7 +60,7 @@ namespace Synapse.Services.NodeService.Cli
             _methods.Add( "QueueItems", "GetCurrentQueueItems" );
             _methods.Add( "qi", "GetCurrentQueueItems" );
 
-            SynapseServerConfig config = SynapseServerConfig.DeserialzeOrNew( ServerRole.Node );
+            SynapseServerConfig config = SynapseServerConfig.DeserializeOrNew( ServerRole.Node );
             BaseUrl = $"{config.WebApi.ToUri( isUserInteractive: true )}/synapse/node";
         }
 
