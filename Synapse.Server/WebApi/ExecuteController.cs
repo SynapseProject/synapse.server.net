@@ -97,21 +97,21 @@ namespace Synapse.Services
 
         [Route( "{planUniqueName}/start/" )]
         [HttpGet]
-        public long StartPlan(string planUniqueName, bool dryRun = false, string requestNumber = null, string nodeUrlSchemeHostPort = null)
+        public long StartPlan(string planUniqueName, bool dryRun = false, string requestNumber = null, string nodeRootUrl = null)
         {
             InitPlanServer();
 
             Uri uri = this.Url.Request.RequestUri;
             string context = GetContext( nameof( StartPlan ), nameof( CurrentUser ), CurrentUser,
                 nameof( planUniqueName ), planUniqueName, nameof( dryRun ), dryRun,
-                nameof( requestNumber ), requestNumber, nameof( nodeUrlSchemeHostPort ), nodeUrlSchemeHostPort, "QueryString", uri.Query );
+                nameof( requestNumber ), requestNumber, nameof( nodeRootUrl ), nodeRootUrl, "QueryString", uri.Query );
 
             try
             {
                 SynapseServer.Logger.Debug( context );
                 Dictionary<string, string> dynamicParameters = uri.ParseQueryString();
                 if( dynamicParameters.ContainsKey( nameof( dryRun ) ) ) dynamicParameters.Remove( nameof( dryRun ) );
-                return _server.StartPlan( CurrentUser, planUniqueName, dryRun, requestNumber, dynamicParameters, nodeUrlSchemeHostPort: nodeUrlSchemeHostPort,
+                return _server.StartPlan( CurrentUser, planUniqueName, dryRun, requestNumber, dynamicParameters, nodeRootUrl: nodeRootUrl,
                     referrer: this.Url.Request.RequestUri );
             }
             catch( Exception ex )
@@ -124,7 +124,7 @@ namespace Synapse.Services
 
         [Route( "{planUniqueName}/start/" )]
         [HttpPost]
-        public long StartPlan([FromBody]StartPlanEnvelope planEnvelope, string planUniqueName, bool dryRun = false, string requestNumber = null, string nodeUrlSchemeHostPort = null)
+        public long StartPlan([FromBody]StartPlanEnvelope planEnvelope, string planUniqueName, bool dryRun = false, string requestNumber = null, string nodeRootUrl = null)
         {
             InitPlanServer();
 
@@ -151,7 +151,7 @@ namespace Synapse.Services
 
             string context = GetContext( nameof( StartPlan ), nameof( CurrentUser ), CurrentUser,
                 nameof( planUniqueName ), planUniqueName, nameof( dryRun ), dryRun,
-                nameof( requestNumber ), requestNumber, nameof( nodeUrlSchemeHostPort ), nodeUrlSchemeHostPort, "planParameters", parms.ToString() );
+                nameof( requestNumber ), requestNumber, nameof( nodeRootUrl ), nodeRootUrl, "planParameters", parms.ToString() );
 
             try
             {
@@ -161,7 +161,7 @@ namespace Synapse.Services
                     throw new Exception( $"Failed to deserialize message body:\r\n{parms.ToString()}" );
 
                 return _server.StartPlan( CurrentUser, planUniqueName, dryRun, requestNumber, dynamicParameters,
-                    postDynamicParameters: true, nodeUrlSchemeHostPort: nodeUrlSchemeHostPort, referrer: this.Url?.Request?.RequestUri );
+                    postDynamicParameters: true, nodeRootUrl: nodeRootUrl, referrer: this.Url?.Request?.RequestUri );
             }
             catch( Exception ex )
             {
@@ -244,18 +244,18 @@ namespace Synapse.Services
 
         [Route( "{planUniqueName}/{planInstanceId}/" )]
         [HttpDelete]
-        public void CancelPlan(string planUniqueName, long planInstanceId, string nodeUrlSchemeHostPort = null)
+        public void CancelPlan(string planUniqueName, long planInstanceId, string nodeRootUrl = null)
         {
             InitPlanServer();
 
             string context = GetContext( nameof( GetPlanStatus ),
                 nameof( planUniqueName ), planUniqueName, nameof( planInstanceId ), planInstanceId,
-                nameof( nodeUrlSchemeHostPort ), nodeUrlSchemeHostPort );
+                nameof( nodeRootUrl ), nodeRootUrl );
 
             try
             {
                 SynapseServer.Logger.Debug( context );
-                _server.CancelPlan( planInstanceId, nodeUrlSchemeHostPort, referrer: this.Url.Request.RequestUri );
+                _server.CancelPlan( planInstanceId, nodeRootUrl, referrer: this.Url.Request.RequestUri );
             }
             catch( Exception ex )
             {

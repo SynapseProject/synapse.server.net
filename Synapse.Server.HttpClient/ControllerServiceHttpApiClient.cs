@@ -60,33 +60,33 @@ namespace Synapse.Services
 
 
         public long StartPlan(string planName, bool dryRun = false, string requestNumber = null,
-            Dictionary<string, string> dynamicParameters = null, bool postDynamicParameters = false, string nodeUrlSchemeHostPort = null)
+            Dictionary<string, string> dynamicParameters = null, bool postDynamicParameters = false, string nodeRootUrl = null)
         {
             if( postDynamicParameters )
-                return StartPlanAsyncAsPost( planName, dryRun, requestNumber, dynamicParameters, nodeUrlSchemeHostPort ).Result;
+                return StartPlanAsyncAsPost( planName, dryRun, requestNumber, dynamicParameters, nodeRootUrl ).Result;
             else
-                return StartPlanAsync( planName, dryRun, requestNumber, dynamicParameters, nodeUrlSchemeHostPort ).Result;
+                return StartPlanAsync( planName, dryRun, requestNumber, dynamicParameters, nodeRootUrl ).Result;
         }
 
         public async Task<long> StartPlanAsync(string planName, bool dryRun = false, string requestNumber = null,
-            Dictionary<string, string> dynamicParameters = null, string nodeUrlSchemeHostPort = null)
+            Dictionary<string, string> dynamicParameters = null, string nodeRootUrl = null)
         {
             requestNumber = !string.IsNullOrWhiteSpace( requestNumber ) ? $"&requestNumber={requestNumber}" : null;
-            nodeUrlSchemeHostPort = !string.IsNullOrWhiteSpace( nodeUrlSchemeHostPort ) ? $"&nodeUrlSchemeHostPort={nodeUrlSchemeHostPort}" : null;
-            string qs = $"?dryRun={dryRun}{requestNumber}{nodeUrlSchemeHostPort}{dynamicParameters?.ToQueryString( asPartialQueryString: true )}";
+            nodeRootUrl = !string.IsNullOrWhiteSpace( nodeRootUrl ) ? $"&nodeRootUrl={nodeRootUrl}" : null;
+            string qs = $"?dryRun={dryRun}{requestNumber}{nodeRootUrl}{dynamicParameters?.ToQueryString( asPartialQueryString: true )}";
             string requestUri = $"{_rootPath}/{planName}/start/{qs}";
             return await GetAsync<long>( requestUri );
         }
 
 
         public async Task<long> StartPlanAsyncAsPost(string planName, bool dryRun = false, string requestNumber = null,
-            Dictionary<string, string> dynamicParameters = null, string nodeUrlSchemeHostPort = null)
+            Dictionary<string, string> dynamicParameters = null, string nodeRootUrl = null)
         {
             StartPlanEnvelope planEnvelope = new StartPlanEnvelope() { DynamicParameters = dynamicParameters };
 
             requestNumber = !string.IsNullOrWhiteSpace( requestNumber ) ? $"&requestNumber={requestNumber}" : null;
-            nodeUrlSchemeHostPort = !string.IsNullOrWhiteSpace( nodeUrlSchemeHostPort ) ? $"&nodeUrlSchemeHostPort={nodeUrlSchemeHostPort}" : null;
-            string qs = $"?dryRun={dryRun}{requestNumber}{nodeUrlSchemeHostPort}";
+            nodeRootUrl = !string.IsNullOrWhiteSpace( nodeRootUrl ) ? $"&nodeRootUrl={nodeRootUrl}" : null;
+            string qs = $"?dryRun={dryRun}{requestNumber}{nodeRootUrl}";
             string requestUri = $"{_rootPath}/{planName}/start/{qs}";
             return await PostAsync<StartPlanEnvelope, long>( planEnvelope, requestUri );
         }
@@ -101,6 +101,30 @@ namespace Synapse.Services
         {
             string requestUri = $"{_rootPath}/{planName}/{planInstanceId}/";
             return await GetAsync<Plan>( requestUri );
+        }
+
+
+        public object GetPlanElements(string planUniqueName, long planInstanceId, string elementPath, SerializationType serializationType = SerializationType.Json)
+        {
+            return GetPlanElementsAsync( planUniqueName, planInstanceId, elementPath, serializationType ).Result;
+        }
+
+        public async Task<object> GetPlanElementsAsync(string planUniqueName, long planInstanceId, string elementPath, SerializationType serializationType = SerializationType.Json)
+        {
+            string requestUri = $"{_rootPath}/{planUniqueName}/{planInstanceId}/part/?{nameof( elementPath )}={elementPath}";
+            return await GetAsync<object>( requestUri );
+        }
+
+
+        public object GetPlanElements(string planUniqueName, long planInstanceId, PlanElementParms elementParms)
+        {
+            return GetPlanElementsAsync( planUniqueName, planInstanceId, elementParms ).Result;
+        }
+
+        public async Task<object> GetPlanElementsAsync(string planUniqueName, long planInstanceId, PlanElementParms elementParms)
+        {
+            string requestUri = $"{_rootPath}/{planUniqueName}/{planInstanceId}/part/";
+            return await PostAsync<PlanElementParms, object>( elementParms, requestUri );
         }
 
 
@@ -130,14 +154,14 @@ namespace Synapse.Services
         }
 
 
-        public void CancelPlan(string planName, long planInstanceId, string nodeUrlSchemeHostPort = null)
+        public void CancelPlan(string planName, long planInstanceId, string nodeRootUrl = null)
         {
-            CancelPlanAsync( planName, planInstanceId, nodeUrlSchemeHostPort ).Wait();
+            CancelPlanAsync( planName, planInstanceId, nodeRootUrl ).Wait();
         }
 
-        public async Task CancelPlanAsync(string planName, long planInstanceId, string nodeUrlSchemeHostPort = null)
+        public async Task CancelPlanAsync(string planName, long planInstanceId, string nodeRootUrl = null)
         {
-            string requestUri = $"{_rootPath}/{planName}/{planInstanceId}/?nodeUrlSchemeHostPort={nodeUrlSchemeHostPort}";
+            string requestUri = $"{_rootPath}/{planName}/{planInstanceId}/?nodeRootUrl={nodeRootUrl}";
             await DeleteAsync( requestUri );
         }
     }

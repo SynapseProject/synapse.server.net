@@ -51,7 +51,7 @@ namespace Synapse.Services
 
         public long StartPlan(string securityContext, string planUniqueName, bool dryRun = false,
             string requestNumber = null, Dictionary<string, string> dynamicParameters = null, bool postDynamicParameters = false,
-            string nodeUrlSchemeHostPort = null, Uri referrer = null)
+            string nodeRootUrl = null, Uri referrer = null)
         {
             _dal.HasAccessOrException( securityContext, planUniqueName );
 
@@ -69,14 +69,14 @@ namespace Synapse.Services
                 //plan.Name += "foo";  //testing: intentionally crash the sig
             }
 
-            GetNodeClientInstance( nodeUrlSchemeHostPort, referrer ).StartPlan( plan, plan.InstanceId, dryRun, dynamicParameters, postDynamicParameters );
+            GetNodeClientInstance( nodeRootUrl, referrer ).StartPlan( plan, plan.InstanceId, dryRun, dynamicParameters, postDynamicParameters );
 
             return plan.InstanceId;
         }
 
-        public void CancelPlan(long instanceId, string nodeUrlSchemeHostPort = null, Uri referrer = null)
+        public void CancelPlan(long instanceId, string nodeRootUrl = null, Uri referrer = null)
         {
-            GetNodeClientInstance( nodeUrlSchemeHostPort, referrer ).CancelPlanAsync( instanceId );
+            GetNodeClientInstance( nodeRootUrl, referrer ).CancelPlanAsync( instanceId );
         }
 
         public Plan GetPlanStatus(string planUniqueName, long planInstanceId)
@@ -151,16 +151,16 @@ namespace Synapse.Services
                 return results;
         }
 
-        NodeServiceHttpApiClient GetNodeClientInstance(string nodeUrlSchemeHostPort, Uri referrer)
+        NodeServiceHttpApiClient GetNodeClientInstance(string nodeRootUrl, Uri referrer)
         {
-            if( string.IsNullOrWhiteSpace( nodeUrlSchemeHostPort ) )
-                nodeUrlSchemeHostPort = SynapseServer.Config.Controller.NodeUrl;
+            if( string.IsNullOrWhiteSpace( nodeRootUrl ) )
+                nodeRootUrl = SynapseServer.Config.Controller.NodeUrl;
             else
-                nodeUrlSchemeHostPort = $"{nodeUrlSchemeHostPort}/synapse/node";
+                nodeRootUrl = $"{nodeRootUrl}/synapse/node";
 
             SynapseServer.Logger.Info( $"nodeClient.Headers.Referrer: {referrer?.AbsoluteUri}" );
 
-            NodeServiceHttpApiClient nodeClient = new NodeServiceHttpApiClient( nodeUrlSchemeHostPort );
+            NodeServiceHttpApiClient nodeClient = new NodeServiceHttpApiClient( nodeRootUrl );
             nodeClient.Headers.Referrer = referrer;
             return nodeClient;
         }
