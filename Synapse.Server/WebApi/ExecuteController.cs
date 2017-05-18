@@ -103,7 +103,7 @@ namespace Synapse.Services
         {
             InitPlanServer();
 
-            Uri uri = this.Url.Request.RequestUri;
+            Uri uri = CurrentUrl.Request.RequestUri;
             string context = GetContext( nameof( StartPlan ), nameof( CurrentUserName ), CurrentUserName,
                 nameof( planUniqueName ), planUniqueName, nameof( dryRun ), dryRun,
                 nameof( requestNumber ), requestNumber, nameof( nodeRootUrl ), nodeRootUrl, "QueryString", uri.Query );
@@ -114,7 +114,7 @@ namespace Synapse.Services
                 Dictionary<string, string> dynamicParameters = uri.ParseQueryString();
                 if( dynamicParameters.ContainsKey( nameof( dryRun ) ) ) dynamicParameters.Remove( nameof( dryRun ) );
                 return _server.StartPlan( CurrentUserName, planUniqueName, dryRun, requestNumber, dynamicParameters, nodeRootUrl: nodeRootUrl,
-                    referrer: this.Url.Request.RequestUri );
+                    referrer: CurrentUrl.Request.RequestUri );
             }
             catch( Exception ex )
             {
@@ -145,7 +145,7 @@ namespace Synapse.Services
             }
             else
             {
-                string rawBody = Request.Properties["body"].ToString();
+                string rawBody = CurrentUrl.Request.Properties["body"].ToString();
                 failedToDeserialize = !string.IsNullOrWhiteSpace( rawBody );
                 if( failedToDeserialize )
                     parms.Append( rawBody );
@@ -163,7 +163,7 @@ namespace Synapse.Services
                     throw new Exception( $"Failed to deserialize message body:\r\n{parms.ToString()}" );
 
                 return _server.StartPlan( CurrentUserName, planUniqueName, dryRun, requestNumber, dynamicParameters,
-                    postDynamicParameters: true, nodeRootUrl: nodeRootUrl, referrer: this.Url?.Request?.RequestUri );
+                    postDynamicParameters: true, nodeRootUrl: nodeRootUrl, referrer: CurrentUrl.Request.RequestUri );
             }
             catch( Exception ex )
             {
@@ -257,7 +257,7 @@ namespace Synapse.Services
             try
             {
                 SynapseServer.Logger.Debug( context );
-                _server.CancelPlan( planInstanceId, nodeRootUrl, referrer: this.Url.Request.RequestUri );
+                _server.CancelPlan( planInstanceId, nodeRootUrl, referrer: CurrentUrl.Request.RequestUri );
             }
             catch( Exception ex )
             {
