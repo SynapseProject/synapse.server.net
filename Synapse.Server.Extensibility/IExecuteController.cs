@@ -1,11 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Security.Principal;
 using System.Web.Http;
+using System.Web.Http.Routing;
+
 using Synapse.Core;
 
 namespace Synapse.Services
 {
     public interface IExecuteController
     {
+        UrlHelper CurrentUrl { get; set; }
+        IPrincipal CurrentUser { get; set; }
+
         void CancelPlan(string planUniqueName, long planInstanceId, string nodeRootUrl = null);
         object GetPlanElements(string planUniqueName, long planInstanceId, string elementPath, SerializationType serializationType = SerializationType.Json);
         object GetPlanElements(string planUniqueName, long planInstanceId, [FromBody] PlanElementParms elementParms);

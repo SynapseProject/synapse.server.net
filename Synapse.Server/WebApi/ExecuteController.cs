@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Principal;
 using System.Text;
 using System.Web.Http;
+using System.Web.Http.Routing;
 
 using Synapse.Core;
 using Synapse.Common.WebApi;
@@ -43,7 +45,7 @@ namespace Synapse.Services
             try
             {
                 SynapseServer.Logger.Debug( context );
-                return CurrentUser;
+                return CurrentUserName;
             }
             catch( Exception ex )
             {
@@ -102,7 +104,7 @@ namespace Synapse.Services
             InitPlanServer();
 
             Uri uri = this.Url.Request.RequestUri;
-            string context = GetContext( nameof( StartPlan ), nameof( CurrentUser ), CurrentUser,
+            string context = GetContext( nameof( StartPlan ), nameof( CurrentUserName ), CurrentUserName,
                 nameof( planUniqueName ), planUniqueName, nameof( dryRun ), dryRun,
                 nameof( requestNumber ), requestNumber, nameof( nodeRootUrl ), nodeRootUrl, "QueryString", uri.Query );
 
@@ -111,7 +113,7 @@ namespace Synapse.Services
                 SynapseServer.Logger.Debug( context );
                 Dictionary<string, string> dynamicParameters = uri.ParseQueryString();
                 if( dynamicParameters.ContainsKey( nameof( dryRun ) ) ) dynamicParameters.Remove( nameof( dryRun ) );
-                return _server.StartPlan( CurrentUser, planUniqueName, dryRun, requestNumber, dynamicParameters, nodeRootUrl: nodeRootUrl,
+                return _server.StartPlan( CurrentUserName, planUniqueName, dryRun, requestNumber, dynamicParameters, nodeRootUrl: nodeRootUrl,
                     referrer: this.Url.Request.RequestUri );
             }
             catch( Exception ex )
@@ -149,7 +151,7 @@ namespace Synapse.Services
                     parms.Append( rawBody );
             }
 
-            string context = GetContext( nameof( StartPlan ), nameof( CurrentUser ), CurrentUser,
+            string context = GetContext( nameof( StartPlan ), nameof( CurrentUserName ), CurrentUserName,
                 nameof( planUniqueName ), planUniqueName, nameof( dryRun ), dryRun,
                 nameof( requestNumber ), requestNumber, nameof( nodeRootUrl ), nodeRootUrl, "planParameters", parms.ToString() );
 
@@ -160,7 +162,7 @@ namespace Synapse.Services
                 if( failedToDeserialize )
                     throw new Exception( $"Failed to deserialize message body:\r\n{parms.ToString()}" );
 
-                return _server.StartPlan( CurrentUser, planUniqueName, dryRun, requestNumber, dynamicParameters,
+                return _server.StartPlan( CurrentUserName, planUniqueName, dryRun, requestNumber, dynamicParameters,
                     postDynamicParameters: true, nodeRootUrl: nodeRootUrl, referrer: this.Url?.Request?.RequestUri );
             }
             catch( Exception ex )
@@ -343,12 +345,26 @@ namespace Synapse.Services
             return $"{c.ToString().TrimEnd( ',', ' ' )})";
         }
 
-        string CurrentUser
+        string CurrentUserName
         {
             get
             {
-                return User != null && User.Identity != null ? User.Identity.Name : "Anonymous";
+                return CurrentUser?.Identity?.Name ?? "Anonymous";
             }
+        }
+
+        UrlHelper _currentUrl = null;
+        public UrlHelper CurrentUrl
+        {
+            get { return _currentUrl ?? this.Url; }
+            set { _currentUrl = value; }
+        }
+
+        IPrincipal _currentUser = null;
+        public IPrincipal CurrentUser
+        {
+            get { return _currentUser ?? this.User; }
+            set { _currentUser = value; }
         }
         #endregion
     }
