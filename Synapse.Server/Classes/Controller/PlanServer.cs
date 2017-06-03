@@ -58,9 +58,26 @@ namespace Synapse.Services
             Plan plan = _dal.CreatePlanInstance( planUniqueName );
             plan.StartInfo = new PlanStartInfo() { RequestUser = securityContext, RequestNumber = requestNumber };
 
+            //record "New" status
+            Plan initResultPlan = new Plan()
+            {
+                Name = plan.Name,
+                UniqueName = plan.UniqueName,
+                InstanceId = plan.InstanceId,
+                StartInfo = plan.StartInfo,
+                Result = new ExecuteResult()
+                {
+                    Status = StatusType.New,
+                    BranchStatus = StatusType.New,
+                    Message = $"New Instance of Plan: {plan.UniqueName}/{plan.InstanceId}."
+                }
+            };
+            _dal.UpdatePlanStatus( initResultPlan );
+
+            //sign the plan
             if( SynapseServer.Config.Controller.SignPlan )
             {
-                SynapseServer.Logger.Debug( $"Signing Plan {plan.Name}/{plan.InstanceId}." );
+                SynapseServer.Logger.Debug( $"Signing Plan: {plan.Name}/{plan.InstanceId}." );
 
                 if( !File.Exists( SynapseServer.Config.Signature.KeyUri ) )
                     throw new FileNotFoundException( SynapseServer.Config.Signature.KeyUri );
@@ -69,6 +86,7 @@ namespace Synapse.Services
                 //plan.Name += "foo";  //testing: intentionally crash the sig
             }
 
+            //send plan to Node to start the work
             GetNodeClientInstance( nodeRootUrl, referrer ).StartPlan( plan, plan.InstanceId, dryRun, dynamicParameters, postDynamicParameters );
 
             return plan.InstanceId;
@@ -79,9 +97,28 @@ namespace Synapse.Services
             GetNodeClientInstance( nodeRootUrl, referrer ).CancelPlanAsync( instanceId );
         }
 
+        //eat the error here, always return something valid.
+        // - possible reasons for Plan failing to fetch: history record has been purged, other error?
         public Plan GetPlanStatus(string planUniqueName, long planInstanceId)
         {
-            return _dal.GetPlanStatus( planUniqueName, planInstanceId );
+            try
+            {
+                return _dal.GetPlanStatus( planUniqueName, planInstanceId );
+            }
+            catch
+            {
+                return new Plan()
+                {
+                    UniqueName = planUniqueName,
+                    InstanceId = planInstanceId,
+                    Result = new ExecuteResult()
+                    {
+                        Status = StatusType.None,
+                        BranchStatus = StatusType.None,
+                        Message = $"Could not fetch Plan: {planUniqueName}/{planInstanceId}."
+                    }
+                };
+            }
         }
 
 
@@ -97,7 +134,7 @@ namespace Synapse.Services
 
         public object GetPlanElements(string planUniqueName, long planInstanceId, PlanElementParms elementParms)
         {
-            Plan plan = _dal.GetPlanStatus( planUniqueName, planInstanceId );
+            Plan plan = GetPlanStatus( planUniqueName, planInstanceId );
             object result = YamlHelpers.SelectElements( plan, elementParms.ElementPaths );
 
             List<object> results = new List<object>();
