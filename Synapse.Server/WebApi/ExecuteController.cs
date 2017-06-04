@@ -97,6 +97,22 @@ namespace Synapse.Services
             }
         }
 
+        [Route( "{planUniqueName}/start/sync/" )]
+        [HttpGet]
+        public object StartPlanSync(string planUniqueName, bool dryRun = false, string requestNumber = null,
+            string path = "Actions[0]:Result:ExitData", int pollingIntervalSeconds = 1, int timeoutSeconds = 120, string nodeRootUrl = null)
+        {
+            Uri uri = CurrentUrl.Request.RequestUri;
+            string context = GetContext( nameof( StartPlanSync ), nameof( CurrentUserName ), CurrentUserName,
+                nameof( planUniqueName ), planUniqueName, nameof( dryRun ), dryRun, nameof( path ), path,
+                nameof( requestNumber ), requestNumber, nameof( nodeRootUrl ), nodeRootUrl, "QueryString", uri.Query );
+            SynapseServer.Logger.Debug( context );
+
+            long instanceId = StartPlan( planUniqueName, dryRun, requestNumber, nodeRootUrl );
+
+            return SyncExecuteHelper.WaitForTerminalStatusOrTimeout<object>( this, planUniqueName, instanceId, path, pollingIntervalSeconds, timeoutSeconds );
+        }
+
         [Route( "{planUniqueName}/start/" )]
         [HttpGet]
         public long StartPlan(string planUniqueName, bool dryRun = false, string requestNumber = null, string nodeRootUrl = null)
@@ -122,6 +138,21 @@ namespace Synapse.Services
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
+        }
+
+        [Route( "{planUniqueName}/start/sync/" )]
+        [HttpPost]
+        public object StartPlanSync([FromBody]StartPlanEnvelope planEnvelope, string planUniqueName, bool dryRun = false, string requestNumber = null,
+            string path = "Actions[0]:Result:ExitData", int pollingIntervalSeconds = 1, int timeoutSeconds = 120, string nodeRootUrl = null)
+        {
+            string context = GetContext( nameof( StartPlanSync ), nameof( CurrentUserName ), CurrentUserName,
+                nameof( planUniqueName ), planUniqueName, nameof( dryRun ), dryRun, nameof( path ), path,
+                nameof( requestNumber ), requestNumber, nameof( nodeRootUrl ), nodeRootUrl );
+            SynapseServer.Logger.Debug( context );
+
+            long instanceId = StartPlan( planEnvelope, planUniqueName, dryRun, requestNumber, nodeRootUrl );
+
+            return SyncExecuteHelper.WaitForTerminalStatusOrTimeout<object>( this, planUniqueName, instanceId, path, pollingIntervalSeconds, timeoutSeconds );
         }
 
         [Route( "{planUniqueName}/start/" )]

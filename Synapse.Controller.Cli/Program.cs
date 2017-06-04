@@ -42,7 +42,7 @@ namespace Synapse.Services.Controller.Cli
         }
 
 
-        Dictionary<string, string> _methods = new Dictionary<string, string>();
+        Dictionary<string, string> _methods = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
         string _service = "service";
         string _keygen = "keygen";
 
@@ -58,6 +58,8 @@ namespace Synapse.Services.Controller.Cli
             _methods.Add( "li", "GetPlanInstanceIdList" );
             _methods.Add( "start", "StartPlan" );
             _methods.Add( "s", "StartPlan" );
+            _methods.Add( "startwait", "StartPlanWait" );
+            _methods.Add( "sw", "StartPlanWait" );
             _methods.Add( "getstatus", "GetPlanStatus" );
             _methods.Add( "gs", "GetPlanStatus" );
             _methods.Add( "setstatus", "SetPlanStatus" );
@@ -92,7 +94,7 @@ namespace Synapse.Services.Controller.Cli
 
                 if( _methods.ContainsKey( arg0 ) )
                 {
-                    Dictionary<string, string> parms = new Dictionary<string, string>();
+                    Dictionary<string, string> parms = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
                     if( args.Length > 1 )
                     {
                         bool error = false;
@@ -105,8 +107,8 @@ namespace Synapse.Services.Controller.Cli
                     }
                     Console.WriteLine( $"Calling {_methods[arg0]} on {BaseUrl}" );
 
-                    if( _methods[arg0] == "StartPlan" )
-                        RunStartPlanMethod( args, parms );
+                    if( _methods[arg0] == "StartPlan" || _methods[arg0] == "StartPlanWait" )
+                        RunStartPlanMethod( args, parms, _methods[arg0] == "StartPlanWait" );
                     else
                         RunMethod( new ControllerServiceHttpApiClient( BaseUrl ), _methods[arg0], args );
                 }
@@ -119,7 +121,7 @@ namespace Synapse.Services.Controller.Cli
             }
         }
 
-        protected virtual void RunStartPlanMethod(string[] args, Dictionary<string, string> parameters)
+        protected virtual void RunStartPlanMethod(string[] args, Dictionary<string, string> parameters, bool isSync)
         {
             string methodName = "StartPlan";
             ControllerServiceHttpApiClient instance = new ControllerServiceHttpApiClient( BaseUrl );
@@ -131,6 +133,11 @@ namespace Synapse.Services.Controller.Cli
                 parms.Add( "planName", typeof( string ) );
                 parms.Add( "dryRun", typeof( bool ) );
                 parms.Add( "requestNumber", typeof( string ) );
+                if( isSync )
+                {
+                    parms.Add( "pollingIntervalSeconds", typeof( int ) );
+                    parms.Add( "timeoutSeconds", typeof( int ) );
+                }
                 parms.Add( "nodeRootUrl", typeof( string ) );
                 parms.Add( "asPost", typeof( string ) );
                 Console.WriteLine( $"Parameter options for {methodName}:\r\n" );
@@ -143,7 +150,7 @@ namespace Synapse.Services.Controller.Cli
             else
             {
                 string planName = null;
-                string pn = nameof( planName ).ToLower();
+                string pn = nameof( planName );
                 if( parameters.ContainsKey( pn ) )
                 {
                     planName = parameters[pn];
@@ -153,7 +160,7 @@ namespace Synapse.Services.Controller.Cli
                     throw new Exception( "PlanName is required." );
 
                 bool dryRun = false;
-                string dr = nameof( dryRun ).ToLower();
+                string dr = nameof( dryRun );
                 if( parameters.ContainsKey( dr ) )
                 {
                     bool.TryParse( parameters[dr], out dryRun );
@@ -161,15 +168,34 @@ namespace Synapse.Services.Controller.Cli
                 }
 
                 string requestNumber = null;
-                string rn = nameof( requestNumber ).ToLower();
+                string rn = nameof( requestNumber );
                 if( parameters.ContainsKey( rn ) )
                 {
                     requestNumber = parameters[rn];
                     parameters.Remove( rn );
                 }
 
+                int pollingIntervalSeconds = 1;
+                int timeoutSeconds = 120;
+                if( isSync )
+                {
+                    string pi = nameof( pollingIntervalSeconds );
+                    if( parameters.ContainsKey( pi ) )
+                    {
+                        int.TryParse( parameters[pi], out pollingIntervalSeconds );
+                        parameters.Remove( pi );
+                    }
+
+                    string to = nameof( timeoutSeconds );
+                    if( parameters.ContainsKey( to ) )
+                    {
+                        int.TryParse( parameters[to], out timeoutSeconds );
+                        parameters.Remove( to );
+                    }
+                }
+
                 string nodeRootUrl = null;
-                string nu = nameof( nodeRootUrl ).ToLower();
+                string nu = nameof( nodeRootUrl );
                 if( parameters.ContainsKey( nu ) )
                 {
                     nodeRootUrl = parameters[nu];
@@ -178,7 +204,7 @@ namespace Synapse.Services.Controller.Cli
 
                 bool postDynamicParameters = false;
                 string asPost = null;
-                string ap = nameof( asPost ).ToLower();
+                string ap = nameof( asPost );
                 if( parameters.ContainsKey( ap ) )
                 {
                     string fileName = parameters[ap];
@@ -209,8 +235,17 @@ namespace Synapse.Services.Controller.Cli
 
                 try
                 {
-                    long result = instance.StartPlan( planName, dryRun, requestNumber, parameters, postDynamicParameters, nodeRootUrl );
-                    Console.WriteLine( result );
+                    if( isSync )
+                    {
+                        object result = instance.StartPlanWait( planName, dryRun, requestNumber, parameters, postDynamicParameters,
+                            pollingIntervalSeconds, timeoutSeconds, nodeRootUrl );
+                        Console.WriteLine( result );
+                    }
+                    else
+                    {
+                        long result = instance.StartPlan( planName, dryRun, requestNumber, parameters, postDynamicParameters, nodeRootUrl );
+                        Console.WriteLine( result );
+                    }
                 }
                 catch( Exception ex )
                 {
@@ -320,6 +355,7 @@ namespace Synapse.Services.Controller.Cli
             Console.WriteLine( "    - List|l             Get a list of Plans.", "" );
             Console.WriteLine( "    - ListInstances|li   Get a list of Plans Instances.", "" );
             Console.WriteLine( "    - Start|s            Start a new Plan Instance.", "" );
+            Console.WriteLine( "    - StartWait|sw       Run a new Plan Instance at Controller.", "" );
             Console.WriteLine( "    - GetStatus|gs       Get the Status for a Plan Instance.", "" );
             Console.WriteLine( "    - SetStatus|ss       Set the Status for a Plan Instance.", "" );
             Console.WriteLine( "    - Cancel|c           Cancel a Plan Instance.\r\n", "" );

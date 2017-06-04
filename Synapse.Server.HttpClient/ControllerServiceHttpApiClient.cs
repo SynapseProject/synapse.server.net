@@ -59,6 +59,7 @@ namespace Synapse.Services
         }
 
 
+        #region async plan execution
         public long StartPlan(string planName, bool dryRun = false, string requestNumber = null,
             Dictionary<string, string> dynamicParameters = null, bool postDynamicParameters = false, string nodeRootUrl = null)
         {
@@ -90,6 +91,49 @@ namespace Synapse.Services
             string requestUri = $"{_rootPath}/{planName}/start/{qs}";
             return await PostAsync<StartPlanEnvelope, long>( planEnvelope, requestUri );
         }
+        #endregion
+
+
+        #region sync plan execution - Controller waits for -> ( Plan.Status >= Complete || Timeout )
+        public object StartPlanWait(string planName, bool dryRun = false, string requestNumber = null,
+            Dictionary<string, string> dynamicParameters = null, bool postDynamicParameters = false,
+            int pollingIntervalSeconds = 1, int timeoutSeconds = 120, string nodeRootUrl = null)
+        {
+            if( postDynamicParameters )
+                return StartPlanWaitAsyncAsPost( planName, dryRun, requestNumber, dynamicParameters, pollingIntervalSeconds, timeoutSeconds, nodeRootUrl ).Result;
+            else
+                return StartPlanWaitAsync( planName, dryRun, requestNumber, dynamicParameters, pollingIntervalSeconds, timeoutSeconds, nodeRootUrl ).Result;
+        }
+
+        public async Task<object> StartPlanWaitAsync(string planName, bool dryRun = false, string requestNumber = null,
+            Dictionary<string, string> dynamicParameters = null,
+            int pollingIntervalSeconds = 1, int timeoutSeconds = 120, string nodeRootUrl = null)
+        {
+            requestNumber = !string.IsNullOrWhiteSpace( requestNumber ) ? $"&requestNumber={requestNumber}" : null;
+            nodeRootUrl = !string.IsNullOrWhiteSpace( nodeRootUrl ) ? $"&nodeRootUrl={nodeRootUrl}" : null;
+            string pi = pollingIntervalSeconds > 1 ? $"&pollingIntervalSeconds={pollingIntervalSeconds}" : null;
+            string to = timeoutSeconds > 0 && timeoutSeconds != 120 ? $"&timeoutSeconds={timeoutSeconds}" : null;
+            string qs = $"?dryRun={dryRun}{requestNumber}{pi}{to}{nodeRootUrl}{dynamicParameters?.ToQueryString( asPartialQueryString: true )}";
+            string requestUri = $"{_rootPath}/{planName}/start/sync/{qs}";
+            return await GetAsync<object>( requestUri );
+        }
+
+
+        public async Task<object> StartPlanWaitAsyncAsPost(string planName, bool dryRun = false, string requestNumber = null,
+            Dictionary<string, string> dynamicParameters = null,
+            int pollingIntervalSeconds = 1, int timeoutSeconds = 120, string nodeRootUrl = null)
+        {
+            StartPlanEnvelope planEnvelope = new StartPlanEnvelope() { DynamicParameters = dynamicParameters };
+
+            requestNumber = !string.IsNullOrWhiteSpace( requestNumber ) ? $"&requestNumber={requestNumber}" : null;
+            nodeRootUrl = !string.IsNullOrWhiteSpace( nodeRootUrl ) ? $"&nodeRootUrl={nodeRootUrl}" : null;
+            string pi = pollingIntervalSeconds > 1 ? $"&pollingIntervalSeconds={pollingIntervalSeconds}" : null;
+            string to = timeoutSeconds > 0 && timeoutSeconds != 120 ? $"&timeoutSeconds={timeoutSeconds}" : null;
+            string qs = $"?dryRun={dryRun}{requestNumber}{pi}{to}{nodeRootUrl}";
+            string requestUri = $"{_rootPath}/{planName}/start/sync/{qs}";
+            return await PostAsync<StartPlanEnvelope, object>( planEnvelope, requestUri );
+        }
+        #endregion
 
 
         public Plan GetPlanStatus(string planName, long planInstanceId)

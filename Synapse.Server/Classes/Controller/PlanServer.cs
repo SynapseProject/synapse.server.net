@@ -69,7 +69,7 @@ namespace Synapse.Services
                 {
                     Status = StatusType.New,
                     BranchStatus = StatusType.New,
-                    Message = $"New Instance of Plan: {plan.UniqueName}/{plan.InstanceId}."
+                    Message = $"New Instance of Plan [{plan.UniqueName}/{plan.InstanceId}]."
                 }
             };
             _dal.UpdatePlanStatus( initResultPlan );
@@ -77,7 +77,7 @@ namespace Synapse.Services
             //sign the plan
             if( SynapseServer.Config.Controller.SignPlan )
             {
-                SynapseServer.Logger.Debug( $"Signing Plan: {plan.Name}/{plan.InstanceId}." );
+                SynapseServer.Logger.Debug( $"Signing Plan [{plan.Name}/{plan.InstanceId}]." );
 
                 if( !File.Exists( SynapseServer.Config.Signature.KeyUri ) )
                     throw new FileNotFoundException( SynapseServer.Config.Signature.KeyUri );
@@ -109,13 +109,14 @@ namespace Synapse.Services
             {
                 return new Plan()
                 {
+                    Name = planUniqueName,
                     UniqueName = planUniqueName,
                     InstanceId = planInstanceId,
                     Result = new ExecuteResult()
                     {
                         Status = StatusType.None,
                         BranchStatus = StatusType.None,
-                        Message = $"Could not fetch Plan: {planUniqueName}/{planInstanceId}."
+                        Message = $"Could not fetch Plan [{planUniqueName}/{planInstanceId}]."
                     }
                 };
             }
