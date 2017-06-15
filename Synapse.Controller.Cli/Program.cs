@@ -60,6 +60,8 @@ namespace Synapse.Services.Controller.Cli
             _methods.Add( "s", "StartPlan" );
             _methods.Add( "startwait", "StartPlanWait" );
             _methods.Add( "sw", "StartPlanWait" );
+            _methods.Add( "getelement", "GetPlanElement" );
+            _methods.Add( "ge", "GetPlanElement" );
             _methods.Add( "getstatus", "GetPlanStatus" );
             _methods.Add( "gs", "GetPlanStatus" );
             _methods.Add( "setstatus", "SetPlanStatus" );
@@ -384,7 +386,8 @@ namespace Synapse.Services.Controller.Cli
             Console.WriteLine( "    - ListInstances|li   Get a list of Plans Instances.", "" );
             Console.WriteLine( "    - Start|s            Start a new Plan Instance.", "" );
             Console.WriteLine( "    - StartWait|sw       Run a new Plan Instance at Controller.", "" );
-            Console.WriteLine( "    - GetStatus|gs       Get the Status for a Plan Instance.", "" );
+            Console.WriteLine( "    - StartWait|sw       Run a new Plan Instance at Controller.", "" );
+            Console.WriteLine( "    - GetPlanElement|ge  Get an element part from a ResultPlan.", "" );
             Console.WriteLine( "    - SetStatus|ss       Set the Status for a Plan Instance.", "" );
             Console.WriteLine( "    - Cancel|c           Cancel a Plan Instance.\r\n", "" );
             Console.WriteLine( "  Examples:", "" );

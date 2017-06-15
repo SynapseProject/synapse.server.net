@@ -174,6 +174,7 @@ namespace Synapse.Services
             }
         }
 
+        #region StartPlanSync
         [Route( "{planUniqueName}/start/sync/" )]
         [HttpGet]
         public object StartPlanSync(string planUniqueName, bool dryRun = false, string requestNumber = null,
@@ -241,6 +242,8 @@ namespace Synapse.Services
                 default: { return content.ToString(); }
             }
         }
+        #endregion
+
 
         [Route( "{planUniqueName}/{planInstanceId}/" )]
         [HttpGet]
@@ -338,7 +341,7 @@ namespace Synapse.Services
 
         [Route( "{planUniqueName}/{planInstanceId}/part/" )]
         [HttpGet]
-        public object GetPlanElements(string planUniqueName, long planInstanceId, string elementPath, SerializationType serializationType = SerializationType.Json)
+        public object GetPlanElements(string planUniqueName, long planInstanceId, string elementPath, SerializationType serializationType = SerializationType.Json, bool setContentType = true)
         {
             InitPlanServer();
 
@@ -354,7 +357,20 @@ namespace Synapse.Services
                 pep.Type = serializationType;
                 pep.ElementPaths.Add( elementPath );
 
-                return _server.GetPlanElements( planUniqueName, planInstanceId, pep );
+                object result = _server.GetPlanElements( planUniqueName, planInstanceId, pep );
+
+                if( setContentType )
+                {
+                    Encoding encoding = serializationType == SerializationType.Xml ? Encoding.Unicode : Encoding.UTF8;
+                    netHttp.HttpResponseMessage response = new netHttp.HttpResponseMessage( System.Net.HttpStatusCode.OK );
+                    response.Content = new netHttp.StringContent( GetStringContent( result, serializationType ),
+                        encoding, SerializationContentType.GetContentType( serializationType ) );
+                    return response;
+                }
+                else
+                {
+                    return result;
+                }
             }
             catch( Exception ex )
             {

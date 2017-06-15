@@ -14,7 +14,8 @@ namespace Synapse.Services
         IPrincipal CurrentUser { get; set; }
 
         void CancelPlan(string planUniqueName, long planInstanceId, string nodeRootUrl = null);
-        object GetPlanElements(string planUniqueName, long planInstanceId, string elementPath, SerializationType serializationType = SerializationType.Json);
+        object GetPlanElements(string planUniqueName, long planInstanceId, string elementPath,
+            SerializationType serializationType = SerializationType.Json, bool setContentType = true);
         object GetPlanElements(string planUniqueName, long planInstanceId, [FromBody] PlanElementParms elementParms);
         IEnumerable<long> GetPlanInstanceIdList(string planUniqueName);
         IEnumerable<string> GetPlanList(string filter = null, bool isRegexFilter = true);

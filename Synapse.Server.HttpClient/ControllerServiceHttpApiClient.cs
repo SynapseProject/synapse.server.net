@@ -160,14 +160,16 @@ namespace Synapse.Services
         }
 
 
-        public object GetPlanElements(string planUniqueName, long planInstanceId, string elementPath, SerializationType serializationType = SerializationType.Json)
+        public object GetPlanElement(string planUniqueName, long planInstanceId, string elementPath,
+            SerializationType serializationType = SerializationType.Json, bool setContentType = true)
         {
-            return GetPlanElementsAsync( planUniqueName, planInstanceId, elementPath, serializationType ).Result;
+            return GetPlanElementAsync( planUniqueName, planInstanceId, elementPath, serializationType, setContentType ).Result;
         }
 
-        public async Task<object> GetPlanElementsAsync(string planUniqueName, long planInstanceId, string elementPath, SerializationType serializationType = SerializationType.Json)
+        public async Task<object> GetPlanElementAsync(string planUniqueName, long planInstanceId, string elementPath,
+            SerializationType serializationType = SerializationType.Json, bool setContentType = true)
         {
-            string requestUri = $"{_rootPath}/{planUniqueName}/{planInstanceId}/part/?{nameof( elementPath )}={elementPath}";
+            string requestUri = $"{_rootPath}/{planUniqueName}/{planInstanceId}/part/?{nameof( elementPath )}={elementPath}&{nameof( serializationType )}={serializationType}&{nameof( setContentType )}={setContentType}";
             return await GetAsync<object>( requestUri );
         }
 
