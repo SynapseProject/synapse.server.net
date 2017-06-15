@@ -175,6 +175,7 @@ namespace Synapse.Services
                             catch { }
                             break;
                         }
+                        case SerializationType.Html:
                         case SerializationType.Unspecified:
                         {
                             //no-op

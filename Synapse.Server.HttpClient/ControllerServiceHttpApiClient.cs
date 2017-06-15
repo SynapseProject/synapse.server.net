@@ -97,39 +97,51 @@ namespace Synapse.Services
         #region sync plan execution - Controller waits for -> ( Plan.Status >= Complete || Timeout )
         public object StartPlanWait(string planName, bool dryRun = false, string requestNumber = null,
             Dictionary<string, string> dynamicParameters = null, bool postDynamicParameters = false,
+            string path = "Actions[0]:Result:ExitData",
+            SerializationType serializationType = SerializationType.Json, bool setContentType = true,
             int pollingIntervalSeconds = 1, int timeoutSeconds = 120, string nodeRootUrl = null)
         {
             if( postDynamicParameters )
-                return StartPlanWaitAsyncAsPost( planName, dryRun, requestNumber, dynamicParameters, pollingIntervalSeconds, timeoutSeconds, nodeRootUrl ).Result;
+                return StartPlanWaitAsyncAsPost( planName, dryRun, requestNumber, dynamicParameters, path,
+                    serializationType, setContentType, pollingIntervalSeconds, timeoutSeconds, nodeRootUrl ).Result;
             else
-                return StartPlanWaitAsync( planName, dryRun, requestNumber, dynamicParameters, pollingIntervalSeconds, timeoutSeconds, nodeRootUrl ).Result;
+                return StartPlanWaitAsync( planName, dryRun, requestNumber, dynamicParameters, path,
+                    serializationType, setContentType, pollingIntervalSeconds, timeoutSeconds, nodeRootUrl ).Result;
         }
 
         public async Task<object> StartPlanWaitAsync(string planName, bool dryRun = false, string requestNumber = null,
-            Dictionary<string, string> dynamicParameters = null,
+            Dictionary<string, string> dynamicParameters = null, string path = "Actions[0]:Result:ExitData",
+            SerializationType serializationType = SerializationType.Json, bool setContentType = true,
             int pollingIntervalSeconds = 1, int timeoutSeconds = 120, string nodeRootUrl = null)
         {
             requestNumber = !string.IsNullOrWhiteSpace( requestNumber ) ? $"&requestNumber={requestNumber}" : null;
             nodeRootUrl = !string.IsNullOrWhiteSpace( nodeRootUrl ) ? $"&nodeRootUrl={nodeRootUrl}" : null;
+            path = !string.IsNullOrWhiteSpace( path ) ? $"&path={path}" : null;
+            string st = !string.IsNullOrWhiteSpace( path ) ? $"&serializationType={serializationType}" : null;
+            string sct = !string.IsNullOrWhiteSpace( path ) ? $"&setContentType={setContentType}" : null;
             string pi = pollingIntervalSeconds > 1 ? $"&pollingIntervalSeconds={pollingIntervalSeconds}" : null;
             string to = timeoutSeconds > 0 && timeoutSeconds != 120 ? $"&timeoutSeconds={timeoutSeconds}" : null;
-            string qs = $"?dryRun={dryRun}{requestNumber}{pi}{to}{nodeRootUrl}{dynamicParameters?.ToQueryString( asPartialQueryString: true )}";
+            string qs = $"?dryRun={dryRun}{requestNumber}{path}{st}{sct}{pi}{to}{nodeRootUrl}{dynamicParameters?.ToQueryString( asPartialQueryString: true )}";
             string requestUri = $"{_rootPath}/{planName}/start/sync/{qs}";
             return await GetAsync<object>( requestUri );
         }
 
 
         public async Task<object> StartPlanWaitAsyncAsPost(string planName, bool dryRun = false, string requestNumber = null,
-            Dictionary<string, string> dynamicParameters = null,
+            Dictionary<string, string> dynamicParameters = null, string path = "Actions[0]:Result:ExitData",
+            SerializationType serializationType = SerializationType.Json, bool setContentType = true,
             int pollingIntervalSeconds = 1, int timeoutSeconds = 120, string nodeRootUrl = null)
         {
             StartPlanEnvelope planEnvelope = new StartPlanEnvelope() { DynamicParameters = dynamicParameters };
 
             requestNumber = !string.IsNullOrWhiteSpace( requestNumber ) ? $"&requestNumber={requestNumber}" : null;
             nodeRootUrl = !string.IsNullOrWhiteSpace( nodeRootUrl ) ? $"&nodeRootUrl={nodeRootUrl}" : null;
+            path = !string.IsNullOrWhiteSpace( path ) ? $"&path={path}" : null;
+            string st = !string.IsNullOrWhiteSpace( path ) ? $"&serializationType={serializationType}" : null;
+            string sct = !string.IsNullOrWhiteSpace( path ) ? $"&setContentType={setContentType}" : null;
             string pi = pollingIntervalSeconds > 1 ? $"&pollingIntervalSeconds={pollingIntervalSeconds}" : null;
             string to = timeoutSeconds > 0 && timeoutSeconds != 120 ? $"&timeoutSeconds={timeoutSeconds}" : null;
-            string qs = $"?dryRun={dryRun}{requestNumber}{pi}{to}{nodeRootUrl}";
+            string qs = $"?dryRun={dryRun}{requestNumber}{path}{st}{sct}{pi}{to}{nodeRootUrl}";
             string requestUri = $"{_rootPath}/{planName}/start/sync/{qs}";
             return await PostAsync<StartPlanEnvelope, object>( planEnvelope, requestUri );
         }

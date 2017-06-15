@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using netHttp = System.Net.Http;
 using System.Security.Principal;
 using System.Text;
 using System.Web.Http;
@@ -97,22 +98,6 @@ namespace Synapse.Services
             }
         }
 
-        [Route( "{planUniqueName}/start/sync/" )]
-        [HttpGet]
-        public object StartPlanSync(string planUniqueName, bool dryRun = false, string requestNumber = null,
-            string path = "Actions[0]:Result:ExitData", int pollingIntervalSeconds = 1, int timeoutSeconds = 120, string nodeRootUrl = null)
-        {
-            Uri uri = CurrentUrl.Request.RequestUri;
-            string context = GetContext( nameof( StartPlanSync ), nameof( CurrentUserName ), CurrentUserName,
-                nameof( planUniqueName ), planUniqueName, nameof( dryRun ), dryRun, nameof( path ), path,
-                nameof( requestNumber ), requestNumber, nameof( nodeRootUrl ), nodeRootUrl, "QueryString", uri.Query );
-            SynapseServer.Logger.Debug( context );
-
-            long instanceId = StartPlan( planUniqueName, dryRun, requestNumber, nodeRootUrl );
-
-            return SyncExecuteHelper.WaitForTerminalStatusOrTimeout<object>( this, planUniqueName, instanceId, path, pollingIntervalSeconds, timeoutSeconds );
-        }
-
         [Route( "{planUniqueName}/start/" )]
         [HttpGet]
         public long StartPlan(string planUniqueName, bool dryRun = false, string requestNumber = null, string nodeRootUrl = null)
@@ -138,21 +123,6 @@ namespace Synapse.Services
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
-        }
-
-        [Route( "{planUniqueName}/start/sync/" )]
-        [HttpPost]
-        public object StartPlanSync([FromBody]StartPlanEnvelope planEnvelope, string planUniqueName, bool dryRun = false, string requestNumber = null,
-            string path = "Actions[0]:Result:ExitData", int pollingIntervalSeconds = 1, int timeoutSeconds = 120, string nodeRootUrl = null)
-        {
-            string context = GetContext( nameof( StartPlanSync ), nameof( CurrentUserName ), CurrentUserName,
-                nameof( planUniqueName ), planUniqueName, nameof( dryRun ), dryRun, nameof( path ), path,
-                nameof( requestNumber ), requestNumber, nameof( nodeRootUrl ), nodeRootUrl );
-            SynapseServer.Logger.Debug( context );
-
-            long instanceId = StartPlan( planEnvelope, planUniqueName, dryRun, requestNumber, nodeRootUrl );
-
-            return SyncExecuteHelper.WaitForTerminalStatusOrTimeout<object>( this, planUniqueName, instanceId, path, pollingIntervalSeconds, timeoutSeconds );
         }
 
         [Route( "{planUniqueName}/start/" )]
@@ -201,6 +171,74 @@ namespace Synapse.Services
                 SynapseServer.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
+            }
+        }
+
+        [Route( "{planUniqueName}/start/sync/" )]
+        [HttpGet]
+        public object StartPlanSync(string planUniqueName, bool dryRun = false, string requestNumber = null,
+            string path = "Actions[0]:Result:ExitData", SerializationType serializationType = SerializationType.Json,
+            bool setContentType = true, int pollingIntervalSeconds = 1, int timeoutSeconds = 120, string nodeRootUrl = null)
+        {
+            Uri uri = CurrentUrl.Request.RequestUri;
+            string context = GetContext( nameof( StartPlanSync ), nameof( CurrentUserName ), CurrentUserName,
+                nameof( planUniqueName ), planUniqueName, nameof( dryRun ), dryRun, nameof( requestNumber ), requestNumber,
+                nameof( path ), path, nameof( serializationType ), serializationType, nameof( setContentType ), setContentType,
+                nameof( pollingIntervalSeconds ), pollingIntervalSeconds, nameof( timeoutSeconds ), timeoutSeconds,
+                nameof( nodeRootUrl ), nodeRootUrl, "QueryString", uri.Query );
+            SynapseServer.Logger.Debug( context );
+
+            long instanceId = StartPlan( planUniqueName, dryRun, requestNumber, nodeRootUrl );
+
+            return WaitForTerminalStatusOrTimeout( instanceId, planUniqueName, path, serializationType,
+                pollingIntervalSeconds, timeoutSeconds, setContentType );
+        }
+
+        [Route( "{planUniqueName}/start/sync/" )]
+        [HttpPost]
+        public object StartPlanSync([FromBody]StartPlanEnvelope planEnvelope, string planUniqueName, bool dryRun = false, string requestNumber = null,
+            string path = "Actions[0]:Result:ExitData", SerializationType serializationType = SerializationType.Json,
+            bool setContentType = true, int pollingIntervalSeconds = 1, int timeoutSeconds = 120, string nodeRootUrl = null)
+        {
+            string context = GetContext( nameof( StartPlanSync ), nameof( CurrentUserName ), CurrentUserName,
+                nameof( planUniqueName ), planUniqueName, nameof( dryRun ), dryRun, nameof( requestNumber ), requestNumber,
+                nameof( path ), path, nameof( serializationType ), serializationType, nameof( setContentType ), setContentType,
+                nameof( pollingIntervalSeconds ), pollingIntervalSeconds, nameof( timeoutSeconds ), timeoutSeconds,
+                nameof( nodeRootUrl ), nodeRootUrl );
+            SynapseServer.Logger.Debug( context );
+
+            long instanceId = StartPlan( planEnvelope, planUniqueName, dryRun, requestNumber, nodeRootUrl );
+
+            return WaitForTerminalStatusOrTimeout( instanceId, planUniqueName, path, serializationType,
+                pollingIntervalSeconds, timeoutSeconds, setContentType );
+        }
+
+        object WaitForTerminalStatusOrTimeout(long instanceId, string planUniqueName, string path, SerializationType serializationType,
+            int pollingIntervalSeconds, int timeoutSeconds, bool setContentType)
+        {
+            object result = SyncExecuteHelper.WaitForTerminalStatusOrTimeout(
+                this, planUniqueName, instanceId, path, serializationType, pollingIntervalSeconds, timeoutSeconds );
+
+            if( setContentType )
+            {
+                Encoding encoding = serializationType == SerializationType.Xml ? Encoding.Unicode : Encoding.UTF8;
+                netHttp.HttpResponseMessage response = new netHttp.HttpResponseMessage( System.Net.HttpStatusCode.OK );
+                response.Content = new netHttp.StringContent( GetStringContent( result, serializationType ),
+                    encoding, SerializationContentType.GetContentType( serializationType ) );
+                return response;
+            }
+            else
+            {
+                return result;
+            }
+        }
+
+        string GetStringContent(object content, SerializationType serializationType)
+        {
+            switch( serializationType )
+            {
+                case SerializationType.Xml: { return XmlHelpers.Serialize<string>( content, omitXmlDeclaration: false, omitXmlNamespace: true ); }
+                default: { return content.ToString(); }
             }
         }
 

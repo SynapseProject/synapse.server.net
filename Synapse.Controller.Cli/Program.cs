@@ -135,6 +135,9 @@ namespace Synapse.Services.Controller.Cli
                 parms.Add( "requestNumber", typeof( string ) );
                 if( isSync )
                 {
+                    parms.Add( "path", typeof( string ) );
+                    parms.Add( "serializationType", typeof( SerializationType ) );
+                    parms.Add( "setContentType", typeof( bool ) );
                     parms.Add( "pollingIntervalSeconds", typeof( int ) );
                     parms.Add( "timeoutSeconds", typeof( int ) );
                 }
@@ -175,10 +178,34 @@ namespace Synapse.Services.Controller.Cli
                     parameters.Remove( rn );
                 }
 
+                string path = "Actions[0]:Result:ExitData";
+                SerializationType serializationType = SerializationType.Json;
+                bool setContentType = true;
                 int pollingIntervalSeconds = 1;
                 int timeoutSeconds = 120;
                 if( isSync )
                 {
+                    string pa = nameof( path );
+                    if( parameters.ContainsKey( pa ) )
+                    {
+                        path = parameters[pa];
+                        parameters.Remove( pa );
+                    }
+
+                    string st = nameof( serializationType );
+                    if( parameters.ContainsKey( st ) )
+                    {
+                        Enum.TryParse( parameters[st], true, out serializationType );
+                        parameters.Remove( st );
+                    }
+
+                    string sct = nameof( setContentType );
+                    if( parameters.ContainsKey( sct ) )
+                    {
+                        bool.TryParse( parameters[sct], out setContentType );
+                        parameters.Remove( sct );
+                    }
+
                     string pi = nameof( pollingIntervalSeconds );
                     if( parameters.ContainsKey( pi ) )
                     {
@@ -238,6 +265,7 @@ namespace Synapse.Services.Controller.Cli
                     if( isSync )
                     {
                         object result = instance.StartPlanWait( planName, dryRun, requestNumber, parameters, postDynamicParameters,
+                            path, serializationType, setContentType,
                             pollingIntervalSeconds, timeoutSeconds, nodeRootUrl );
                         Console.WriteLine( result );
                     }

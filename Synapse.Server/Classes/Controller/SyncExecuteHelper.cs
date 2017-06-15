@@ -9,12 +9,13 @@ namespace Synapse.Services
 {
     public class SyncExecuteHelper
     {
-        public static object WaitForTerminalStatusOrTimeout<T>(IExecuteController ec, string planName, long id,
-            string path = "Actions[0]:Result:ExitData", int pollingIntervalSeconds = 1, int timeoutSeconds = 120)
+        public static object WaitForTerminalStatusOrTimeout(IExecuteController ec, string planName, long id,
+            string path = "Actions[0]:Result:ExitData", SerializationType serializationType = SerializationType.Json,
+            int pollingIntervalSeconds = 1, int timeoutSeconds = 120)
         {
             StatusType status = Task.Run( () => GetStatus( ec, planName, id, pollingIntervalSeconds, timeoutSeconds ) ).Result;
             if( status == StatusType.Success )
-                return YamlHelpers.Deserialize<T>( ec.GetPlanElements( planName, id, path ).ToString() );
+                return ec.GetPlanElements( planName, id, path, serializationType );
             else
                 return status;
         }
