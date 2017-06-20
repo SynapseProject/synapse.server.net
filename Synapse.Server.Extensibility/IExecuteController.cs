@@ -12,6 +12,7 @@ namespace Synapse.Services
     {
         string Hello();
         string WhoAmI();
+        Plan GetPlan(string planUniqueName);
         IEnumerable<string> GetPlanList(string filter = null, bool isRegexFilter = true);
         IEnumerable<long> GetPlanInstanceIdList(string planUniqueName);
 

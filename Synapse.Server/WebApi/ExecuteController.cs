@@ -57,6 +57,27 @@ namespace Synapse.Services
         }
 
         [HttpGet]
+        [Route( "{planUniqueName}/item" )]
+        public Plan GetPlan(string planUniqueName)
+        {
+            InitPlanServer();
+
+            string context = GetContext( nameof( GetPlanList ), nameof( planUniqueName ), planUniqueName );
+
+            try
+            {
+                SynapseServer.Logger.Debug( context );
+                return _server.GetPlan( planUniqueName );
+            }
+            catch( Exception ex )
+            {
+                SynapseServer.Logger.Error(
+                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
+                throw;
+            }
+        }
+
+        [HttpGet]
         [Route( "" )]
         public IEnumerable<string> GetPlanList(string filter = null, bool isRegexFilter = true)
         {
@@ -245,7 +266,7 @@ namespace Synapse.Services
         #endregion
 
 
-        [Route( "{planUniqueName}/{planInstanceId}/" )]
+        [Route( "{planUniqueName}/{planInstanceId:long}/" )]
         [HttpGet]
         public Plan GetPlanStatus(string planUniqueName, long planInstanceId)
         {
@@ -267,7 +288,7 @@ namespace Synapse.Services
             }
         }
 
-        [Route( "{planUniqueName}/{planInstanceId}/" )]
+        [Route( "{planUniqueName}/{planInstanceId:long}/" )]
         [HttpPost]
         public void SetStatus(string planUniqueName, long planInstanceId, [FromBody]string planString)
         {
@@ -293,7 +314,7 @@ namespace Synapse.Services
             }
         }
 
-        [Route( "{planUniqueName}/{planInstanceId}/action/" )]
+        [Route( "{planUniqueName}/{planInstanceId:long}/action/" )]
         [HttpPost]
         public void SetStatus(string planUniqueName, long planInstanceId, [FromBody]ActionItem actionItem)
         {
@@ -316,7 +337,7 @@ namespace Synapse.Services
             }
         }
 
-        [Route( "{planUniqueName}/{planInstanceId}/" )]
+        [Route( "{planUniqueName}/{planInstanceId:long}/" )]
         [HttpDelete]
         public void CancelPlan(string planUniqueName, long planInstanceId, string nodeRootUrl = null)
         {
@@ -339,7 +360,7 @@ namespace Synapse.Services
             }
         }
 
-        [Route( "{planUniqueName}/{planInstanceId}/part/" )]
+        [Route( "{planUniqueName}/{planInstanceId:long}/part/" )]
         [HttpGet]
         public object GetPlanElements(string planUniqueName, long planInstanceId, string elementPath, SerializationType serializationType = SerializationType.Json, bool setContentType = true)
         {
@@ -380,7 +401,7 @@ namespace Synapse.Services
             }
         }
 
-        [Route( "{planUniqueName}/{planInstanceId}/part/" )]
+        [Route( "{planUniqueName}/{planInstanceId:long}/part/" )]
         [HttpPost]
         public object GetPlanElements(string planUniqueName, long planInstanceId, [FromBody]PlanElementParms elementParms)
         {

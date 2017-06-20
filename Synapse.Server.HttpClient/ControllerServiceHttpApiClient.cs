@@ -34,6 +34,18 @@ namespace Synapse.Services
         }
 
 
+        public Plan GetPlan(string planUniqueName)
+        {
+            return GetPlanAsync( planUniqueName ).Result;
+        }
+
+        public async Task<Plan> GetPlanAsync(string planUniqueName)
+        {
+            string requestUri = $"{_rootPath}/{planUniqueName}/item";
+            return await GetAsync<Plan>( requestUri );
+        }
+
+
         public List<string> GetPlanList(string filter = null, bool isRegexFilter = true)
         {
             return GetPlanListAsync( filter, isRegexFilter ).Result;
