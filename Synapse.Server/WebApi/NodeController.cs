@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Security.Principal;
 using System.Web.Http;
 
 using Synapse.Common.WebApi;
@@ -83,6 +84,10 @@ namespace Synapse.Services
             string context = GetContext( nameof( StartPlanAsync ),
                 nameof( plan ), plan.Name, nameof( dryRun ), dryRun, nameof( planInstanceId ), planInstanceId, "QueryString", uri.Query );
 
+            WindowsIdentity id = (WindowsIdentity)User.Identity;
+            WindowsImpersonationContext wic = id.Impersonate();
+            SynapseServer.Logger.Info( $"***** Running As User [{User.Identity.Name}]" );
+
             try
             {
                 SynapseServer.Logger.Debug( context );
@@ -100,6 +105,10 @@ namespace Synapse.Services
                 SynapseServer.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
+            }
+            finally
+            {
+                wic.Undo();
             }
         }
 

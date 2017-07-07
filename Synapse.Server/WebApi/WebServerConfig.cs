@@ -32,10 +32,10 @@ namespace Synapse.Services
                 routeTemplate: "synapse/{controller}/{id}",
                 defaults: new { id = RouteParameter.Optional }
             );
-
+            
             config.MessageHandlers.Add( new RawContentHandler() );
 
-            if( SynapseServer.Config.Service.IsRoleController && SynapseServer.Config.WebApi.Authentication.Scheme == AuthenticationSchemes.Basic )
+            if( SynapseServer.Config.WebApi.Authentication.Scheme == AuthenticationSchemes.Basic )
             {
                 IAuthenticationProvider auth = AuthenticationProviderUtil.GetInstance(
                     "Synapse.Authentication", "Synapse.Authentication.AuthenticationProvider", config );

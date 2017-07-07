@@ -130,6 +130,10 @@ namespace Synapse.Services
                 nameof( planUniqueName ), planUniqueName, nameof( dryRun ), dryRun,
                 nameof( requestNumber ), requestNumber, nameof( nodeRootUrl ), nodeRootUrl, "QueryString", uri.Query );
 
+            WindowsIdentity id = (WindowsIdentity)CurrentUser.Identity;
+            WindowsImpersonationContext wic = id.Impersonate();
+            SynapseServer.Logger.Info( $"***** Running As User [{CurrentUser.Identity.Name}]" );
+
             try
             {
                 SynapseServer.Logger.Debug( context );
@@ -143,6 +147,10 @@ namespace Synapse.Services
                 SynapseServer.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
+            }
+            finally
+            {
+                wic.Undo();
             }
         }
 
