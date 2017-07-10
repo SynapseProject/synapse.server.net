@@ -123,6 +123,7 @@ namespace Synapse.Services
         [HttpGet]
         public long StartPlan(string planUniqueName, bool dryRun = false, string requestNumber = null, string nodeRootUrl = null)
         {
+            SynapseServer.Logger.Info( $"***** Starting Plan [{planUniqueName}]" );
             InitPlanServer();
 
             Uri uri = CurrentUrl.Request.RequestUri;
@@ -130,9 +131,16 @@ namespace Synapse.Services
                 nameof( planUniqueName ), planUniqueName, nameof( dryRun ), dryRun,
                 nameof( requestNumber ), requestNumber, nameof( nodeRootUrl ), nodeRootUrl, "QueryString", uri.Query );
 
-            WindowsIdentity id = (WindowsIdentity)CurrentUser.Identity;
-            WindowsImpersonationContext wic = id.Impersonate();
-            SynapseServer.Logger.Info( $"***** Running As User [{CurrentUser.Identity.Name}]" );
+            WindowsIdentity id = (WindowsIdentity)CurrentUser?.Identity;
+            WindowsImpersonationContext wic = null;
+            if (SynapseServer.UseImpersonation())
+            {
+                wic = id.Impersonate();
+                SynapseServer.Logger.Info( $"***** Running As Impersonated User [{CurrentUser?.Identity?.Name}]" );
+            }
+            else
+                SynapseServer.Logger.Info( $"***** Running As User [{WindowsIdentity.GetCurrent().Name}]" );
+
 
             try
             {
@@ -150,7 +158,7 @@ namespace Synapse.Services
             }
             finally
             {
-                wic.Undo();
+                wic?.Undo();
             }
         }
 

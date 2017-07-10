@@ -13,6 +13,7 @@ namespace Synapse.Services
 
 
         public string NodeUrl { get; set; }
+        public AuthenticationConfig NodeAuthentication { get; set; }
         public bool SignPlan { get; set; } = false;
 
         public List<string> Assemblies { get; set; }

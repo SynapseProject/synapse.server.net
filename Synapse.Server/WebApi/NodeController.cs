@@ -77,6 +77,9 @@ namespace Synapse.Services
         [HttpPost]
         public void StartPlanAsync(long planInstanceId, bool dryRun, [FromBody]string planString)
         {
+            SynapseServer.Logger.Info( $"***** Starting PlanInstanceId [{planInstanceId}]" );
+            SynapseServer.Logger.Info( $"***** Plan [{planString}]" );
+
             Uri uri = this.Url.Request.RequestUri;
             planString = CryptoHelpers.Decode( planString );
             Plan plan  = Plan.FromYaml( new StringReader( planString ) );
@@ -84,9 +87,15 @@ namespace Synapse.Services
             string context = GetContext( nameof( StartPlanAsync ),
                 nameof( plan ), plan.Name, nameof( dryRun ), dryRun, nameof( planInstanceId ), planInstanceId, "QueryString", uri.Query );
 
-            WindowsIdentity id = (WindowsIdentity)User.Identity;
-            WindowsImpersonationContext wic = id.Impersonate();
-            SynapseServer.Logger.Info( $"***** Running As User [{User.Identity.Name}]" );
+            WindowsIdentity id = (WindowsIdentity)User?.Identity;
+            WindowsImpersonationContext wic = null;
+            if ( SynapseServer.UseImpersonation() )
+            {
+                wic = id.Impersonate();
+                SynapseServer.Logger.Info( $"***** Running As Impersonated User [{User?.Identity?.Name}]" );
+            }
+            else
+                SynapseServer.Logger.Info( $"***** Running As User [{WindowsIdentity.GetCurrent().Name}]" );
 
             try
             {
@@ -108,7 +117,7 @@ namespace Synapse.Services
             }
             finally
             {
-                wic.Undo();
+                wic?.Undo();
             }
         }
 

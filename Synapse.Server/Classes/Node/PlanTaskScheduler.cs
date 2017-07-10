@@ -69,11 +69,19 @@ namespace Synapse.Services
 
                 //                _tasks.Add( _tf.StartNew( () => { planContainer.Start( cts.Token, PlanComplete ); }, cts.Token ) );
                 WindowsIdentity user = WindowsIdentity.GetCurrent();
-                SynapseServer.Logger.Debug( $"***** Starting Plan As User [{user.Name}]" );
                 _tasks.Add( _tf.StartNew( () => 
                     {
-                        using ( WindowsImpersonationContext ctx = user.Impersonate() )
+                        if ( SynapseServer.UseImpersonation() )
                         {
+                            SynapseServer.Logger.Debug( $"***** Starting Plan As Impersonated User [{user.Name}]" );
+                            using ( WindowsImpersonationContext ctx = user.Impersonate() )
+                            {
+                                planContainer.Start( cts.Token, PlanComplete );
+                            }
+                        }
+                        else
+                        {
+                            SynapseServer.Logger.Debug( $"***** Starting Plan As User [{user.Name}]" );
                             planContainer.Start( cts.Token, PlanComplete );
                         }
                     }

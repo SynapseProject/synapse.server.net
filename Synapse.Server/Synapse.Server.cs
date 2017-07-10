@@ -6,6 +6,7 @@ using System.ServiceProcess;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using System.Security.Principal;
 
 using log4net;
 
@@ -187,6 +188,31 @@ namespace Synapse.Services
             Logger.Info( ServiceStatus.Stopped );
         }
 
+
+        public static bool UseImpersonation()
+        {
+            bool rc = true;
+
+            ServerRole myRole = Config.Service.Role;
+            AuthenticationConfig myAuth = Config.WebApi.Authentication;
+            AuthenticationConfig destAuth = Config.WebApi.Authentication;
+
+            if ( myRole == ServerRole.Controller )
+            {
+                if ( Config.Controller.NodeAuthentication != null )
+                    destAuth = Config.Controller.NodeAuthentication;
+            }
+            else if ( myRole == ServerRole.Node )
+            {
+                if ( Config.Node.ControllerAuthentication != null )
+                    destAuth = Config.Node.ControllerAuthentication;
+            }
+
+            if ( destAuth.Scheme == System.Net.AuthenticationSchemes.Anonymous || destAuth.Scheme == System.Net.AuthenticationSchemes.Basic )
+                rc = false;
+
+            return rc;
+        }
 
         #region exception handling
         private static void CurrentDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)
