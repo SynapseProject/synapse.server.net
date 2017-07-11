@@ -87,12 +87,15 @@ namespace Synapse.Services
             string context = GetContext( nameof( StartPlanAsync ),
                 nameof( plan ), plan.Name, nameof( dryRun ), dryRun, nameof( planInstanceId ), planInstanceId, "QueryString", uri.Query );
 
-            WindowsIdentity id = (WindowsIdentity)User?.Identity;
-            WindowsImpersonationContext wic = null;
+            Impersonator runAsUser = null;
             if ( SynapseServer.UseImpersonation() )
             {
-                wic = id.Impersonate();
-                SynapseServer.Logger.Info( $"***** Running As Impersonated User [{User?.Identity?.Name}]" );
+                if ( SynapseServer.Config.WebApi.Authentication.Scheme == System.Net.AuthenticationSchemes.Basic )
+                    runAsUser = new Impersonator( Request.Headers.Authorization );
+                else
+                    runAsUser = new Impersonator( (WindowsIdentity)User.Identity );
+                runAsUser.Start();
+                SynapseServer.Logger.Info( $"***** Running As Impersonated User [{Impersonator.WhoAmI().Name}]" );
             }
             else
                 SynapseServer.Logger.Info( $"***** Running As User [{WindowsIdentity.GetCurrent().Name}]" );
@@ -107,7 +110,7 @@ namespace Synapse.Services
                 Dictionary<string, string> dynamicParameters = uri.ParseQueryString();
                 if( dynamicParameters.ContainsKey( nameof( dryRun ) ) ) dynamicParameters.Remove( nameof( dryRun ) );
                 PlanRuntimePod p = new PlanRuntimePod( plan, dryRun, dynamicParameters, plan.InstanceId, this.Url.Request.Headers.Referrer );
-                _scheduler.StartPlan( p );
+                _scheduler.StartPlan( p, runAsUser );
             }
             catch( Exception ex )
             {
@@ -117,7 +120,7 @@ namespace Synapse.Services
             }
             finally
             {
-                wic?.Undo();
+                runAsUser?.Stop();
             }
         }
 
@@ -138,8 +141,21 @@ namespace Synapse.Services
 
                 ValidatePlanSignature( plan );
 
+                Impersonator runAsUser = null;
+                if ( SynapseServer.UseImpersonation() )
+                {
+                    if ( SynapseServer.Config.WebApi.Authentication.Scheme == System.Net.AuthenticationSchemes.Basic )
+                        runAsUser = new Impersonator( Request.Headers.Authorization );
+                    else
+                        runAsUser = new Impersonator( (WindowsIdentity)User.Identity );
+                    runAsUser.Start();
+                    SynapseServer.Logger.Info( $"***** Running As Impersonated User [{Impersonator.WhoAmI().Name}]" );
+                }
+                else
+                    SynapseServer.Logger.Info( $"***** Running As User [{WindowsIdentity.GetCurrent().Name}]" );
+
                 PlanRuntimePod p = new PlanRuntimePod( plan, dryRun, planEnvelope.DynamicParameters, plan.InstanceId, this.Url.Request.Headers.Referrer );
-                _scheduler.StartPlan( p );
+                _scheduler.StartPlan( p, runAsUser );
             }
             catch( Exception ex )
             {

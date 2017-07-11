@@ -131,12 +131,17 @@ namespace Synapse.Services
                 nameof( planUniqueName ), planUniqueName, nameof( dryRun ), dryRun,
                 nameof( requestNumber ), requestNumber, nameof( nodeRootUrl ), nodeRootUrl, "QueryString", uri.Query );
 
-            WindowsIdentity id = (WindowsIdentity)CurrentUser?.Identity;
-            WindowsImpersonationContext wic = null;
+            Impersonator runAsUser = null;
             if (SynapseServer.UseImpersonation())
             {
-                wic = id.Impersonate();
-                SynapseServer.Logger.Info( $"***** Running As Impersonated User [{CurrentUser?.Identity?.Name}]" );
+                if ( SynapseServer.Config.WebApi.Authentication.Scheme == System.Net.AuthenticationSchemes.Basic )
+                {
+                    runAsUser = new Impersonator( Request.Headers.Authorization );
+                }
+                else
+                    runAsUser = new Impersonator( (WindowsIdentity)(CurrentUser?.Identity) );
+                runAsUser.Start();
+                SynapseServer.Logger.Info( $"***** Running As Impersonated User [{Impersonator.WhoAmI().Name}]" );
             }
             else
                 SynapseServer.Logger.Info( $"***** Running As User [{WindowsIdentity.GetCurrent().Name}]" );
@@ -148,7 +153,7 @@ namespace Synapse.Services
                 Dictionary<string, string> dynamicParameters = uri.ParseQueryString();
                 if( dynamicParameters.ContainsKey( nameof( dryRun ) ) ) dynamicParameters.Remove( nameof( dryRun ) );
                 return _server.StartPlan( CurrentUserName, planUniqueName, dryRun, requestNumber, dynamicParameters, nodeRootUrl: nodeRootUrl,
-                    referrer: CurrentUrl.Request.RequestUri );
+                    referrer: CurrentUrl.Request.RequestUri, authHeader: Request?.Headers?.Authorization?.Parameter );
             }
             catch( Exception ex )
             {
@@ -158,7 +163,7 @@ namespace Synapse.Services
             }
             finally
             {
-                wic?.Undo();
+                runAsUser?.Stop();
             }
         }
 

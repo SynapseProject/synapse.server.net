@@ -208,7 +208,7 @@ namespace Synapse.Services
                     destAuth = Config.Node.ControllerAuthentication;
             }
 
-            if ( destAuth.Scheme == System.Net.AuthenticationSchemes.Anonymous || destAuth.Scheme == System.Net.AuthenticationSchemes.Basic )
+            if ( destAuth.Scheme == System.Net.AuthenticationSchemes.Anonymous )
                 rc = false;
 
             return rc;

@@ -56,7 +56,7 @@ namespace Synapse.Services
 
         public long StartPlan(string securityContext, string planUniqueName, bool dryRun = false,
             string requestNumber = null, Dictionary<string, string> dynamicParameters = null, bool postDynamicParameters = false,
-            string nodeRootUrl = null, Uri referrer = null)
+            string nodeRootUrl = null, Uri referrer = null, string authHeader = null)
         {
             _dal.HasAccessOrException( securityContext, planUniqueName );
 
@@ -92,14 +92,14 @@ namespace Synapse.Services
             }
 
             //send plan to Node to start the work
-            GetNodeClientInstance( nodeRootUrl, referrer ).StartPlan( plan, plan.InstanceId, dryRun, dynamicParameters, postDynamicParameters );
+            GetNodeClientInstance( nodeRootUrl, referrer, authHeader ).StartPlan( plan, plan.InstanceId, dryRun, dynamicParameters, postDynamicParameters );
 
             return plan.InstanceId;
         }
 
-        public void CancelPlan(long instanceId, string nodeRootUrl = null, Uri referrer = null)
+        public void CancelPlan(long instanceId, string nodeRootUrl = null, Uri referrer = null, string authHeader = null)
         {
-            GetNodeClientInstance( nodeRootUrl, referrer ).CancelPlanAsync( instanceId );
+            GetNodeClientInstance( nodeRootUrl, referrer, authHeader ).CancelPlanAsync( instanceId );
         }
 
         //eat the error here, always return something valid.
@@ -195,7 +195,7 @@ namespace Synapse.Services
                 return results;
         }
 
-        NodeServiceHttpApiClient GetNodeClientInstance(string nodeRootUrl, Uri referrer)
+        NodeServiceHttpApiClient GetNodeClientInstance(string nodeRootUrl, Uri referrer,  string authHeader)
         {
             if( string.IsNullOrWhiteSpace( nodeRootUrl ) )
                 nodeRootUrl = SynapseServer.Config.Controller.NodeUrl;
@@ -206,6 +206,8 @@ namespace Synapse.Services
 
             NodeServiceHttpApiClient nodeClient = new NodeServiceHttpApiClient( nodeRootUrl );
             nodeClient.Headers.Referrer = referrer;
+            if ( SynapseServer.Config.WebApi.Authentication.Scheme == System.Net.AuthenticationSchemes.Basic )
+                nodeClient.Options.Authentication = new Synapse.Common.WebApi.BasicAuthentication( authHeader );
             return nodeClient;
         }
     }

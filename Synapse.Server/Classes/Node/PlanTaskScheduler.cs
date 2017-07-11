@@ -55,7 +55,7 @@ namespace Synapse.Services
         /// </summary>
         /// <param name="planContainer"></param>
         /// <returns>Success/Fail for whether the Task is queued.</returns>
-        public virtual bool StartPlan(IPlanRuntimeContainer planContainer)
+        public virtual bool StartPlan(IPlanRuntimeContainer planContainer, Impersonator runAsUser = null)
         {
             if( !_isDrainstopped )
             {
@@ -67,14 +67,13 @@ namespace Synapse.Services
                 };
                 _plans[planContainer.PlanInstanceId] = info;
 
-                //                _tasks.Add( _tf.StartNew( () => { planContainer.Start( cts.Token, PlanComplete ); }, cts.Token ) );
                 WindowsIdentity user = WindowsIdentity.GetCurrent();
                 _tasks.Add( _tf.StartNew( () => 
                     {
-                        if ( SynapseServer.UseImpersonation() )
+                        if ( SynapseServer.UseImpersonation() && runAsUser != null )
                         {
-                            SynapseServer.Logger.Debug( $"***** Starting Plan As Impersonated User [{user.Name}]" );
-                            using ( WindowsImpersonationContext ctx = user.Impersonate() )
+                            SynapseServer.Logger.Debug( $"***** Starting Plan As Impersonated User [{Impersonator.WhoAmI().Name}]" );
+                            using ( WindowsImpersonationContext ctx = runAsUser.Identity.Impersonate() )
                             {
                                 planContainer.Start( cts.Token, PlanComplete );
                             }
