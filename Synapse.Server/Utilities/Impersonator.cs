@@ -61,11 +61,9 @@ namespace Synapse.Services
 
         public Impersonator(AuthenticationHeaderValue basicAuthHeader)
         {
-            SynapseServer.Logger.Debug( "Impersonating With Basic Authentication Header" );
-            String userpass = basicAuthHeader.Parameter.Replace( "Basic ", "" );
+            String userpass = basicAuthHeader.Parameter.Replace( "Basic ", "" ).Trim();
             byte[] bytes = Convert.FromBase64String( userpass );
             String decodedStr = Encoding.UTF8.GetString( bytes );
-            SynapseServer.Logger.Debug( $"AuthHeader >> {decodedStr}" );
             String[] parts = decodedStr.Split( ':' );
             UserName = parts[0];
             Password = parts[1];
