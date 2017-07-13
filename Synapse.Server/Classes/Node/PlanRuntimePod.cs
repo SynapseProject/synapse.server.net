@@ -37,7 +37,7 @@ namespace Synapse.Services
                 SynapseServer.Logger.Debug( $"***** AuthHeader : [{authHeader}]" );
                 if ( authHeader != null )
                 {
-                    if (authHeader.Scheme.ToLower() == "basic")
+                    if ( authHeader.Scheme.ToLower() == "basic" )
                         _controllerService.Options.Authentication = new BasicAuthentication( authHeader );
                 }
             }
