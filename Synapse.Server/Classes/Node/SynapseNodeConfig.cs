@@ -28,7 +28,6 @@ namespace Synapse.Services
         public bool ValidatePlanSignature { get; set; } = false;
         public string ControllerUrl { get; set; }
         internal bool HasControllerUrl { get { return !string.IsNullOrWhiteSpace( ControllerUrl ); } }
-        public AuthenticationConfig ControllerAuthentication { get; set; }
 
 
         public string GetResolvedAuditLogRootPath()

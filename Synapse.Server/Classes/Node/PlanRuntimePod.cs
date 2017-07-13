@@ -5,6 +5,7 @@ using System.Threading;
 
 using Synapse.Common;
 using Synapse.Core;
+using Synapse.Common.WebApi;
 using Synapse.Core.Runtime;
 
 namespace Synapse.Services
@@ -18,7 +19,7 @@ namespace Synapse.Services
 
         ControllerServiceHttpApiClient _controllerService = null;
 
-        public PlanRuntimePod(Plan plan, bool isDryRun = false, Dictionary<string, string> dynamicParameters = null, long planInstanceId = 0, Uri referrer = null)
+        public PlanRuntimePod(Plan plan, bool isDryRun = false, Dictionary<string, string> dynamicParameters = null, long planInstanceId = 0, Uri referrer = null, string authHeader = null)
         {
             #region setup ControllerServiceHttpApiClient
             _url = referrer != null ? $"{referrer.Scheme}://{referrer.Host}:{referrer.Port}/synapse/execute" : null;
@@ -29,10 +30,15 @@ namespace Synapse.Services
             if( SynapseServer.Config.Node.HasControllerUrl )
                 _url = SynapseServer.Config.Node.ControllerUrl;
 
-            if( !string.IsNullOrWhiteSpace( _url ) )
+            if ( !string.IsNullOrWhiteSpace( _url ) )
+            {
                 _controllerService = new ControllerServiceHttpApiClient( _url );
+                if ( SynapseServer.Config.WebApi.Authentication.Scheme == System.Net.AuthenticationSchemes.Basic )
+                    _controllerService.Options.Authentication = new BasicAuthentication( authHeader );
+            }
             else
                 throw new Exception( "Could not initialize ControllerServiceHttpApiClient from Referrer or Config.Node.ControllerUrl." );
+
             #endregion
 
 

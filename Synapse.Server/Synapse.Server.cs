@@ -142,7 +142,7 @@ namespace Synapse.Services
                 string url = Config.WebApi.ToUri( Environment.UserInteractive );
                 _webapp = WebApp.Start<WebServerConfig>( url );
                 Logger.Info( $"Listening on {url}" );
-                Logger.Info( $"Authentication Scheme, {Config.WebApi.Authentication.Scheme}" );
+                Logger.Info( $"Authentication Scheme = [{Config.WebApi.Authentication.Scheme}]" );
 
                 _serviceHost = Config.Service.IsRoleController ?
                     new ServiceHost( typeof( ExecuteController ) ) : new ServiceHost( typeof( NodeController ) );
