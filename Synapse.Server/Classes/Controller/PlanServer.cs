@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http.Headers;
 
 using Synapse.Core;
 using Synapse.Core.Utilities;
 using Synapse.Services.Controller.Dal;
+using Synapse.Common.WebApi;
 
 namespace Synapse.Services
 {
@@ -56,7 +58,7 @@ namespace Synapse.Services
 
         public long StartPlan(string securityContext, string planUniqueName, bool dryRun = false,
             string requestNumber = null, Dictionary<string, string> dynamicParameters = null, bool postDynamicParameters = false,
-            string nodeRootUrl = null, Uri referrer = null, string authHeader = null)
+            string nodeRootUrl = null, Uri referrer = null, AuthenticationHeaderValue authHeader = null)
         {
             _dal.HasAccessOrException( securityContext, planUniqueName );
 
@@ -97,7 +99,7 @@ namespace Synapse.Services
             return plan.InstanceId;
         }
 
-        public void CancelPlan(long instanceId, string nodeRootUrl = null, Uri referrer = null, string authHeader = null)
+        public void CancelPlan(long instanceId, string nodeRootUrl = null, Uri referrer = null, AuthenticationHeaderValue authHeader = null)
         {
             GetNodeClientInstance( nodeRootUrl, referrer, authHeader ).CancelPlanAsync( instanceId );
         }
@@ -195,7 +197,7 @@ namespace Synapse.Services
                 return results;
         }
 
-        NodeServiceHttpApiClient GetNodeClientInstance(string nodeRootUrl, Uri referrer,  string authHeader)
+        NodeServiceHttpApiClient GetNodeClientInstance(string nodeRootUrl, Uri referrer, AuthenticationHeaderValue authHeader)
         {
             if( string.IsNullOrWhiteSpace( nodeRootUrl ) )
                 nodeRootUrl = SynapseServer.Config.Controller.NodeUrl;
@@ -206,8 +208,12 @@ namespace Synapse.Services
 
             NodeServiceHttpApiClient nodeClient = new NodeServiceHttpApiClient( nodeRootUrl );
             nodeClient.Headers.Referrer = referrer;
-            if ( SynapseServer.Config.WebApi.Authentication.Scheme == System.Net.AuthenticationSchemes.Basic )
-                nodeClient.Options.Authentication = new Synapse.Common.WebApi.BasicAuthentication( authHeader );
+            SynapseServer.Logger.Debug( $"***** AuthHeader : [{authHeader}]" );
+            if ( authHeader != null)
+            {
+                if ( authHeader.Scheme.ToLower() == "basic" )
+                    nodeClient.Options.Authentication = new BasicAuthentication( authHeader );
+            }
             return nodeClient;
         }
     }

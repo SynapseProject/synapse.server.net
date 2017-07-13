@@ -148,7 +148,7 @@ namespace Synapse.Services
                 Dictionary<string, string> dynamicParameters = uri.ParseQueryString();
                 if( dynamicParameters.ContainsKey( nameof( dryRun ) ) ) dynamicParameters.Remove( nameof( dryRun ) );
                 return _server.StartPlan( CurrentUserName, planUniqueName, dryRun, requestNumber, dynamicParameters, nodeRootUrl: nodeRootUrl,
-                    referrer: CurrentUrl.Request.RequestUri, authHeader: Request?.Headers?.Authorization?.Parameter );
+                    referrer: CurrentUrl.Request.RequestUri, authHeader: Request?.Headers?.Authorization );
             }
             catch( Exception ex )
             {
