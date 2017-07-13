@@ -77,9 +77,6 @@ namespace Synapse.Services
         [HttpPost]
         public void StartPlanAsync(long planInstanceId, bool dryRun, [FromBody]string planString)
         {
-            SynapseServer.Logger.Info( $"***** Starting PlanInstanceId [{planInstanceId}]" );
-            SynapseServer.Logger.Info( $"***** Plan [{planString}]" );
-
             Uri uri = this.Url.Request.RequestUri;
             planString = CryptoHelpers.Decode( planString );
             Plan plan  = Plan.FromYaml( new StringReader( planString ) );
@@ -88,17 +85,14 @@ namespace Synapse.Services
                 nameof( plan ), plan.Name, nameof( dryRun ), dryRun, nameof( planInstanceId ), planInstanceId, "QueryString", uri.Query );
 
             Impersonator runAsUser = null;
-            if ( SynapseServer.UseImpersonation() )
+            if ( SynapseServer.UseImpersonation(User?.Identity) )
             {
                 if ( SynapseServer.Config.WebApi.Authentication.Scheme == System.Net.AuthenticationSchemes.Basic )
                     runAsUser = new Impersonator( Request.Headers.Authorization );
                 else
                     runAsUser = new Impersonator( (WindowsIdentity)User.Identity );
                 runAsUser.Start();
-                SynapseServer.Logger.Info( $"***** Running As Impersonated User [{Impersonator.WhoAmI().Name}]" );
             }
-            else
-                SynapseServer.Logger.Info( $"***** Running As User [{WindowsIdentity.GetCurrent().Name}]" );
 
             try
             {
@@ -142,17 +136,14 @@ namespace Synapse.Services
                 ValidatePlanSignature( plan );
 
                 Impersonator runAsUser = null;
-                if ( SynapseServer.UseImpersonation() )
+                if ( SynapseServer.UseImpersonation(User?.Identity) )
                 {
                     if ( SynapseServer.Config.WebApi.Authentication.Scheme == System.Net.AuthenticationSchemes.Basic )
                         runAsUser = new Impersonator( Request.Headers.Authorization );
                     else
                         runAsUser = new Impersonator( (WindowsIdentity)User.Identity );
                     runAsUser.Start();
-                    SynapseServer.Logger.Info( $"***** Running As Impersonated User [{Impersonator.WhoAmI().Name}]" );
                 }
-                else
-                    SynapseServer.Logger.Info( $"***** Running As User [{WindowsIdentity.GetCurrent().Name}]" );
 
                 PlanRuntimePod p = new PlanRuntimePod( plan, dryRun, planEnvelope.DynamicParameters, plan.InstanceId, this.Url.Request.Headers.Referrer );
                 _scheduler.StartPlan( p, runAsUser );

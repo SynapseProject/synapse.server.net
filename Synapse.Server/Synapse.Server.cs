@@ -142,6 +142,7 @@ namespace Synapse.Services
                 string url = Config.WebApi.ToUri( Environment.UserInteractive );
                 _webapp = WebApp.Start<WebServerConfig>( url );
                 Logger.Info( $"Listening on {url}" );
+                Logger.Info( $"Authentication Scheme, {Config.WebApi.Authentication.Scheme}" );
 
                 _serviceHost = Config.Service.IsRoleController ?
                     new ServiceHost( typeof( ExecuteController ) ) : new ServiceHost( typeof( NodeController ) );
@@ -189,27 +190,24 @@ namespace Synapse.Services
         }
 
 
-        public static bool UseImpersonation()
+        public static bool UseImpersonation(IIdentity user)
         {
             bool rc = true;
 
-            ServerRole myRole = Config.Service.Role;
-            AuthenticationConfig myAuth = Config.WebApi.Authentication;
-            AuthenticationConfig destAuth = Config.WebApi.Authentication;
-
-            if ( myRole == ServerRole.Controller )
-            {
-                if ( Config.Controller.NodeAuthentication != null )
-                    destAuth = Config.Controller.NodeAuthentication;
-            }
-            else if ( myRole == ServerRole.Node )
-            {
-                if ( Config.Node.ControllerAuthentication != null )
-                    destAuth = Config.Node.ControllerAuthentication;
-            }
-
-            if ( destAuth.Scheme == System.Net.AuthenticationSchemes.Anonymous )
+            if ( SynapseServer.Config.WebApi.UseImpersonation == false )
                 rc = false;
+            else if ( SynapseServer.Config.WebApi.Authentication.Scheme == System.Net.AuthenticationSchemes.Anonymous )
+                rc = false;
+            else
+            {
+                string currentUser = user?.Name;
+                string runningAsUser = Impersonator.WhoAmI()?.Name;
+
+                if ( currentUser == null )
+                    rc = false;
+                else if ( currentUser.ToLower() == runningAsUser.ToLower() )
+                    rc = false;
+            }
 
             return rc;
         }

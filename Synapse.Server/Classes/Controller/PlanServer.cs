@@ -80,7 +80,7 @@ namespace Synapse.Services
             _dal.UpdatePlanStatus( initResultPlan );
 
             //sign the plan
-            if( SynapseServer.Config.Controller.SignPlan )
+            if ( SynapseServer.Config.Controller.SignPlan )
             {
                 SynapseServer.Logger.Debug( $"Signing Plan [{plan.Name}/{plan.InstanceId}]." );
 

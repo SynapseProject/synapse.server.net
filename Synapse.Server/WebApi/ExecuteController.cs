@@ -123,7 +123,6 @@ namespace Synapse.Services
         [HttpGet]
         public long StartPlan(string planUniqueName, bool dryRun = false, string requestNumber = null, string nodeRootUrl = null)
         {
-            SynapseServer.Logger.Info( $"***** Starting Plan [{planUniqueName}]" );
             InitPlanServer();
 
             Uri uri = CurrentUrl.Request.RequestUri;
@@ -132,7 +131,7 @@ namespace Synapse.Services
                 nameof( requestNumber ), requestNumber, nameof( nodeRootUrl ), nodeRootUrl, "QueryString", uri.Query );
 
             Impersonator runAsUser = null;
-            if (SynapseServer.UseImpersonation())
+            if (SynapseServer.UseImpersonation(CurrentUser?.Identity))
             {
                 if ( SynapseServer.Config.WebApi.Authentication.Scheme == System.Net.AuthenticationSchemes.Basic )
                 {
@@ -141,11 +140,7 @@ namespace Synapse.Services
                 else
                     runAsUser = new Impersonator( (WindowsIdentity)(CurrentUser?.Identity) );
                 runAsUser.Start();
-                SynapseServer.Logger.Info( $"***** Running As Impersonated User [{Impersonator.WhoAmI().Name}]" );
             }
-            else
-                SynapseServer.Logger.Info( $"***** Running As User [{WindowsIdentity.GetCurrent().Name}]" );
-
 
             try
             {
@@ -171,6 +166,7 @@ namespace Synapse.Services
         [HttpPost]
         public long StartPlan([FromBody]StartPlanEnvelope planEnvelope, string planUniqueName, bool dryRun = false, string requestNumber = null, string nodeRootUrl = null)
         {
+
             InitPlanServer();
 
             bool failedToDeserialize = false;

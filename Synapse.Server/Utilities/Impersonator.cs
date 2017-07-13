@@ -28,7 +28,7 @@ namespace Synapse.Services
         public string Password { get; set; }
 
         private SafeTokenHandle safeTokenHandle;
-        private bool isStarted = false;
+        public bool IsStarted = false;
 
         [PermissionSetAttribute(SecurityAction.Demand, Name = "FullTrust")]
         public Impersonator()
@@ -94,21 +94,21 @@ namespace Synapse.Services
         [PermissionSetAttribute(SecurityAction.Demand, Name = "FullTrust")]
         public void Start()
         {
-            if ( !isStarted )
+            if ( !IsStarted )
             {
-                isStarted = true;
+                IsStarted = true;
                 Context = Identity.Impersonate();
+                SynapseServer.Logger.Debug( $"Impersonation Started.  Now Running As User [{WhoAmI().Name}]." );
             }
         }
 
         public void Stop()
         {
-            if ( isStarted )
+            if ( IsStarted )
             {
-                isStarted = false;
+                IsStarted = false;
                 Context.Undo();
-//                Context.Dispose();
-//                Context = null;
+                SynapseServer.Logger.Debug( $"Impersonation Stopped.  Now Running As User [{WhoAmI().Name}]." );
             }
         }
 

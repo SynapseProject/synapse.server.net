@@ -90,6 +90,7 @@ namespace Synapse.Services
         public string Host { get; set; } = localhost;
         public int Port { get; set; }
         public bool IsSecure { get; set; } = false;
+        public bool UseImpersonation { get; set; } = false;
 
         public AuthenticationConfig Authentication { get; set; } = new AuthenticationConfig();
 
