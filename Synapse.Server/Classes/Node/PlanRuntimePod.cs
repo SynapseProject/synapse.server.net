@@ -34,7 +34,6 @@ namespace Synapse.Services
             if ( !string.IsNullOrWhiteSpace( _url ) )
             {
                 _controllerService = new ControllerServiceHttpApiClient( _url );
-                SynapseServer.Logger.Debug( $"***** AuthHeader : [{authHeader}]" );
                 if ( authHeader != null )
                 {
                     if ( authHeader.Scheme.ToLower() == "basic" )

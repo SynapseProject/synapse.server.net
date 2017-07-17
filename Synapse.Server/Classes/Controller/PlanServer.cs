@@ -208,7 +208,6 @@ namespace Synapse.Services
 
             NodeServiceHttpApiClient nodeClient = new NodeServiceHttpApiClient( nodeRootUrl );
             nodeClient.Headers.Referrer = referrer;
-            SynapseServer.Logger.Debug( $"***** AuthHeader : [{authHeader}]" );
             if ( authHeader != null)
             {
                 if ( authHeader.Scheme.ToLower() == "basic" )
