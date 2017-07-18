@@ -105,7 +105,7 @@ namespace Synapse.Services
                 Dictionary<string, string> dynamicParameters = uri.ParseQueryString();
                 if( dynamicParameters.ContainsKey( nameof( dryRun ) ) ) dynamicParameters.Remove( nameof( dryRun ) );
                 PlanRuntimePod p = new PlanRuntimePod( plan, dryRun, dynamicParameters, plan.InstanceId, this.Url.Request.Headers.Referrer, this.Request?.Headers?.Authorization );
-                _scheduler.StartPlan( p, runAsUser );
+                _scheduler.StartPlan( p );
             }
             catch( Exception ex )
             {
@@ -147,7 +147,7 @@ namespace Synapse.Services
                 }
 
                 PlanRuntimePod p = new PlanRuntimePod( plan, dryRun, planEnvelope.DynamicParameters, plan.InstanceId, this.Url.Request.Headers.Referrer, this.Request?.Headers?.Authorization );
-                _scheduler.StartPlan( p, runAsUser );
+                _scheduler.StartPlan( p );
             }
             catch( Exception ex )
             {

@@ -56,7 +56,7 @@ namespace Synapse.Services
         /// </summary>
         /// <param name="planContainer"></param>
         /// <returns>Success/Fail for whether the Task is queued.</returns>
-        public virtual bool StartPlan(IPlanRuntimeContainer planContainer, Impersonator runAsUser = null)
+        public virtual bool StartPlan(IPlanRuntimeContainer planContainer)
         {
             if( !_isDrainstopped )
             {
