@@ -6,10 +6,12 @@ using System.Security.Principal;
 using System.Text;
 using System.Web.Http;
 using System.Web.Http.Routing;
+using System.Net.Http.Headers;
 
 using Synapse.Core;
 using Synapse.Common.WebApi;
 using Synapse.Core.Utilities;
+using Synapse.Common;
 
 namespace Synapse.Services
 {
@@ -135,11 +137,11 @@ namespace Synapse.Services
             {
                 if ( SynapseServer.Config.WebApi.Authentication.Scheme == System.Net.AuthenticationSchemes.Basic )
                 {
-                    runAsUser = new Impersonator( Request.Headers.Authorization );
+                    runAsUser = new Impersonator( this.AuthenticationHeader );
                 }
                 else
                     runAsUser = new Impersonator( (WindowsIdentity)(CurrentUser?.Identity) );
-                runAsUser.Start();
+                runAsUser.Start( SynapseServer.Logger );
             }
 
             try
@@ -148,7 +150,7 @@ namespace Synapse.Services
                 Dictionary<string, string> dynamicParameters = uri.ParseQueryString();
                 if( dynamicParameters.ContainsKey( nameof( dryRun ) ) ) dynamicParameters.Remove( nameof( dryRun ) );
                 return _server.StartPlan( CurrentUserName, planUniqueName, dryRun, requestNumber, dynamicParameters, nodeRootUrl: nodeRootUrl,
-                    referrer: CurrentUrl.Request.RequestUri, authHeader: Request?.Headers?.Authorization );
+                    referrer: CurrentUrl.Request.RequestUri, authHeader: this.AuthenticationHeader );
             }
             catch( Exception ex )
             {
@@ -158,7 +160,7 @@ namespace Synapse.Services
             }
             finally
             {
-                runAsUser?.Stop();
+                runAsUser?.Stop( SynapseServer.Logger );
             }
         }
 
@@ -194,6 +196,18 @@ namespace Synapse.Services
                 nameof( planUniqueName ), planUniqueName, nameof( dryRun ), dryRun,
                 nameof( requestNumber ), requestNumber, nameof( nodeRootUrl ), nodeRootUrl, "planParameters", parms.ToString() );
 
+            Impersonator runAsUser = null;
+            if ( SynapseServer.UseImpersonation( CurrentUser?.Identity ) )
+            {
+                if ( SynapseServer.Config.WebApi.Authentication.Scheme == System.Net.AuthenticationSchemes.Basic )
+                {
+                    runAsUser = new Impersonator( this.AuthenticationHeader );
+                }
+                else
+                    runAsUser = new Impersonator( (WindowsIdentity)(CurrentUser?.Identity) );
+                runAsUser.Start( SynapseServer.Logger );
+            }
+
             try
             {
                 SynapseServer.Logger.Info( context );
@@ -202,13 +216,17 @@ namespace Synapse.Services
                     throw new Exception( $"Failed to deserialize message body:\r\n{parms.ToString()}" );
 
                 return _server.StartPlan( CurrentUserName, planUniqueName, dryRun, requestNumber, dynamicParameters,
-                    postDynamicParameters: true, nodeRootUrl: nodeRootUrl, referrer: CurrentUrl.Request.RequestUri );
+                    postDynamicParameters: true, nodeRootUrl: nodeRootUrl, referrer: CurrentUrl.Request.RequestUri, authHeader: this.AuthenticationHeader );
             }
             catch( Exception ex )
             {
                 SynapseServer.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
+            }
+            finally
+            {
+                runAsUser?.Stop( SynapseServer.Logger );
             }
         }
 
@@ -489,6 +507,14 @@ namespace Synapse.Services
             get { return _currentUser ?? this.User; }
             set { _currentUser = value; }
         }
+
+        AuthenticationHeaderValue _authenticationHeader = null;
+        public AuthenticationHeaderValue AuthenticationHeader
+        {
+            get { return _authenticationHeader ?? this?.Request?.Headers?.Authorization; }
+            set { _authenticationHeader = value; }
+        }
+
         #endregion
     }
 }

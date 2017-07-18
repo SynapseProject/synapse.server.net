@@ -8,6 +8,7 @@ using System.Web.Http;
 using Synapse.Common.WebApi;
 using Synapse.Core;
 using Synapse.Core.Utilities;
+using Synapse.Common;
 
 namespace Synapse.Services
 {
@@ -91,7 +92,7 @@ namespace Synapse.Services
                     runAsUser = new Impersonator( Request.Headers.Authorization );
                 else
                     runAsUser = new Impersonator( (WindowsIdentity)User.Identity );
-                runAsUser.Start();
+                runAsUser.Start( SynapseServer.Logger );
             }
 
             try
@@ -114,7 +115,7 @@ namespace Synapse.Services
             }
             finally
             {
-                runAsUser?.Stop();
+                runAsUser?.Stop( SynapseServer.Logger );
             }
         }
 
@@ -128,6 +129,7 @@ namespace Synapse.Services
             string context = GetContext( nameof( StartPlanAsyncWithParametersAsPost ),
                 nameof( plan ), plan.Name, nameof( dryRun ), dryRun, nameof( planInstanceId ), planInstanceId );
 
+            Impersonator runAsUser = null;
             try
             {
                 SynapseServer.Logger.Debug( context );
@@ -135,17 +137,16 @@ namespace Synapse.Services
 
                 ValidatePlanSignature( plan );
 
-                Impersonator runAsUser = null;
                 if ( SynapseServer.UseImpersonation(User?.Identity) )
                 {
                     if ( SynapseServer.Config.WebApi.Authentication.Scheme == System.Net.AuthenticationSchemes.Basic )
                         runAsUser = new Impersonator( Request.Headers.Authorization );
                     else
                         runAsUser = new Impersonator( (WindowsIdentity)User.Identity );
-                    runAsUser.Start();
+                    runAsUser.Start( SynapseServer.Logger );
                 }
 
-                PlanRuntimePod p = new PlanRuntimePod( plan, dryRun, planEnvelope.DynamicParameters, plan.InstanceId, this.Url.Request.Headers.Referrer );
+                PlanRuntimePod p = new PlanRuntimePod( plan, dryRun, planEnvelope.DynamicParameters, plan.InstanceId, this.Url.Request.Headers.Referrer, this.Request?.Headers?.Authorization );
                 _scheduler.StartPlan( p, runAsUser );
             }
             catch( Exception ex )
@@ -153,6 +154,10 @@ namespace Synapse.Services
                 SynapseServer.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
+            }
+            finally
+            {
+                runAsUser?.Stop( SynapseServer.Logger );
             }
         }
 

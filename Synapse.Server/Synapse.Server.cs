@@ -14,6 +14,7 @@ using Microsoft.Owin.Hosting;
 
 using Synapse.Common.CmdLine;
 using Synapse.Services.Common;
+using Synapse.Common;
 
 
 namespace Synapse.Services

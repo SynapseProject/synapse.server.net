@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Security.Principal;
 using System.Web.Http;
 using System.Web.Http.Routing;
+using System.Net.Http.Headers;
 
 using Synapse.Core;
 
@@ -35,5 +36,6 @@ namespace Synapse.Services
 
         UrlHelper CurrentUrl { get; set; }
         IPrincipal CurrentUser { get; set; }
+        AuthenticationHeaderValue AuthenticationHeader { get; set; }
     }
 }

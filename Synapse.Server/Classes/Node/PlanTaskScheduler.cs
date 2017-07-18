@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Security.Principal;
+using Synapse.Common;
 
 namespace Synapse.Services
 {

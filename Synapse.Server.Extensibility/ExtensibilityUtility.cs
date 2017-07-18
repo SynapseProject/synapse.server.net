@@ -2,12 +2,13 @@
 using System.Reflection;
 using System.Security.Principal;
 using System.Web.Http.Routing;
+using System.Net.Http.Headers;
 
 namespace Synapse.Services
 {
     public class ExtensibilityUtility
     {
-        public static IExecuteController GetExecuteControllerInstance(UrlHelper currentUrl, IPrincipal currentUser)
+        public static IExecuteController GetExecuteControllerInstance(UrlHelper currentUrl, IPrincipal currentUser, AuthenticationHeaderValue authenticationHeader)
         {
             Assembly a = Assembly.Load( "Synapse.Server" );
             Type t = a.GetType( "Synapse.Services.ExecuteController", true );
@@ -16,6 +17,7 @@ namespace Synapse.Services
             {
                 c.CurrentUrl = currentUrl;
                 c.CurrentUser = currentUser;
+                c.AuthenticationHeader = authenticationHeader;
             }
             return c;
         }
