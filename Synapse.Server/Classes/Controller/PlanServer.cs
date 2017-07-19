@@ -94,7 +94,8 @@ namespace Synapse.Services
             }
 
             //send plan to Node to start the work
-            GetNodeClientInstance( nodeRootUrl, referrer, authHeader ).StartPlan( plan, plan.InstanceId, dryRun, dynamicParameters, postDynamicParameters );
+            NodeServiceHttpApiClient nodeClient = GetNodeClientInstance( nodeRootUrl, referrer, authHeader );
+            nodeClient.StartPlan( plan, plan.InstanceId, dryRun, dynamicParameters, postDynamicParameters );
 
             return plan.InstanceId;
         }
