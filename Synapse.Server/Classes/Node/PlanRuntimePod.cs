@@ -93,6 +93,8 @@ namespace Synapse.Services
             //send final message home
             _controllerService.SetPlanStatusAsync( Plan.Name, PlanInstanceId, Plan.ResultPlan );
 
+            _log.Dispose();
+
             callback?.Invoke( this );
         }
 
