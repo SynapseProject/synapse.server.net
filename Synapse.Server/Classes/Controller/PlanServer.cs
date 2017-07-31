@@ -12,7 +12,7 @@ namespace Synapse.Services
 {
     public class PlanServer
     {
-        IControllerDal _dal = null;
+		static IControllerDal _dal = null;
 
         static bool once = false;
 
@@ -21,7 +21,9 @@ namespace Synapse.Services
             if( SynapseServer.Config.Service.IsRoleController && _dal == null )
                 try
                 {
-                    _dal = AssemblyLoader.Load<IControllerDal>(
+					SynapseServer.Logger.Debug( $"Loading Dal: {SynapseServer.Config.Controller.Dal.Type}." );
+
+					_dal = AssemblyLoader.Load<IControllerDal>(
                         SynapseServer.Config.Controller.Dal.Type, SynapseServer.Config.Controller.Dal.DefaultType );
                     Dictionary<string, string> props = _dal.Configure( SynapseServer.Config.Controller.Dal );
 
@@ -35,7 +37,7 @@ namespace Synapse.Services
                 }
                 catch( Exception ex )
                 {
-                    SynapseServer.Logger.Fatal( "Failed to load Dal.", ex );
+                    SynapseServer.Logger.Fatal( $"Failed to load Dal: {SynapseServer.Config.Controller.Dal.Type}.", ex );
                     throw;
                 }
         }
