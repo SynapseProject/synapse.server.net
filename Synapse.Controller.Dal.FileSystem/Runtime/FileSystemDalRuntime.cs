@@ -81,7 +81,8 @@ public partial class FileSystemDal : IControllerDal
 
     public IEnumerable<long> GetPlanInstanceIdList(string planUniqueName)
     {
-        IEnumerable<string> files = Directory.GetFiles( _histPath, "*.yaml" ).Select( f => Path.GetFileNameWithoutExtension( f ) );
+        IEnumerable<string> files = Directory.GetFiles( _histPath, $"{planUniqueName}*.yaml" )
+			.Select( f => Path.GetFileNameWithoutExtension( f ) );
 
         List<long> ids = new List<long>();
         foreach( string file in files )
