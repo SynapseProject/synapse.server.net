@@ -92,34 +92,41 @@ namespace Synapse.Services.Controller.Cli
             }
             else
             {
-                string arg0 = args[0].ToLower();
-
-                if( _methods.ContainsKey( arg0 ) )
+                try
                 {
-                    Dictionary<string, string> parms = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
-                    if( args.Length > 1 )
-                    {
-                        bool error = false;
-                        parms = ParseCmdLine( args, 1, ref error, suppressErrorMessages: true );
-                        if( parms.ContainsKey( "url" ) )
-                        {
-                            BaseUrl = parms["url"];
-                            parms.Remove( "url" );
-                        }
-                    }
-                    Console.WriteLine( $"Calling {_methods[arg0]} on {BaseUrl}" );
+                    string arg0 = args[0].ToLower();
 
-                    if( _methods[arg0] == "StartPlan" || _methods[arg0] == "StartPlanWait" )
-                        RunStartPlanMethod( args, parms, _methods[arg0] == "StartPlanWait" );
+                    if( _methods.ContainsKey( arg0 ) )
+                    {
+                        Dictionary<string, string> parms = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
+                        if( args.Length > 1 )
+                        {
+                            bool error = false;
+                            parms = ParseCmdLine( args, 1, ref error, suppressErrorMessages: true );
+                            if( parms.ContainsKey( "url" ) )
+                            {
+                                BaseUrl = parms["url"];
+                                parms.Remove( "url" );
+                            }
+                        }
+                        Console.WriteLine( $"Calling {_methods[arg0]} on {BaseUrl}" );
+
+                        if( _methods[arg0] == "StartPlan" || _methods[arg0] == "StartPlanWait" )
+                            RunStartPlanMethod( args, parms, _methods[arg0] == "StartPlanWait" );
+                        else
+                            RunMethod( new ControllerServiceHttpApiClient( BaseUrl ), _methods[arg0], args );
+                    }
+                    else if( arg0.StartsWith( _service ) )
+                        RunServiceAction( args );
+                    else if( arg0.StartsWith( _keygen ) )
+                        RunKeyGenerator( args );
                     else
-                        RunMethod( new ControllerServiceHttpApiClient( BaseUrl ), _methods[arg0], args );
+                        WriteHelpAndExit( "Unknown action." );
                 }
-                else if( arg0.StartsWith( _service ) )
-                    RunServiceAction( args );
-                else if( arg0.StartsWith( _keygen ) )
-                    RunKeyGenerator( args );
-                else
-                    WriteHelpAndExit( "Unknown action." );
+                catch( Exception ex )
+                {
+                    WriteHelpAndExit( Synapse.Common.WebApi.Utilities.UnwindException( ex ) );
+                }
             }
         }
 
@@ -342,6 +349,9 @@ namespace Synapse.Services.Controller.Cli
 
         public void GenerateRsaKeys(string keyContainerName, string filePath)
         {
+            if( string.IsNullOrWhiteSpace( filePath ) )
+                throw new ArgumentNullException( nameof( filePath ), "FilePath is required." );
+
             CryptoHelpers.GenerateRsaKeys( keyContainerName, $"{filePath}.pubPriv", $"{filePath}.pubOnly" );
         }
 
@@ -385,9 +395,9 @@ namespace Synapse.Services.Controller.Cli
             Console.WriteLine( "    - List|l             Get a list of Plans.", "" );
             Console.WriteLine( "    - ListInstances|li   Get a list of Plans Instances.", "" );
             Console.WriteLine( "    - Start|s            Start a new Plan Instance.", "" );
-            Console.WriteLine( "    - StartWait|sw       Run a new Plan Instance at Controller.", "" );
-            Console.WriteLine( "    - StartWait|sw       Run a new Plan Instance at Controller.", "" );
+            Console.WriteLine( "    - StartWait|sw       Run a new Plan Instance w built-in poller.", "" );
             Console.WriteLine( "    - GetPlanElement|ge  Get an element part from a ResultPlan.", "" );
+            Console.WriteLine( "    - GetStatus|gs       Get the Status for a Plan Instance.", "" );
             Console.WriteLine( "    - SetStatus|ss       Set the Status for a Plan Instance.", "" );
             Console.WriteLine( "    - Cancel|c           Cancel a Plan Instance.\r\n", "" );
             Console.WriteLine( "  Examples:", "" );
