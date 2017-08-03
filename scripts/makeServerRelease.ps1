@@ -118,6 +118,7 @@ function Main()
     New-Item  $handlers -Type directory
     DownloadRelease 'handlers.CommandLine.net' $handlers
     DownloadRelease 'handlers.Sql.net' $handlers
+    DownloadRelease 'handlers.ActiveDirectory.net' $handlers
 
     #GetSynapseCli...
     GetSynapseCli $fr

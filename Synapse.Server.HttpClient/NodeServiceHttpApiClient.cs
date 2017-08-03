@@ -83,7 +83,8 @@ namespace Synapse.Services
 
         public async Task<ExecuteResult> StartPlanAsyncWithParametersAsPost(Plan plan, long planInstanceId, bool dryRun = false, Dictionary<string, string> dynamicParameters = null)
         {
-            StartPlanEnvelope planEnvelope = new StartPlanEnvelope()
+			dynamicParameters?.PrepareValuesForPost();
+			StartPlanEnvelope planEnvelope = new StartPlanEnvelope()
             {
                 Plan = plan,
                 DynamicParameters = dynamicParameters

@@ -75,29 +75,36 @@ namespace Synapse.Services.NodeService.Cli
             }
             else
             {
-                string arg0 = args[0].ToLower();
-
-                if( _methods.ContainsKey( arg0 ) )
+                try
                 {
-                    Dictionary<string, string> parms = new Dictionary<string, string>();
-                    if( args.Length > 1 )
-                    {
-                        bool error = false;
-                        parms = ParseCmdLine( args, 1, ref error, suppressErrorMessages: true );
-                        if( parms.ContainsKey( "url" ) )
-                            BaseUrl = parms["url"];
-                    }
-                    Console.WriteLine( $"Calling {_methods[arg0]} on {BaseUrl}" );
+                    string arg0 = args[0].ToLower();
 
-                    if( _methods[arg0] == "StartPlanFile" )
-                        RunStartPlanMethod( args, parms );
+                    if( _methods.ContainsKey( arg0 ) )
+                    {
+                        Dictionary<string, string> parms = new Dictionary<string, string>();
+                        if( args.Length > 1 )
+                        {
+                            bool error = false;
+                            parms = ParseCmdLine( args, 1, ref error, suppressErrorMessages: true );
+                            if( parms.ContainsKey( "url" ) )
+                                BaseUrl = parms["url"];
+                        }
+                        Console.WriteLine( $"Calling {_methods[arg0]} on {BaseUrl}" );
+
+                        if( _methods[arg0] == "StartPlanFile" )
+                            RunStartPlanMethod( args, parms );
+                        else
+                            RunMethod( new NodeServiceHttpApiClient( BaseUrl ), _methods[arg0], args );
+                    }
+                    else if( arg0.StartsWith( _service ) )
+                        RunServiceAction( args );
                     else
-                        RunMethod( new NodeServiceHttpApiClient( BaseUrl ), _methods[arg0], args );
+                        WriteHelpAndExit( "Unknown action." );
                 }
-                else if( arg0.StartsWith( _service ) )
-                    RunServiceAction( args );
-                else
-                    WriteHelpAndExit( "Unknown action." );
+                catch( Exception ex )
+                {
+                    WriteHelpAndExit( Synapse.Common.WebApi.Utilities.UnwindException( ex ) );
+                }
             }
         }
 
