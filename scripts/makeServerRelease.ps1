@@ -1,9 +1,6 @@
-﻿Add-Type -assembly "system.io.compression.filesystem"
-
-$dir = Split-Path $MyInvocation.MyCommand.Path
-Set-Location $dir
-
-Main
+﻿param( 
+    [string]$workingDir = 'C:\Devo\synapse\synapse.server.net\scripts'
+)
 
 function RemoveFile( $path )
 {
@@ -50,6 +47,7 @@ function Unzip( $source, $destination )
 
 function DownloadRelease( $repo, $destination )
 {
+    Write-Host ("Downloading: " + $repo)
     $uri = ('https://api.github.com/repos/synapseproject/' + $repo + '/releases')
     $rel = Invoke-WebRequest -Uri $uri | ConvertFrom-Json
     $url = $rel[0].assets[0].browser_download_url
@@ -77,7 +75,7 @@ function GetVersionInfo( $folder )
     return [System.Diagnostics.FileVersionInfo]::GetVersionInfo($folder + '\Synapse.Server.exe').FileVersion
 }
 
-function Main()
+function MakeServerRelease()
 {
     $release = 'Release';
     $fr = ($dir + '\' + $release)
@@ -98,22 +96,27 @@ function Main()
     Get-ChildItem $release -directory | ForEach-Object { Remove-Item -recurse -force ( $release + '\' + $_ ) }
 
     #these folders are created as empty
+    Write-Host "Creating folders."
     New-Item ($release + '\Assemblies') -Type directory
     New-Item ($release + '\Logs') -Type directory
     New-Item ($release + '\Crypto') -Type directory
 
     #authentication folder
+    Write-Host "Copying Authentication release files."
     CopyFolder '\Synapse.Authentication\bin\Release\*' ($release + '\Authentication')
 
     #dal folder
+    Write-Host "Creating DAL folders, copying DAL release files."
     CopyFolder '\Synapse.Controller.Dal.FileSystem\bin\Release\*' ($release + '\Dal')
     New-Item ($release + '\Dal\History') -Type directory
     New-Item ($release + '\Dal\Plans') -Type directory
     New-Item ($release + '\Dal\Security') -Type directory
+    Write-Host "Unzipping sample Plans and Suplex."
     Unzip ($dir + '\_Plans.zip') ($fr + '\Dal')
     Unzip ($dir + '\_Suplex.zip') ($fr + '\Dal\Security')
 
     #handlers folder
+    Write-Host "Creating Handlers folders."
     $handlers = ($fr + '\Handlers')
     New-Item  $handlers -Type directory
     DownloadRelease 'handlers.CommandLine.net' $handlers
@@ -124,12 +127,22 @@ function Main()
     GetSynapseCli $fr
 
     #zip the Release folder
+    Write-Host "Creating Release zip."
     $ver = GetVersionInfo $fr
     $archive = ($dir + '\Synapse.Server.' + $ver + '-beta.zip')
     RemoveFile $archive
     [io.compression.zipfile]::CreateFromDirectory( $fr, $archive, [System.IO.Compression.CompressionLevel]::Optimal, $false );
 
     #clean up
+    Write-Host "Deleting temp files."
     RemoveFile( $fr + '\*' );
     Remove-Item $release
 }
+
+
+Add-Type -assembly "system.io.compression.filesystem"
+
+$dir = $workingDir
+Set-Location $dir
+
+MakeServerRelease
