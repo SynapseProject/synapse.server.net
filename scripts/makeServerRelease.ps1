@@ -34,7 +34,7 @@ function CleanFolder
 
 function CopyFolder( $source, $destination )
 {
-    New-Item $destination -Type directory
+    New-Item $destination -Type directory | Out-Null
     $r = $dir.ToLower().Replace( '\scripts', $source )
     Copy-Item $r $destination -recurse
     CleanFolder $destination $true
@@ -97,9 +97,9 @@ function MakeServerRelease()
 
     #these folders are created as empty
     Write-Host "Creating folders."
-    New-Item ($release + '\Assemblies') -Type directory
-    New-Item ($release + '\Logs') -Type directory
-    New-Item ($release + '\Crypto') -Type directory
+    New-Item ($release + '\Assemblies') -Type directory | Out-Null
+    New-Item ($release + '\Logs') -Type directory | Out-Null
+    New-Item ($release + '\Crypto') -Type directory | Out-Null
 
     #authentication folder
     Write-Host "Copying Authentication release files."
@@ -108,9 +108,9 @@ function MakeServerRelease()
     #dal folder
     Write-Host "Creating DAL folders, copying DAL release files."
     CopyFolder '\Synapse.Controller.Dal.FileSystem\bin\Release\*' ($release + '\Dal')
-    New-Item ($release + '\Dal\History') -Type directory
-    New-Item ($release + '\Dal\Plans') -Type directory
-    New-Item ($release + '\Dal\Security') -Type directory
+    New-Item ($release + '\Dal\History') -Type directory | Out-Null
+    New-Item ($release + '\Dal\Plans') -Type directory | Out-Null
+    New-Item ($release + '\Dal\Security') -Type directory | Out-Null
     Write-Host "Unzipping sample Plans and Suplex."
     Unzip ($dir + '\_Plans.zip') ($fr + '\Dal')
     Unzip ($dir + '\_Suplex.zip') ($fr + '\Dal\Security')
@@ -118,7 +118,7 @@ function MakeServerRelease()
     #handlers folder
     Write-Host "Creating Handlers folders."
     $handlers = ($fr + '\Handlers')
-    New-Item  $handlers -Type directory
+    New-Item  $handlers -Type directory | Out-Null
     DownloadRelease 'handlers.CommandLine.net' $handlers
     DownloadRelease 'handlers.Sql.net' $handlers
     DownloadRelease 'handlers.ActiveDirectory.net' $handlers
