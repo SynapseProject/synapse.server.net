@@ -81,8 +81,10 @@ public partial class FileSystemDal : IControllerDal
 
     public IEnumerable<long> GetPlanInstanceIdList(string planUniqueName)
     {
-        IEnumerable<string> files = Directory.GetFiles( _histPath, $"{planUniqueName}_*.yaml" )
-			.Select( f => Path.GetFileNameWithoutExtension( f ) );
+        Regex regex = new Regex( $@"^{planUniqueName}(_\d+\.yaml)$" );
+        IEnumerable<string> files = Directory.GetFiles( _histPath )
+            .Where( f => regex.IsMatch( Path.GetFileName( f ) ) )
+            .Select( f => Path.GetFileNameWithoutExtension( f ) );
 
         List<long> ids = new List<long>();
         foreach( string file in files )
