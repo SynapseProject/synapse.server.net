@@ -60,22 +60,24 @@ public partial class FileSystemDal : IControllerDal
         }
         else
         {
-            Regex regex = new Regex( filter, RegexOptions.IgnoreCase );
-
             if( !isRegexFilter )
             {
                 foreach( char x in @"\+?|{[()^$.#" )
                     filter = filter.Replace( x.ToString(), @"\" + x.ToString() );
-                regex = new Regex( string.Format( "^{0}$", filter.Replace( "*", ".*" ) ), RegexOptions.IgnoreCase );
+                filter = $@"{filter.Replace( "*", ".*" )}.*\.yaml$";
             }
-
-            if( !filter.EndsWith( ".yaml", StringComparison.OrdinalIgnoreCase ) )
+            else if( !filter.EndsWith( ".yaml", StringComparison.OrdinalIgnoreCase ) )
             {
-                filter = $@"{filter}.*\.yaml";
-                regex = new Regex( filter, RegexOptions.IgnoreCase );
+                if( filter.EndsWith( "$" ) )
+                    filter = $@"{filter.Remove( filter.Length - 1 )}\.yaml$";
+                else
+                    filter = $@"{filter}.*\.yaml$";
             }
 
-            return Directory.GetFiles( _planPath ).Where( f => regex.IsMatch( f ) ).Select( f => Path.GetFileNameWithoutExtension( f ) );
+            Regex regex = new Regex( filter, RegexOptions.IgnoreCase );
+
+            return Directory.GetFiles( _planPath ).Where( f => regex.IsMatch( Path.GetFileName( f ) ) )
+                .Select( f => Path.GetFileNameWithoutExtension( f ) );
         }
     }
 
