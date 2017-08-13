@@ -68,9 +68,6 @@ namespace Synapse.Services.Controller.Cli
             _methods.Add( "ss", "SetPlanStatus" );
             _methods.Add( "cancel", "CancelPlan" );
             _methods.Add( "c", "CancelPlan" );
-
-            SynapseServerConfig config = SynapseServerConfig.DeserializeOrNew( ServerRole.Controller );
-            BaseUrl = $"{config.WebApi.ToUri( isUserInteractive: true )}/synapse/execute";
         }
 
 
@@ -94,21 +91,31 @@ namespace Synapse.Services.Controller.Cli
             {
                 try
                 {
+                    bool error = false;
+                    Dictionary<string, string> parms = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
+                    parms = ParseCmdLine( args, 0, ref error, suppressErrorMessages: true );
+                    string configFile = null;
+                    if( parms.ContainsKey( InstallUtility.SynapseConfigParm ) )
+                    {
+                        configFile = parms[InstallUtility.SynapseConfigParm];
+                        parms.Remove( InstallUtility.SynapseConfigParm );
+                    }
+
+                    SynapseServerConfig config = SynapseServerConfig.DeserializeOrNew( ServerRole.Controller, configFile );
+                    if( string.IsNullOrWhiteSpace( BaseUrl ) )
+                        BaseUrl = $"{config.WebApi.ToUri( isUserInteractive: true )}/synapse/execute";
+
+                    if( parms.ContainsKey( "url" ) )
+                    {
+                        BaseUrl = parms["url"];
+                        parms.Remove( "url" );
+                    }
+
+
                     string arg0 = args[0].ToLower();
 
                     if( _methods.ContainsKey( arg0 ) )
                     {
-                        Dictionary<string, string> parms = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
-                        if( args.Length > 1 )
-                        {
-                            bool error = false;
-                            parms = ParseCmdLine( args, 1, ref error, suppressErrorMessages: true );
-                            if( parms.ContainsKey( "url" ) )
-                            {
-                                BaseUrl = parms["url"];
-                                parms.Remove( "url" );
-                            }
-                        }
                         Console.WriteLine( $"Calling {_methods[arg0]} on {BaseUrl}" );
 
                         if( _methods[arg0] == "StartPlan" || _methods[arg0] == "StartPlanWait" )
@@ -303,7 +310,14 @@ namespace Synapse.Services.Controller.Cli
             {
                 case "run":
                 {
-                    SynapseServer.RunConsole();
+                    string[] arguments = args;
+                    if( args.Length > 2 )
+                    {
+                        arguments = new string[arguments.Length - 2];
+                        for( int i = 2; i < args.Length; i++ )
+                            arguments[i-2] = args[i];
+                    }
+                    SynapseServer.RunConsole( arguments );
                     break;
                 }
                 case "install":
@@ -322,7 +336,9 @@ namespace Synapse.Services.Controller.Cli
                 case "uninstall":
                 {
                     string message = string.Empty;
-                    if( !InstallUtility.StopAndUninstallService( out message ) )
+                    bool error = false;
+                    Dictionary<string, string> values = ParseCmdLine( args, 2, ref error, true );
+                    if( !InstallUtility.StopAndUninstallService( installOptions: values, message: out message ) )
                     {
                         Console.WriteLine( message );
                         Environment.Exit( 1 );

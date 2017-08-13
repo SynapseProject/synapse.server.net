@@ -15,13 +15,14 @@ using Microsoft.Owin.Hosting;
 using Synapse.Common.CmdLine;
 using Synapse.Services.Common;
 using Synapse.Common;
-
+using System.Linq;
+using System.IO;
 
 namespace Synapse.Services
 {
     public partial class SynapseServer : ServiceBase
     {
-        public static ILog Logger = LogManager.GetLogger( "SynapseServer" );
+        public static ILog Logger = null;
         public static SynapseServerConfig Config = null;
 
         ServiceHost _serviceHost = null;
@@ -30,9 +31,6 @@ namespace Synapse.Services
 
         public SynapseServer()
         {
-            if( Config == null )
-                Config = SynapseServerConfig.Deserialze();
-
             InitializeComponent();
 
             this.ServiceName = Config.Service.Name;
@@ -42,12 +40,45 @@ namespace Synapse.Services
         {
             AppDomain.CurrentDomain.UnhandledException += CurrentDomainUnhandledException;
 
+            DeserialzeConfig( args );
+
+            //can't setup the Logger until after deserializing Config
+            log4net.GlobalContext.Properties["LogName"] = $"{Config.Service.Name}.{Environment.MachineName.ToLower()}";
+            Logger = LogManager.GetLogger( "SynapseServer" );
+
+            //can't log the Config path until after Logger is setup
+            Logger.Info( $"Using SynapseServerConfig from [{SynapseServerConfig.FileName}]" );
+
 #if DEBUG
-            RunConsole();
+            RunConsole( args );
 #endif
 
             InstallService( args ); //only runs RELEASE
             RunService(); //only runs RELEASE
+        }
+
+        public static void DeserialzeConfig(string[] args)
+        {
+            string configFile = null;
+
+            if( args != null && args.Length > 0 )
+            {
+                string arg0 = args[0].ToLower();
+                List<string> parms = (new string[] { "install", "i", "uninstall", "u", "config", "c" }).ToList();
+                if( !parms.Contains( arg0 ) )
+                    if( File.Exists( arg0 ) )
+                        configFile = args[0];
+                    else
+                    {
+                        FileNotFoundException ex = new FileNotFoundException( $"Could not find startup config file [{configFile}].", configFile );
+                        if( Environment.UserInteractive )
+                            WriteHelpAndExit( ex.Message );
+                        else
+                            throw ex;
+                    }
+            }
+
+            Config = SynapseServerConfig.Deserialze( configFile );
         }
 
         /// <summary>
@@ -74,7 +105,7 @@ namespace Synapse.Services
                     }
                     else if( arg0 == "uninstall" || arg0 == "u" )
                     {
-                        ok = InstallUtility.StopAndUninstallService( out message );
+                        ok = InstallUtility.StopAndUninstallService( installOptions: null, message: out message );
                     }
                     else if( arg0 == "config" || arg0 == "c" )
                     {
@@ -99,7 +130,7 @@ namespace Synapse.Services
             ServiceBase.Run( new SynapseServer() );
         }
 
-        public static void RunConsole()
+        public static void RunConsole(string[] args = null)
         {
             if( !Environment.UserInteractive )
             {
@@ -110,7 +141,8 @@ namespace Synapse.Services
                 Environment.Exit( 1 );
             }
 
-            Config = SynapseServerConfig.Deserialze();
+            if( Config == null )
+                DeserialzeConfig( args );
             ConsoleColor current = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine( $"Starting Synapse.Server as {Config?.Service.Role}: Press Ctrl-C/Ctrl-Break to stop." );

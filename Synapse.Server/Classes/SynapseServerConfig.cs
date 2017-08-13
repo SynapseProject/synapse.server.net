@@ -16,9 +16,10 @@ namespace Synapse.Services
         public SynapseServerConfig() { }
 
         public static readonly string CurrentPath = $"{Path.GetDirectoryName( typeof( SynapseServerConfig ).Assembly.Location )}";
-        public static readonly string FileName = $"{Path.GetDirectoryName( typeof( SynapseServerConfig ).Assembly.Location )}\\Synapse.Server.config.yaml";
 
 
+        public static string FileName { get; private set; } = $"{Path.GetDirectoryName( typeof( SynapseServerConfig ).Assembly.Location )}\\Synapse.Server.config.yaml";
+        public string ConfigFileName { get { return FileName; } }
         public ServiceConfig Service { get; set; } = new ServiceConfig();
         public WebApiConfig WebApi { get; set; } = new WebApiConfig();
         public SignatureConfig Signature { get; set; } = new SignatureConfig();
@@ -31,19 +32,25 @@ namespace Synapse.Services
             YamlHelpers.SerializeFile( FileName, this, serializeAsJson: false, emitDefaultValues: true );
         }
 
-        public static SynapseServerConfig Deserialze()
+        public static SynapseServerConfig Deserialze(string fileName = null)
         {
+            if( !string.IsNullOrWhiteSpace( fileName ) )
+                FileName = fileName;
+
             if( !File.Exists( FileName ) )
                 throw new FileNotFoundException( $"Could not find {FileName}" );
 
             return YamlHelpers.DeserializeFile<SynapseServerConfig>( FileName );
         }
 
-        public static SynapseServerConfig DeserializeOrNew(ServerRole role)
+        public static SynapseServerConfig DeserializeOrNew(ServerRole role, string fileName = null)
         {
             SynapseServerConfig config = null;
 
             int port = ((role & ServerRole.Controller) == ServerRole.Controller) ? 20000 : 20001;
+
+            if( !string.IsNullOrWhiteSpace( fileName ) )
+                FileName = fileName;
 
             if( !File.Exists( FileName ) )
             {

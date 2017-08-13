@@ -1,18 +1,24 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration.Install;
 using System.IO;
 using System.ServiceProcess;
+using System.Text;
 
 namespace Synapse.Services
 {
     public class InstallUtility
     {
+        public static readonly string SynapseConfigParm = "synapseConfig";
+
         public static bool InstallAndStartService(ServerRole serverRole, Dictionary<string, string> installOptions, out string message)
         {
             message = null;
             bool startService = true;
+
+            string configFile = null;
 
             if( installOptions != null )
             {
@@ -22,17 +28,21 @@ namespace Synapse.Services
                     bool.TryParse( installOptions[run], out startService );
                     installOptions.Remove( run );
                 }
+                if( installOptions.ContainsKey( SynapseConfigParm ) )
+                {
+                    configFile = installOptions[SynapseConfigParm];
+                    installOptions.Remove( SynapseConfigParm );
+                }
             }
 
-            SynapseServerConfig.DeserializeOrNew( serverRole );
-            bool ok = InstallOrUninstallService( install: true, message: out message );
+            SynapseServerConfig config = SynapseServerConfig.DeserializeOrNew( serverRole, configFile );
+            bool ok = InstallOrUninstallService( install: true, configFile: configFile, message: out message );
 
             if( ok && startService )
                 try
                 {
-                    string sn = SynapseServerConfig.Deserialze().Service.Name;
-                    Console.Write( $"\r\nStarting {sn}... " );
-                    ServiceController sc = new ServiceController( sn );
+                    Console.Write( $"\r\nStarting {config.Service.Name}... " );
+                    ServiceController sc = new ServiceController( config.Service.Name );
                     sc.Start();
                     sc.WaitForStatus( ServiceControllerStatus.Running, TimeSpan.FromMinutes( 2 ) );
                     Console.WriteLine( sc.Status );
@@ -47,14 +57,21 @@ namespace Synapse.Services
             return ok;
         }
 
-        public static bool StopAndUninstallService(out string message)
+        public static bool StopAndUninstallService(Dictionary<string, string> installOptions, out string message)
         {
             bool ok = true;
             message = null;
 
+            string configFile = null;
+            if( installOptions != null && installOptions.ContainsKey( "synapseConfig" ) )
+            {
+                configFile = installOptions["synapseConfig"];
+                installOptions.Remove( "synapseConfig" );
+            }
+
             try
             {
-                string sn = SynapseServerConfig.Deserialze().Service.Name;
+                string sn = SynapseServerConfig.Deserialze( configFile ).Service.Name;
                 ServiceController sc = new ServiceController( sn );
                 if( sc.Status == ServiceControllerStatus.Running )
                 {
@@ -70,14 +87,15 @@ namespace Synapse.Services
             }
 
             if( ok )
-                ok = InstallOrUninstallService( install: false, message: out message );
+                ok = InstallOrUninstallService( install: false, configFile: configFile, message: out message );
 
             return ok;
         }
 
-        public static bool InstallOrUninstallService(bool install, out string message)
+        static bool InstallOrUninstallService(bool install, string configFile, out string message)
         {
             string fullFilePath = typeof( SynapseServerServiceInstaller ).Assembly.Location;
+
             string logFile = $"Synapse.Server.InstallLog.txt";
 
             List<string> args = new List<string>();
@@ -106,21 +124,32 @@ namespace Synapse.Services
         }
     }
 
+    public class SynapseServiceInstaller : ServiceInstaller
+    {
+        public override void Install(IDictionary stateSaver)
+        {
+            //each element of the assemblyPath needs to individually encapsulated in double-quotes
+            StringBuilder path = new StringBuilder( "\"" );
+            path.Append( Context.Parameters["assemblypath"] );
+            path.Append( "\" \"" );
+            path.Append( Path.GetFullPath( SynapseServerConfig.FileName ) );
+            path.Append( "\"" );
+            Context.Parameters["assemblypath"] = path.ToString();
+            base.Install( stateSaver );
+        }
+    }
+
     [RunInstaller( true )]
     public class SynapseServerServiceInstaller : Installer
     {
         public SynapseServerServiceInstaller()
         {
             ServiceProcessInstaller processInstaller = new ServiceProcessInstaller();
-            ServiceInstaller serviceInstaller = new ServiceInstaller();
+            ServiceInstaller serviceInstaller = new SynapseServiceInstaller();
 
+            //SynapseServerConfig.FileName is a static, so this will deserialize a custom config file if specified
+            //  since it was alreadt deserialized above at [SynapseServerConfig.DeserializeOrNew( serverRole, configFile );] (line 37)
             SynapseServerConfig config = SynapseServerConfig.Deserialze();
-            ////if( config.HasServiceNameDefaults )
-            ////{
-            ////    config.ServiceName = config.ServiceNameValue;
-            ////    config.ServiceDisplayName = config.ServiceDisplayNameValue;
-            ////    config.Serialize();
-            ////}
 
             //set the privileges
             processInstaller.Account = ServiceAccount.LocalSystem;
