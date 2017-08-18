@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 
 
 namespace Synapse.Services
@@ -13,6 +14,7 @@ namespace Synapse.Services
 
 
         public string NodeUrl { get; set; }
+        public AuthenticationSchemes NodeAuthenticationScheme { get; set; } = AuthenticationSchemes.None;
         public bool SignPlan { get; set; } = false;
 
         public List<string> Assemblies { get; set; }

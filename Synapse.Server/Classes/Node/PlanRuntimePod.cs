@@ -34,7 +34,12 @@ namespace Synapse.Services
             if ( !string.IsNullOrWhiteSpace( _url ) )
             {
                 _controllerService = new ControllerServiceHttpApiClient( _url );
-                if ( authHeader != null )
+                if ( SynapseServer.Config?.Controller?.NodeAuthenticationScheme != null )
+                {
+                    if ( SynapseServer.Config.Controller.NodeAuthenticationScheme == System.Net.AuthenticationSchemes.Basic )
+                        _controllerService.Options.Authentication = new BasicAuthentication( authHeader );
+                }
+                else if ( authHeader != null )
                 {
                     if ( authHeader.Scheme.ToLower() == "basic" )
                         _controllerService.Options.Authentication = new BasicAuthentication( authHeader );

@@ -135,7 +135,7 @@ namespace Synapse.Services
             Impersonator runAsUser = null;
             if (SynapseServer.UseImpersonation(CurrentUser?.Identity))
             {
-                if ( SynapseServer.Config.WebApi.Authentication.Scheme == System.Net.AuthenticationSchemes.Basic )
+                if ( Request?.Headers?.Authorization?.Scheme?.ToLower() == "basic" )
                 {
                     runAsUser = new Impersonator( this.AuthenticationHeader );
                 }
@@ -199,7 +199,7 @@ namespace Synapse.Services
             Impersonator runAsUser = null;
             if ( SynapseServer.UseImpersonation( CurrentUser?.Identity ) )
             {
-                if ( SynapseServer.Config.WebApi.Authentication.Scheme == System.Net.AuthenticationSchemes.Basic )
+                if ( Request?.Headers?.Authorization?.Scheme?.ToLower() == "basic" )
                 {
                     runAsUser = new Impersonator( this.AuthenticationHeader );
                 }

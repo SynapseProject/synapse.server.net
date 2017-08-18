@@ -213,7 +213,12 @@ namespace Synapse.Services
             nodeClient.Headers.Referrer = referrer;
             if ( authHeader != null)
             {
-                if ( authHeader.Scheme.ToLower() == "basic" )
+                if ( SynapseServer.Config?.Node?.ControllerAuthenticationScheme != null )
+                {
+                    if ( SynapseServer.Config.Node.ControllerAuthenticationScheme == System.Net.AuthenticationSchemes.Basic )
+                        nodeClient.Options.Authentication = new BasicAuthentication( authHeader );
+                }
+                else if ( authHeader.Scheme.ToLower() == "basic" )
                     nodeClient.Options.Authentication = new BasicAuthentication( authHeader );
             }
             return nodeClient;

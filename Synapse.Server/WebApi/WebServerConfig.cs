@@ -35,7 +35,7 @@ namespace Synapse.Services
             
             config.MessageHandlers.Add( new RawContentHandler() );
 
-            if( SynapseServer.Config.WebApi.Authentication.Scheme == AuthenticationSchemes.Basic )
+            if ( (SynapseServer.Config.WebApi.Authentication.Scheme | AuthenticationSchemes.Basic) != 0 )
             {
                 IAuthenticationProvider auth = AuthenticationProviderUtil.GetInstance(
                     "Synapse.Authentication", "Synapse.Authentication.AuthenticationProvider", config );

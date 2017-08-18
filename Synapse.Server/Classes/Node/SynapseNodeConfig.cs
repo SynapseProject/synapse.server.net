@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 
 
 namespace Synapse.Services
@@ -27,6 +28,7 @@ namespace Synapse.Services
         public bool SerializeResultPlan { get; set; } = true;
         public bool ValidatePlanSignature { get; set; } = false;
         public string ControllerUrl { get; set; }
+        public AuthenticationSchemes ControllerAuthenticationScheme { get; set; } = AuthenticationSchemes.None;
         internal bool HasControllerUrl { get { return !string.IsNullOrWhiteSpace( ControllerUrl ); } }
 
 
