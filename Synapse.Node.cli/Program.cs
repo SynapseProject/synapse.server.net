@@ -37,7 +37,8 @@ namespace Synapse.Services.NodeService.Cli
 
 
         Dictionary<string, string> _methods = new Dictionary<string, string>();
-        string _service = "service";
+        readonly string _service = "service";
+        readonly string _genconfig = "genconfig";
 
         public Program()
         {
@@ -108,6 +109,8 @@ namespace Synapse.Services.NodeService.Cli
                     }
                     else if( arg0.StartsWith( _service ) )
                         RunServiceAction( args );
+                    else if( arg0.StartsWith( _genconfig ) )
+                        RunConfigGenerator( args );
                     else
                         WriteHelpAndExit( "Unknown action." );
                 }
@@ -187,10 +190,10 @@ namespace Synapse.Services.NodeService.Cli
             {
                 case "run":
                 {
-                    string[] arguments = args;
+                    string[] arguments = new string[] { };
                     if( args.Length > 2 )
                     {
-                        arguments = new string[arguments.Length - 2];
+                        arguments = new string[args.Length - 2];
                         for( int i = 2; i < args.Length; i++ )
                             arguments[i - 2] = args[i];
                     }
@@ -234,6 +237,23 @@ namespace Synapse.Services.NodeService.Cli
         }
 
 
+        #region Generate ServerConfigs
+        private void RunConfigGenerator(string[] args)
+        {
+            Console.WriteLine( $"Calling {nameof( GenerateConfig )}." );
+            RunMethod( this, nameof( GenerateConfig ), args );
+        }
+
+        public void GenerateConfig(string filePath)
+        {
+            if( string.IsNullOrWhiteSpace( filePath ) )
+                throw new ArgumentNullException( nameof( filePath ), "FilePath is required." );
+
+            SynapseServerConfig.DeserializeOrNew( ServerRole.Node, filePath ); ;
+        }
+        #endregion
+
+
         #region Help
         protected override void WriteHelpAndExit(string errorMessage = null)
         {
@@ -244,7 +264,8 @@ namespace Synapse.Services.NodeService.Cli
             Console_WriteLine( $"synapse.node.cli.exe, Version: {typeof( Program ).Assembly.GetName().Version}\r\n", ConsoleColor.Green );
             Console.WriteLine( "Syntax:" );
             Console_WriteLine( "  synapse.node.cli.exe service {0}command{1} | {0}httpAction parm:value{1} |", ConsoleColor.Cyan, "{", "}" );
-            Console.WriteLine( "       interactive|i [url:http://{1}host:port{2}/synapse/node]\r\n", "", "{", "}" );
+            Console.WriteLine( "       interactive|i [url:http://{1}host:port{2}/synapse/node] |", "", "{", "}" );
+            Console.WriteLine( "       genconfig filePath:{1}path{2}\r\n", "", "{", "}" );
             Console_WriteLine( "  About URLs:{0,-2}URL is an optional parameter on all commands except 'service'", ConsoleColor.Green, "" );
             Console.WriteLine( "{0,-15}commands. Specify as [url:http://{1}host:port{2}/synapse/node].", "", "{", "}" );
             Console.WriteLine( "{0,-15}URL default is localhost:{1}port{2} (See WebApiPort in config.yaml)\r\n", "", "{", "}" );
@@ -255,6 +276,11 @@ namespace Synapse.Services.NodeService.Cli
             Console.WriteLine( "{0,-15}- Commands: install [run:true|false] | uninstall | run", "" );
             Console.WriteLine( "{0,-15}- Example:  synapse.node.cli service install run:false", "" );
             Console.WriteLine( "{0,-15}            synapse.node.cli service run\r\n", "" );
+            Console.WriteLine( "  {1}{0,-4}Generate a Synapse Node config file.", "", _genconfig );
+            Console.WriteLine( "{0,-15}- filePath: Path and filename for the config file.\r\n", "" );
+            Console.WriteLine( "{0,-15}Note: Running synapse.node.cli with no parameters will", "" );
+            Console.WriteLine( "{0,-15}      generate a default config if none exists.  Use this option", "" );
+            Console.WriteLine( "{0,-15}      to generate a named config file.\r\n", "" );
             Console.WriteLine( "  httpAction{0,-3}Execute a command, optionally specify URL.", "" );
             Console.WriteLine( "{0,-15}Parm help: synapse.node.cli {1}httpAction{2} help.\r\n", "", "{", "}" );
             Console.WriteLine( "  - httpActions:", "" );

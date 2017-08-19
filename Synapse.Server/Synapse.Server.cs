@@ -43,11 +43,7 @@ namespace Synapse.Services
             DeserialzeConfig( args );
 
             //can't setup the Logger until after deserializing Config
-            log4net.GlobalContext.Properties["LogName"] = $"{Config.Service.Name}.{Environment.MachineName.ToLower()}";
-            Logger = LogManager.GetLogger( "SynapseServer" );
-
-            //can't log the Config path until after Logger is setup
-            Logger.Info( $"Using SynapseServerConfig from [{SynapseServerConfig.FileName}]" );
+            SetupLogger();
 
 #if DEBUG
             RunConsole( args );
@@ -64,13 +60,13 @@ namespace Synapse.Services
             if( args != null && args.Length > 0 )
             {
                 string arg0 = args[0].ToLower();
-                List<string> parms = (new string[] { "install", "i", "uninstall", "u", "config", "c" }).ToList();
+                List<string> parms = (new string[] { "install", "i", "uninstall", "u", "genconfig", "gc" }).ToList();
                 if( !parms.Contains( arg0 ) )
                     if( File.Exists( arg0 ) )
                         configFile = args[0];
                     else
                     {
-                        FileNotFoundException ex = new FileNotFoundException( $"Could not find startup config file [{configFile}].", configFile );
+                        FileNotFoundException ex = new FileNotFoundException( $"Could not find startup config file [{args[0]}].", args[0] );
                         if( Environment.UserInteractive )
                             WriteHelpAndExit( ex.Message );
                         else
@@ -79,6 +75,15 @@ namespace Synapse.Services
             }
 
             Config = SynapseServerConfig.Deserialze( configFile );
+        }
+
+        public static void SetupLogger()
+        {
+            log4net.GlobalContext.Properties["LogName"] = $"{Config.Service.Name}.{Environment.MachineName.ToLower()}";
+            Logger = LogManager.GetLogger( "SynapseServer" );
+
+            //can't log the Config path until after Logger is setup
+            Logger.Info( $"Using SynapseServerConfig from [{SynapseServerConfig.FileName}]" );
         }
 
         /// <summary>
@@ -107,9 +112,12 @@ namespace Synapse.Services
                     {
                         ok = InstallUtility.StopAndUninstallService( installOptions: null, message: out message );
                     }
-                    else if( arg0 == "config" || arg0 == "c" )
+                    else if( arg0 == "genconfig" || arg0 == "gc" )
                     {
-                        SynapseServerConfig.DeserializeOrNew( ServerRole.Server );
+                        string configFile = null;
+                        if( args.Length > 1 )
+                            configFile = args[1];
+                        SynapseServerConfig.DeserializeOrNew( ServerRole.Server, configFile );
                         ok = true;
                     }
 
@@ -143,10 +151,14 @@ namespace Synapse.Services
 
             if( Config == null )
                 DeserialzeConfig( args );
+
             ConsoleColor current = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine( $"Starting Synapse.Server as {Config?.Service.Role}: Press Ctrl-C/Ctrl-Break to stop." );
             Console.ForegroundColor = current;
+
+            //can't setup the Logger until after deserializing Config
+            SetupLogger();
 
             using( SynapseServer s = new SynapseServer() )
             {
@@ -300,7 +312,7 @@ namespace Synapse.Services
 
             MessageBoxIcon icon = MessageBoxIcon.Information;
 
-            string msg = $"synapse.server.exe, Version: {typeof( SynapseServer ).Assembly.GetName().Version}\r\nSyntax:\r\n  synapse.server.exe install [run:true|false] | uninstall | config";
+            string msg = $"synapse.server.exe, Version: {typeof( SynapseServer ).Assembly.GetName().Version}\r\nSyntax:\r\n  synapse.server.exe install [run:true|false] | uninstall | genconfig";
 
             if( haveError )
             {

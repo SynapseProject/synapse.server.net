@@ -43,8 +43,9 @@ namespace Synapse.Services.Controller.Cli
 
 
         Dictionary<string, string> _methods = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
-        string _service = "service";
-        string _keygen = "keygen";
+        readonly string _service = "service";
+        readonly string _genkey = "genkey";
+        readonly string _genconfig = "genconfig";
 
         public Program()
         {
@@ -125,7 +126,9 @@ namespace Synapse.Services.Controller.Cli
                     }
                     else if( arg0.StartsWith( _service ) )
                         RunServiceAction( args );
-                    else if( arg0.StartsWith( _keygen ) )
+                    else if( arg0.StartsWith( _genconfig ) )
+                        RunConfigGenerator( args );
+                    else if( arg0.StartsWith( _genkey ) )
                         RunKeyGenerator( args );
                     else
                         WriteHelpAndExit( "Unknown action." );
@@ -310,10 +313,10 @@ namespace Synapse.Services.Controller.Cli
             {
                 case "run":
                 {
-                    string[] arguments = args;
+                    string[] arguments = new string[] { };
                     if( args.Length > 2 )
                     {
-                        arguments = new string[arguments.Length - 2];
+                        arguments = new string[args.Length - 2];
                         for( int i = 2; i < args.Length; i++ )
                             arguments[i-2] = args[i];
                     }
@@ -357,6 +360,7 @@ namespace Synapse.Services.Controller.Cli
         }
 
 
+        #region Generate RSA Keys & ServerConfigs
         private void RunKeyGenerator(string[] args)
         {
             Console.WriteLine( $"Calling {nameof( GenerateRsaKeys )}." );
@@ -370,6 +374,22 @@ namespace Synapse.Services.Controller.Cli
 
             CryptoHelpers.GenerateRsaKeys( keyContainerName, $"{filePath}.pubPriv", $"{filePath}.pubOnly" );
         }
+
+
+        private void RunConfigGenerator(string[] args)
+        {
+            Console.WriteLine( $"Calling {nameof( GenerateConfig )}." );
+            RunMethod( this, nameof( GenerateConfig ), args );
+        }
+
+        public void GenerateConfig(string filePath)
+        {
+            if( string.IsNullOrWhiteSpace( filePath ) )
+                throw new ArgumentNullException( nameof( filePath ), "FilePath is required." );
+
+            SynapseServerConfig.DeserializeOrNew( ServerRole.Controller, filePath ); ;
+        }
+        #endregion
 
 
         #region Help
@@ -389,7 +409,9 @@ namespace Synapse.Services.Controller.Cli
             Console_WriteLine( $"synapse.controller.cli.exe, Version: {typeof( Program ).Assembly.GetName().Version}\r\n", ConsoleColor.Green );
             Console.WriteLine( "Syntax:" );
             Console_WriteLine( "  synapse.controller.cli.exe service {0}command{1} | {0}httpAction parm:value{1} |", ConsoleColor.Cyan, "{", "}" );
-            Console.WriteLine( "       interactive|i [url:http://{1}host:port{2}/synapse/execute]\r\n", "", "{", "}" );
+            Console.WriteLine( "       interactive|i [url:http://{1}host:port{2}/synapse/execute] |", "", "{", "}" );
+            Console.WriteLine( "       genconfig filePath:{1}path{2} |", "", "{", "}" );
+            Console.WriteLine( "       genkey filePath:{1}path{2} keyContainerName:{1}container{2}\r\n", "", "{", "}" );
             Console_WriteLine( "  About URLs:{0,-2}URL is an optional parameter on all commands except 'service'", ConsoleColor.Green, "" );
             Console.WriteLine( "{0,-15}commands. Specify as [url:http://{1}host:port{2}/synapse/execute].", "", "{", "}" );
             Console.WriteLine( "{0,-15}URL default is localhost:{1}port{2} (See WebApiPort in config.yaml)\r\n", "", "{", "}" );
@@ -400,7 +422,12 @@ namespace Synapse.Services.Controller.Cli
             Console.WriteLine( "{0,-15}- Commands: install [run:true|false] | uninstall | run", "" );
             Console.WriteLine( "{0,-15}- Example:  synapse.controller.cli service install run:false", "" );
             Console.WriteLine( "{0,-15}            synapse.controller.cli service run\r\n", "" );
-            Console.WriteLine( "  keygen{0,-7}Generate RSA key for signing Plans.", "" );
+            Console.WriteLine( "  {1}{0,-4}Generate a Synapse Controller config file.", "", _genconfig );
+            Console.WriteLine( "{0,-15}- filePath: Path and filename for the config file.\r\n", "" );
+            Console.WriteLine( "{0,-15}Note: Running synapse.controller.cli with no parameters will", "" );
+            Console.WriteLine( "{0,-15}      generate a default config if none exists.  Use this option", "" );
+            Console.WriteLine( "{0,-15}      to generate a named config file.\r\n", "" );
+            Console.WriteLine( "  {1}{0,-7}Generate RSA key for signing Plans.", "", _genkey );
             Console.WriteLine( "{0,-15}- keyContainerName:  Key values storage Container.", "" );
             Console.WriteLine( "{0,-15}- filePath:          Path and filename to store key values.\r\n", "" );
             Console.WriteLine( "  httpAction{0,-3}Execute a command, optionally specify URL.", "" );
@@ -416,7 +443,7 @@ namespace Synapse.Services.Controller.Cli
             Console.WriteLine( "    - GetStatus|gs       Get the Status for a Plan Instance.", "" );
             Console.WriteLine( "    - SetStatus|ss       Set the Status for a Plan Instance.", "" );
             Console.WriteLine( "    - Cancel|c           Cancel a Plan Instance.\r\n", "" );
-            Console.WriteLine( "  Examples:", "" );
+            Console.WriteLine( "  httpActions Examples:", "" );
             Console.WriteLine( "    synapse.controller.cli l url:http://somehost/synapse/execute", "" );
             Console.WriteLine( "    synapse.controller.cli li help", "" );
             Console.WriteLine( "    synapse.controller.cli li planName:foo url:http://somehost/synapse/execute", "" );

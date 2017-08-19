@@ -19,7 +19,7 @@ namespace Synapse.Services
 
 
         public static string FileName { get; private set; } = $"{Path.GetDirectoryName( typeof( SynapseServerConfig ).Assembly.Location )}\\Synapse.Server.config.yaml";
-        public string ConfigFileName { get { return FileName; } }
+        //public string ConfigFileName { get { return FileName; } }  //ss: i recall putting this here, but it doesn't seem to be in use
         public ServiceConfig Service { get; set; } = new ServiceConfig();
         public WebApiConfig WebApi { get; set; } = new WebApiConfig();
         public SignatureConfig Signature { get; set; } = new SignatureConfig();
