@@ -120,7 +120,7 @@ namespace Synapse.Services
                     }
                     else if( arg0 == "uninstall" || arg0 == "u" )
                     {
-                        ok = InstallUtility.StopAndUninstallService( installOptions: null, message: out message );
+                        ok = InstallUtility.StopAndUninstallService( installOptions: options, message: out message );
                     }
                     else if( arg0 == "genconfig" || arg0 == "gc" )
                     {
@@ -326,7 +326,30 @@ namespace Synapse.Services
 
             MessageBoxIcon icon = MessageBoxIcon.Information;
 
-            string msg = $"synapse.server.exe, Version: {typeof( SynapseServer ).Assembly.GetName().Version}\r\nSyntax:\r\n  synapse.server.exe install [run:true|false] | uninstall | genconfig";
+            string scp = "[synapseConfig:{file}]";
+            string q = "[quiet:true|false]";
+            string msg = $"synapse.server.exe, Version: {typeof( SynapseServer ).Assembly.GetName().Version}\r\nSyntax:"; //  synapse.server.exe install [run:true|false] | uninstall | genconfig\r\n  All commands also accept: {scp} {q}";
+
+            msg += @"
+synapse.server [install|uninstall|genconfig] [synapseConfig:{file}] [quiet:true|false]
+
+  install: Installs the service, optionally runs it.
+             - [run:*true*|false]
+             - [synapseConfig:{file}]
+             - [quiet:true|*false*]
+
+  uninstall: Uninstalls the service.
+             - [synapseConfig:{file}]
+             - [quiet:true|*false*]
+
+  genconfig: Generate a synapse.server config, requires synapseConfig.
+             - synapseConfig:{file}
+             - [quiet:true|*false*]
+
+  Parameter options:
+  - synapseConfig: Path to synapse.server config file.
+  - quiet: Optionally suppress this dialog.";
+
 
             if( haveError )
             {

@@ -63,10 +63,10 @@ namespace Synapse.Services
             message = null;
 
             string configFile = null;
-            if( installOptions != null && installOptions.ContainsKey( "synapseConfig" ) )
+            if( installOptions != null && installOptions.ContainsKey( SynapseConfigParm ) )
             {
-                configFile = installOptions["synapseConfig"];
-                installOptions.Remove( "synapseConfig" );
+                configFile = installOptions[SynapseConfigParm];
+                installOptions.Remove( SynapseConfigParm );
             }
 
             try
