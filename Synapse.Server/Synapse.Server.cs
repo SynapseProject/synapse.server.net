@@ -100,12 +100,22 @@ namespace Synapse.Services
                     bool ok = false;
                     string message = string.Empty;
 
+                    bool cliParseError = false;
+                    Dictionary<string, string> options = args.Length > 1 ? CmdLineUtilities.ParseCmdLine( args, 1, ref cliParseError, ref message, null, true ) : null;
+
+                    bool quiet = false;
+                    if( !cliParseError )
+                        if( options.ContainsKey( "quiet" ) )
+                        {
+                            bool.TryParse( options["quiet"], out quiet );
+                            options.Remove( "quiet" );
+                        }
+
+
                     string arg0 = args[0].ToLower();
                     if( arg0 == "install" || arg0 == "i" )
                     {
-                        bool error = false;
-                        Dictionary<string, string> options = args.Length > 1 ? CmdLineUtilities.ParseCmdLine( args, 1, ref error, ref message, null, true ) : null;
-                        if( !error )
+                        if( !cliParseError )
                             ok = InstallUtility.InstallAndStartService( serverRole: ServerRole.Server, installOptions: options, message: out message );
                     }
                     else if( arg0 == "uninstall" || arg0 == "u" )
@@ -115,14 +125,18 @@ namespace Synapse.Services
                     else if( arg0 == "genconfig" || arg0 == "gc" )
                     {
                         string configFile = null;
-                        if( args.Length > 1 )
-                            configFile = args[1];
+                        if( !cliParseError )
+                            if( options.ContainsKey( "synapseConfig" ) )
+                                configFile = options["synapseConfig"];
+
                         SynapseServerConfig.DeserializeOrNew( ServerRole.Server, configFile );
+
                         ok = true;
                     }
 
+
                     if( !ok )
-                        WriteHelpAndExit( message );
+                        WriteHelpAndExit( message, quiet );
                     else
                         Environment.Exit( 0 );
                 }
@@ -239,18 +253,18 @@ namespace Synapse.Services
         {
             bool rc = true;
 
-            if ( SynapseServer.Config.WebApi.UseImpersonation == false )
+            if( SynapseServer.Config.WebApi.UseImpersonation == false )
                 rc = false;
-            else if ( SynapseServer.Config.WebApi.Authentication.Scheme == System.Net.AuthenticationSchemes.Anonymous )
+            else if( SynapseServer.Config.WebApi.Authentication.Scheme == System.Net.AuthenticationSchemes.Anonymous )
                 rc = false;
             else
             {
                 string currentUser = user?.Name;
                 string runningAsUser = Impersonator.WhoAmI()?.Name;
 
-                if ( currentUser == null )
+                if( currentUser == null )
                     rc = false;
-                else if ( currentUser.ToLower() == runningAsUser.ToLower() )
+                else if( currentUser.ToLower() == runningAsUser.ToLower() )
                     rc = false;
             }
 
@@ -306,7 +320,7 @@ namespace Synapse.Services
         #endregion
 
         #region Help
-        static void WriteHelpAndExit(string errorMessage = null)
+        static void WriteHelpAndExit(string errorMessage = null, bool quiet = false)
         {
             bool haveError = !string.IsNullOrWhiteSpace( errorMessage );
 
@@ -320,7 +334,8 @@ namespace Synapse.Services
                 icon = MessageBoxIcon.Error;
             }
 
-            MessageBox.Show( msg, "Synapse Server", MessageBoxButtons.OK, icon );
+            if( !quiet && Environment.UserInteractive )
+                MessageBox.Show( msg, "Synapse Server", MessageBoxButtons.OK, icon );
 
             Environment.Exit( haveError ? 1 : 0 );
         }
