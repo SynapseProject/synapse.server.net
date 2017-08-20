@@ -326,10 +326,7 @@ namespace Synapse.Services
 
             MessageBoxIcon icon = MessageBoxIcon.Information;
 
-            string scp = "[synapseConfig:{file}]";
-            string q = "[quiet:true|false]";
-            string msg = $"synapse.server.exe, Version: {typeof( SynapseServer ).Assembly.GetName().Version}\r\nSyntax:"; //  synapse.server.exe install [run:true|false] | uninstall | genconfig\r\n  All commands also accept: {scp} {q}";
-
+            string msg = $"synapse.server.exe, Version: {typeof( SynapseServer ).Assembly.GetName().Version}\r\n\r\nSyntax:";
             msg += @"
 synapse.server [install|uninstall|genconfig] [synapseConfig:{file}] [quiet:true|false]
 
