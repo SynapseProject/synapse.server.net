@@ -126,8 +126,8 @@ namespace Synapse.Services
                     {
                         string configFile = null;
                         if( !cliParseError )
-                            if( options.ContainsKey( "synapseConfig" ) )
-                                configFile = options["synapseConfig"];
+                            if( options.ContainsKey( "filepath" ) )
+                                configFile = options["filepath"];
 
                         SynapseServerConfig.DeserializeOrNew( ServerRole.Server, configFile );
 

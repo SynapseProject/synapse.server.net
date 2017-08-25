@@ -420,11 +420,12 @@ namespace Synapse.Services.Controller.Cli
             Console.WriteLine( "  service{0,-6}Install/Uninstall the Windows Service, or Run the Service", "" );
             Console.WriteLine( "{0,-15}as a cmdline-hosted daemon.", "" );
             Console.WriteLine( "{0,-15}- Commands: install [run:true|false] | uninstall | run", "" );
-            Console.WriteLine( "{0,-15}- Example:  synapse.controller.cli service install run:false", "" );
+			Console.WriteLine( "{0,-15}- Example:  synapse.controller.cli service install run:false", "" );
             Console.WriteLine( "{0,-15}            synapse.controller.cli service run\r\n", "" );
-            Console.WriteLine( "  {1}{0,-4}Generate a Synapse Controller config file.", "", _genconfig );
-            Console.WriteLine( "{0,-15}- filePath: Path and filename for the config file.\r\n", "" );
-            Console.WriteLine( "{0,-15}Note: Running synapse.controller.cli with no parameters will", "" );
+			Console.WriteLine( "  {1}{0,-4}Generate a Synapse Controller config file.", "", _genconfig );
+            Console.WriteLine( "{0,-15}- filePath: Path and filename for the config file.", "" );
+			Console.WriteLine( "{0,-15}- Example: synapse.controller.cli genconfig filepath:custom.yaml\r\n", "" );
+			Console.WriteLine( "{0,-15}Note: Running synapse.controller.cli with no parameters will", "" );
             Console.WriteLine( "{0,-15}      generate a default config if none exists.  Use this option", "" );
             Console.WriteLine( "{0,-15}      to generate a named config file.\r\n", "" );
             Console.WriteLine( "  {1}{0,-7}Generate RSA key for signing Plans.", "", _genkey );

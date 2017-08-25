@@ -277,8 +277,9 @@ namespace Synapse.Services.NodeService.Cli
             Console.WriteLine( "{0,-15}- Example:  synapse.node.cli service install run:false", "" );
             Console.WriteLine( "{0,-15}            synapse.node.cli service run\r\n", "" );
             Console.WriteLine( "  {1}{0,-4}Generate a Synapse Node config file.", "", _genconfig );
-            Console.WriteLine( "{0,-15}- filePath: Path and filename for the config file.\r\n", "" );
-            Console.WriteLine( "{0,-15}Note: Running synapse.node.cli with no parameters will", "" );
+            Console.WriteLine( "{0,-15}- filePath: Path and filename for the config file.", "" );
+			Console.WriteLine( "{0,-15}- Example: synapse.node.cli genconfig filepath:custom.yaml\r\n", "" );
+			Console.WriteLine( "{0,-15}Note: Running synapse.node.cli with no parameters will", "" );
             Console.WriteLine( "{0,-15}      generate a default config if none exists.  Use this option", "" );
             Console.WriteLine( "{0,-15}      to generate a named config file.\r\n", "" );
             Console.WriteLine( "  httpAction{0,-3}Execute a command, optionally specify URL.", "" );
