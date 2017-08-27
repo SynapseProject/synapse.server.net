@@ -22,11 +22,13 @@ namespace Synapse.Services.NodeService.Cli
                         p.BaseUrl = s[1];
                 }
 
-                string input = Console.ReadLine();
+				Console.Write( "synapse> " );
+				string input = Console.ReadLine();
                 while( input.ToLower() != "exit" )
                 {
                     p.ProcessArgs( input.Split( ' ' ) );
-                    input = Console.ReadLine();
+					Console.Write( "synapse> " );
+					input = Console.ReadLine();
                 }
             }
             else

@@ -24,11 +24,13 @@ namespace Synapse.Services.Controller.Cli
                         p.BaseUrl = s[1];
                 }
 
+				Console.Write( "synapse> " );
                 string input = Console.ReadLine();
                 while( input.ToLower() != "exit" )
                 {
                     p.ProcessArgs( input.Split( ' ' ) );
-                    input = Console.ReadLine();
+					Console.Write( "synapse> " );
+					input = Console.ReadLine();
                 }
             }
             else if( args.Length > 0 && (args[0].ToLower() == "test" || args[0].ToLower() == "t") )
