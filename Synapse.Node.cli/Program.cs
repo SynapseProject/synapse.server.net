@@ -131,10 +131,12 @@ namespace Synapse.Services.NodeService.Cli
 
             if( needHelp )
             {
-                Dictionary<string, Type> parms = new Dictionary<string, Type>();
-                parms.Add( "filePath", typeof( string ) );
-                parms.Add( "planInstanceId", typeof( long ) );
-                parms.Add( "dryRun", typeof( bool ) );
+                Dictionary<string, Type> parms = new Dictionary<string, Type>
+                {
+                    { "filePath", typeof( string ) },
+                    { "planInstanceId", typeof( long ) },
+                    { "dryRun", typeof( bool ) }
+                };
                 Console.WriteLine( $"Parameter options for {methodName}:\r\n" );
                 WriteMethodParametersHelp( parms );
                 Console.WriteLine( $"Remaining argname:argvalue pairs will be passed as dynamic parameters.\r\n" );

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using Synapse.Common.WebApi;
 using Synapse.Core;
 using Synapse.Core.Utilities;
@@ -53,7 +54,7 @@ namespace Synapse.Services
 
         public async Task<List<string>> GetPlanListAsync(string filter = null, bool isRegexFilter = true)
         {
-            filter = !string.IsNullOrWhiteSpace( filter ) ? $"/?filter={filter}&isRegexFilter={isRegexFilter}" : null;
+            filter = !string.IsNullOrWhiteSpace( filter ) ? $"/?filter={HttpUtility.UrlEncode( filter )}&isRegexFilter={isRegexFilter}" : null;
             string requestUri = $"{_rootPath}{filter}";
             return await GetAsync<List<string>>( requestUri );
         }
@@ -84,8 +85,8 @@ namespace Synapse.Services
         public async Task<long> StartPlanAsync(string planName, bool dryRun = false, string requestNumber = null,
             Dictionary<string, string> dynamicParameters = null, string nodeRootUrl = null)
         {
-            requestNumber = !string.IsNullOrWhiteSpace( requestNumber ) ? $"&requestNumber={requestNumber}" : null;
-            nodeRootUrl = !string.IsNullOrWhiteSpace( nodeRootUrl ) ? $"&nodeRootUrl={nodeRootUrl}" : null;
+            requestNumber = requestNumber?.ToUrlEncodedOrNull( "&requestNumber" );
+            nodeRootUrl = nodeRootUrl?.ToUrlEncodedOrNull( "&nodeRootUrl" );
             string qs = $"?dryRun={dryRun}{requestNumber}{nodeRootUrl}{dynamicParameters?.ToQueryString( asPartialQueryString: true )}";
             string requestUri = $"{_rootPath}/{planName}/start/{qs}";
             return await GetAsync<long>( requestUri );
@@ -97,8 +98,8 @@ namespace Synapse.Services
         {
             StartPlanEnvelope planEnvelope = new StartPlanEnvelope() { DynamicParameters = dynamicParameters };
 
-            requestNumber = !string.IsNullOrWhiteSpace( requestNumber ) ? $"&requestNumber={requestNumber}" : null;
-            nodeRootUrl = !string.IsNullOrWhiteSpace( nodeRootUrl ) ? $"&nodeRootUrl={nodeRootUrl}" : null;
+            requestNumber = requestNumber?.ToUrlEncodedOrNull( "&requestNumber" );
+            nodeRootUrl = nodeRootUrl?.ToUrlEncodedOrNull( "&nodeRootUrl" );
             string qs = $"?dryRun={dryRun}{requestNumber}{nodeRootUrl}";
             string requestUri = $"{_rootPath}/{planName}/start/{qs}";
             return await PostAsync<StartPlanEnvelope, long>( planEnvelope, requestUri );
@@ -126,14 +127,14 @@ namespace Synapse.Services
             SerializationType serializationType = SerializationType.Json, bool setContentType = true,
             int pollingIntervalSeconds = 1, int timeoutSeconds = 120, string nodeRootUrl = null)
         {
-            requestNumber = !string.IsNullOrWhiteSpace( requestNumber ) ? $"&requestNumber={requestNumber}" : null;
-            nodeRootUrl = !string.IsNullOrWhiteSpace( nodeRootUrl ) ? $"&nodeRootUrl={nodeRootUrl}" : null;
-            path = !string.IsNullOrWhiteSpace( path ) ? $"&path={path}" : null;
-            string st = !string.IsNullOrWhiteSpace( path ) ? $"&serializationType={serializationType}" : null;
-            string sct = !string.IsNullOrWhiteSpace( path ) ? $"&setContentType={setContentType}" : null;
+            requestNumber = requestNumber?.ToUrlEncodedOrNull( "&requestNumber" );
+            nodeRootUrl = nodeRootUrl?.ToUrlEncodedOrNull( "&nodeRootUrl" );
+            path = path?.ToUrlEncodedOrNull( "&path" );
+            if( !string.IsNullOrWhiteSpace( path ) )
+                path = $"{path}&serializationType={serializationType}&setContentType={setContentType}";
             string pi = pollingIntervalSeconds > 1 ? $"&pollingIntervalSeconds={pollingIntervalSeconds}" : null;
             string to = timeoutSeconds > 0 && timeoutSeconds != 120 ? $"&timeoutSeconds={timeoutSeconds}" : null;
-            string qs = $"?dryRun={dryRun}{requestNumber}{path}{st}{sct}{pi}{to}{nodeRootUrl}{dynamicParameters?.ToQueryString( asPartialQueryString: true )}";
+            string qs = $"?dryRun={dryRun}{requestNumber}{path}{pi}{to}{nodeRootUrl}{dynamicParameters?.ToQueryString( asPartialQueryString: true )}";
             string requestUri = $"{_rootPath}/{planName}/start/sync/{qs}";
             return await GetAsync<object>( requestUri );
         }
@@ -146,14 +147,14 @@ namespace Synapse.Services
         {
             StartPlanEnvelope planEnvelope = new StartPlanEnvelope() { DynamicParameters = dynamicParameters };
 
-            requestNumber = !string.IsNullOrWhiteSpace( requestNumber ) ? $"&requestNumber={requestNumber}" : null;
-            nodeRootUrl = !string.IsNullOrWhiteSpace( nodeRootUrl ) ? $"&nodeRootUrl={nodeRootUrl}" : null;
-            path = !string.IsNullOrWhiteSpace( path ) ? $"&path={path}" : null;
-            string st = !string.IsNullOrWhiteSpace( path ) ? $"&serializationType={serializationType}" : null;
-            string sct = !string.IsNullOrWhiteSpace( path ) ? $"&setContentType={setContentType}" : null;
+            requestNumber = requestNumber?.ToUrlEncodedOrNull( "&requestNumber" );
+            nodeRootUrl = nodeRootUrl?.ToUrlEncodedOrNull( "&nodeRootUrl" );
+            path = path?.ToUrlEncodedOrNull( "&path" );
+            if( !string.IsNullOrWhiteSpace( path ) )
+                path = $"{path}&serializationType={serializationType}&setContentType={setContentType}";
             string pi = pollingIntervalSeconds > 1 ? $"&pollingIntervalSeconds={pollingIntervalSeconds}" : null;
             string to = timeoutSeconds > 0 && timeoutSeconds != 120 ? $"&timeoutSeconds={timeoutSeconds}" : null;
-            string qs = $"?dryRun={dryRun}{requestNumber}{path}{st}{sct}{pi}{to}{nodeRootUrl}";
+            string qs = $"?dryRun={dryRun}{requestNumber}{path}{pi}{to}{nodeRootUrl}";
             string requestUri = $"{_rootPath}/{planName}/start/sync/{qs}";
             return await PostAsync<StartPlanEnvelope, object>( planEnvelope, requestUri );
         }
