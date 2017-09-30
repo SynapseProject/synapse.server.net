@@ -14,7 +14,7 @@ namespace Synapse.Services
     {
 		static IControllerDal _dal = null;
 
-        static bool once = false;
+        static bool _once = false;
 
         public PlanServer()
         {
@@ -27,12 +27,12 @@ namespace Synapse.Services
                         SynapseServer.Config.Controller.Dal.Type, SynapseServer.Config.Controller.Dal.DefaultType );
                     Dictionary<string, string> props = _dal.Configure( SynapseServer.Config.Controller.Dal );
 
-                    if( !once )
+                    if( !_once )
                     {
                         if( props != null )
                             foreach( string key in props.Keys )
                                 SynapseServer.Logger.Info( $"{key}: {props[key]}" );
-                        once = true;
+                        _once = true;
                     }
                 }
                 catch( Exception ex )
