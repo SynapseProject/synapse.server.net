@@ -16,7 +16,7 @@ namespace Synapse.Services.Controller.Dal
     public class SecurityConfig
     {
         public string FilePath { get; set; }= "Security";
-        public bool IsRequired { get; set; } = true;
+        public bool IsRequired { get; set; } = false;
         public bool ValidateSignature { get; set; } = false;
         public string SignaturePublicKeyFile { get; set; }
         public string GlobalExternalGroupsCsv { get; set; } = "Everyone";

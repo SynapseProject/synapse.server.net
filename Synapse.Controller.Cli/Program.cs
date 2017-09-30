@@ -71,6 +71,8 @@ namespace Synapse.Services.Controller.Cli
             _methods.Add( "ss", "SetPlanStatus" );
             _methods.Add( "cancel", "CancelPlan" );
             _methods.Add( "c", "CancelPlan" );
+
+            SynapseServerConfig.DeserializeOrNew( ServerRole.Controller );
         }
 
 
@@ -97,6 +99,7 @@ namespace Synapse.Services.Controller.Cli
                     bool error = false;
                     Dictionary<string, string> parms = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
                     parms = ParseCmdLine( args, 0, ref error, suppressErrorMessages: true );
+
                     string configFile = null;
                     if( parms.ContainsKey( InstallUtility.SynapseConfigParm ) )
                     {
@@ -150,10 +153,12 @@ namespace Synapse.Services.Controller.Cli
 
             if( needHelp )
             {
-                Dictionary<string, Type> parms = new Dictionary<string, Type>();
-                parms.Add( "planName", typeof( string ) );
-                parms.Add( "dryRun", typeof( bool ) );
-                parms.Add( "requestNumber", typeof( string ) );
+                Dictionary<string, Type> parms = new Dictionary<string, Type>
+                {
+                    { "planName", typeof( string ) },
+                    { "dryRun", typeof( bool ) },
+                    { "requestNumber", typeof( string ) }
+                };
                 if( isSync )
                 {
                     parms.Add( "path", typeof( string ) );

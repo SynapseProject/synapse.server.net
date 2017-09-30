@@ -63,7 +63,7 @@ namespace Synapse.Services
                 List<string> parms = (new string[] { "install", "i", "uninstall", "u", "genconfig", "gc" }).ToList();
                 if( !parms.Contains( arg0 ) )
                     if( File.Exists( arg0 ) )
-                        configFile = args[0];
+                        configFile = args[0];  //this line supports "synapse.server xx.config.yaml" for running as service
                     else
                     {
                         FileNotFoundException ex = new FileNotFoundException( $"Could not find startup config file [{args[0]}].", args[0] );
@@ -74,7 +74,7 @@ namespace Synapse.Services
                     }
             }
 
-            Config = SynapseServerConfig.Deserialze( configFile );
+            Config = SynapseServerConfig.DeserializeOrNew( ServerRole.Server, configFile );
         }
 
         public static void SetupLogger()

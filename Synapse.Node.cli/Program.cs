@@ -62,6 +62,8 @@ namespace Synapse.Services.NodeService.Cli
             _methods.Add( "qd", "GetCurrentQueueDepth" );
             _methods.Add( "QueueItems", "GetCurrentQueueItems" );
             _methods.Add( "qi", "GetCurrentQueueItems" );
+
+            SynapseServerConfig.DeserializeOrNew( ServerRole.Node );
         }
 
         public bool IsInteractive { get; set; }
@@ -80,6 +82,7 @@ namespace Synapse.Services.NodeService.Cli
                     bool error = false;
                     Dictionary<string, string> parms = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
                     parms = ParseCmdLine( args, 0, ref error, suppressErrorMessages: true );
+
                     string configFile = null;
                     if( parms.ContainsKey( InstallUtility.SynapseConfigParm ) )
                     {
@@ -96,6 +99,12 @@ namespace Synapse.Services.NodeService.Cli
                         BaseUrl = parms["url"];
                         parms.Remove( "url" );
                     }
+                    string referrerurl = null;
+                    if( parms.ContainsKey( "referrerurl" ) )
+                    {
+                        referrerurl = parms["referrerurl"];
+                        parms.Remove( "referrerurl" );
+                    }
 
 
                     string arg0 = args[0].ToLower();
@@ -105,9 +114,9 @@ namespace Synapse.Services.NodeService.Cli
                         Console.WriteLine( $"Calling {_methods[arg0]} on {BaseUrl}" );
 
                         if( _methods[arg0] == "StartPlanFile" )
-                            RunStartPlanMethod( args, parms );
+                            RunStartPlanMethod( args, parms, referrerurl );
                         else
-                            RunMethod( new NodeServiceHttpApiClient( BaseUrl ), _methods[arg0], args );
+                            RunMethod( new NodeServiceHttpApiClient( BaseUrl, referrer: referrerurl ), _methods[arg0], args );
                     }
                     else if( arg0.StartsWith( _service ) )
                         RunServiceAction( args );
@@ -123,10 +132,10 @@ namespace Synapse.Services.NodeService.Cli
             }
         }
 
-        protected virtual void RunStartPlanMethod(string[] args, Dictionary<string, string> parameters)
+        protected virtual void RunStartPlanMethod(string[] args, Dictionary<string, string> parameters, string referrerurl = null)
         {
             string methodName = "StartPlanFile";
-            NodeServiceHttpApiClient instance = new NodeServiceHttpApiClient( BaseUrl );
+            NodeServiceHttpApiClient instance = new NodeServiceHttpApiClient( BaseUrl, referrer: referrerurl );
             bool needHelp = args.Length == 2 && args[1].ToLower().Contains( "help" );
 
             if( needHelp )
@@ -267,12 +276,14 @@ namespace Synapse.Services.NodeService.Cli
 
             Console_WriteLine( $"synapse.node.cli.exe, Version: {typeof( Program ).Assembly.GetName().Version}\r\n", ConsoleColor.Green );
             Console.WriteLine( "Syntax:" );
-            Console_WriteLine( "  synapse.node.cli.exe service {0}command{1} | {0}httpAction parm:value{1} |", ConsoleColor.Cyan, "{", "}" );
+            Console_WriteLine( "  synapse.node.cli.exe service {0}command{1} | {0}httpAction parm:value{1}", ConsoleColor.Cyan, "{", "}" );
+            Console.WriteLine( "       [referrerUrl:http://{1}host:port{2}/synapse/execute] |", "", "{", "}" );
             Console.WriteLine( "       interactive|i [url:http://{1}host:port{2}/synapse/node] |", "", "{", "}" );
             Console.WriteLine( "       genconfig filePath:{1}path{2}\r\n", "", "{", "}" );
             Console_WriteLine( "  About URLs:{0,-2}URL is an optional parameter on all commands except 'service'", ConsoleColor.Green, "" );
             Console.WriteLine( "{0,-15}commands. Specify as [url:http://{1}host:port{2}/synapse/node].", "", "{", "}" );
-            Console.WriteLine( "{0,-15}URL default is localhost:{1}port{2} (See WebApiPort in config.yaml)\r\n", "", "{", "}" );
+            Console.WriteLine( "{0,-15}URL default is localhost:{1}port{2} (See WebApiPort in config.yaml)", "", "{", "}" );
+            Console.WriteLine( "{0,-15}referrerUrl allows an override of default response location.\r\n", "", "{", "}" );
             Console.WriteLine( "  interactive{0,-2}Run this CLI in interactive mode, optionally specify URL.", "" );
             Console.WriteLine( "{0,-15}All commands below work in standard or interactive modes.\r\n", "" );
             Console.WriteLine( "  service{0,-6}Install/Uninstall the Windows Service, or Run the Service", "" );

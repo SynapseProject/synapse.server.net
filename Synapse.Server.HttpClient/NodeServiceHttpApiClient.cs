@@ -13,8 +13,10 @@ namespace Synapse.Services
     {
         string _rootPath = "/synapse/node";
 
-        public NodeServiceHttpApiClient(string baseUrl, string messageFormatType = "application/json") : base( baseUrl, messageFormatType )
+        public NodeServiceHttpApiClient(string baseUrl, string messageFormatType = "application/json", string referrer = null) : base( baseUrl, messageFormatType )
         {
+            if( !string.IsNullOrWhiteSpace( referrer ) )
+                Headers.Referrer = new Uri( referrer );
         }
 
 
@@ -83,8 +85,8 @@ namespace Synapse.Services
 
         public async Task<ExecuteResult> StartPlanAsyncWithParametersAsPost(Plan plan, long planInstanceId, bool dryRun = false, Dictionary<string, string> dynamicParameters = null)
         {
-			dynamicParameters?.PrepareValuesForPost();
-			StartPlanEnvelope planEnvelope = new StartPlanEnvelope()
+            dynamicParameters?.PrepareValuesForPost();
+            StartPlanEnvelope planEnvelope = new StartPlanEnvelope()
             {
                 Plan = plan,
                 DynamicParameters = dynamicParameters

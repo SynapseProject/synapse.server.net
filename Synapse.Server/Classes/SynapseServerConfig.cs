@@ -32,7 +32,7 @@ namespace Synapse.Services
             YamlHelpers.SerializeFile( FileName, this, serializeAsJson: false, emitDefaultValues: true );
         }
 
-        public static SynapseServerConfig Deserialze(string fileName = null)
+        public static SynapseServerConfig Deserialize(string fileName = null)
         {
             if( !string.IsNullOrWhiteSpace( fileName ) )
                 FileName = fileName;

@@ -71,7 +71,7 @@ namespace Synapse.Services
 
             try
             {
-                string sn = SynapseServerConfig.Deserialze( configFile ).Service.Name;
+                string sn = SynapseServerConfig.Deserialize( configFile ).Service.Name;
                 ServiceController sc = new ServiceController( sn );
                 if( sc.Status == ServiceControllerStatus.Running )
                 {
@@ -149,7 +149,7 @@ namespace Synapse.Services
 
             //SynapseServerConfig.FileName is a static, so this will deserialize a custom config file if specified
             //  since it was alreadt deserialized above at [SynapseServerConfig.DeserializeOrNew( serverRole, configFile );] (line 37)
-            SynapseServerConfig config = SynapseServerConfig.Deserialze();
+            SynapseServerConfig config = SynapseServerConfig.Deserialize();
 
             //set the privileges
             processInstaller.Account = ServiceAccount.LocalSystem;
