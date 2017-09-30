@@ -11,7 +11,7 @@ namespace Synapse.Services
 {
     public interface IExecuteController
     {
-        string Hello();
+        string Hello(bool log = true);
         string WhoAmI();
         Plan GetPlan(string planUniqueName);
         IEnumerable<string> GetPlanList(string filter = null, bool isRegexFilter = true);

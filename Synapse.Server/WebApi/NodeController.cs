@@ -38,13 +38,14 @@ namespace Synapse.Services
 
         [HttpGet]
         [Route( "hello" )]
-        public string Hello()
+        public string Hello(bool log = true)
         {
             string context = GetContext( nameof( Hello ) );
 
             try
             {
-                SynapseServer.Logger.Debug( context );
+                if( log )
+                    SynapseServer.Logger.Debug( context );
                 return "Hello from SynapseNode, World!";
             }
             catch( Exception ex )
@@ -74,21 +75,45 @@ namespace Synapse.Services
             }
         }
 
+
+        [HttpGet]
+        [Route( "hello/about" )]
+        public AboutData About(bool asCsv = false)
+        {
+            string context = GetContext( nameof( About ) );
+
+            try
+            {
+                SynapseServer.Logger.Debug( context );
+
+                AboutData about = new AboutData() { Config = SynapseServer.Config };
+                about.GetFiles( asCsv );
+
+                return about;
+            }
+            catch( Exception ex )
+            {
+                SynapseServer.Logger.Error(
+                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
+                throw;
+            }
+        }
+
         [Route( "{planInstanceId}/" )]
         [HttpPost]
         public void StartPlanAsync(long planInstanceId, bool dryRun, [FromBody]string planString)
         {
             Uri uri = this.Url.Request.RequestUri;
             planString = CryptoHelpers.Decode( planString );
-            Plan plan  = Plan.FromYaml( new StringReader( planString ) );
+            Plan plan = Plan.FromYaml( new StringReader( planString ) );
 
             string context = GetContext( nameof( StartPlanAsync ),
                 nameof( plan ), plan.Name, nameof( dryRun ), dryRun, nameof( planInstanceId ), planInstanceId, "QueryString", uri.Query );
 
             Impersonator runAsUser = null;
-            if ( SynapseServer.UseImpersonation(User?.Identity) )
+            if( SynapseServer.UseImpersonation( User?.Identity ) )
             {
-                if ( Request?.Headers?.Authorization?.Scheme?.ToLower() == "basic" )
+                if( Request?.Headers?.Authorization?.Scheme?.ToLower() == "basic" )
                     runAsUser = new Impersonator( Request.Headers.Authorization );
                 else
                     runAsUser = new Impersonator( (WindowsIdentity)User.Identity );
@@ -137,9 +162,9 @@ namespace Synapse.Services
 
                 ValidatePlanSignature( plan );
 
-                if ( SynapseServer.UseImpersonation(User?.Identity) )
+                if( SynapseServer.UseImpersonation( User?.Identity ) )
                 {
-                    if ( Request?.Headers?.Authorization?.Scheme?.ToLower() == "basic" )
+                    if( Request?.Headers?.Authorization?.Scheme?.ToLower() == "basic" )
                         runAsUser = new Impersonator( Request.Headers.Authorization );
                     else
                         runAsUser = new Impersonator( (WindowsIdentity)User.Identity );

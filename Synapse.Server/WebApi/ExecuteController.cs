@@ -22,13 +22,14 @@ namespace Synapse.Services
 
         [HttpGet]
         [Route( "hello" )]
-        public string Hello()
+        public string Hello(bool log = true)
         {
             string context = GetContext( nameof( Hello ) );
 
             try
             {
-                SynapseServer.Logger.Debug( context );
+                if( log )
+                    SynapseServer.Logger.Debug( context );
                 return "Hello from SynapseController, World!";
             }
             catch( Exception ex )
@@ -49,6 +50,29 @@ namespace Synapse.Services
             {
                 SynapseServer.Logger.Debug( context );
                 return CurrentUserName;
+            }
+            catch( Exception ex )
+            {
+                SynapseServer.Logger.Error(
+                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
+                throw;
+            }
+        }
+
+        [HttpGet]
+        [Route( "hello/about" )]
+        public AboutData About(bool asCsv = false)
+        {
+            string context = GetContext( nameof( About ) );
+
+            try
+            {
+                SynapseServer.Logger.Debug( context );
+
+                AboutData about = new AboutData() { Config = SynapseServer.Config };
+                about.GetFiles( asCsv );
+
+                return about;
             }
             catch( Exception ex )
             {
@@ -133,9 +157,9 @@ namespace Synapse.Services
                 nameof( requestNumber ), requestNumber, nameof( nodeRootUrl ), nodeRootUrl, "QueryString", uri.Query );
 
             Impersonator runAsUser = null;
-            if (SynapseServer.UseImpersonation(CurrentUser?.Identity))
+            if( SynapseServer.UseImpersonation( CurrentUser?.Identity ) )
             {
-                if ( Request?.Headers?.Authorization?.Scheme?.ToLower() == "basic" )
+                if( Request?.Headers?.Authorization?.Scheme?.ToLower() == "basic" )
                 {
                     runAsUser = new Impersonator( this.AuthenticationHeader );
                 }
@@ -197,9 +221,9 @@ namespace Synapse.Services
                 nameof( requestNumber ), requestNumber, nameof( nodeRootUrl ), nodeRootUrl, "planParameters", parms.ToString() );
 
             Impersonator runAsUser = null;
-            if ( SynapseServer.UseImpersonation( CurrentUser?.Identity ) )
+            if( SynapseServer.UseImpersonation( CurrentUser?.Identity ) )
             {
-                if ( Request?.Headers?.Authorization?.Scheme?.ToLower() == "basic" )
+                if( Request?.Headers?.Authorization?.Scheme?.ToLower() == "basic" )
                 {
                     runAsUser = new Impersonator( this.AuthenticationHeader );
                 }
