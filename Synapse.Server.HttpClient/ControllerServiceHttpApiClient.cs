@@ -35,12 +35,12 @@ namespace Synapse.Services
             return await GetAsync<string>( requestUri );
         }
 
-        public object About(bool asCsv = false) { return AboutAsync( asCsv ).Result; }
+        public AboutData About(bool asCsv = false) { return AboutAsync( asCsv ).Result; }
 
-        public async Task<object> AboutAsync(bool asCsv = false)
+        public async Task<AboutData> AboutAsync(bool asCsv = false)
         {
             string requestUri = $"{_rootPath}/hello/about/?asCsv={asCsv}";
-            return await GetAsync<object>( requestUri );
+            return await GetAsync<AboutData>( requestUri );
         }
 
 

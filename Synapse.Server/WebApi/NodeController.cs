@@ -78,7 +78,7 @@ namespace Synapse.Services
 
         [HttpGet]
         [Route( "hello/about" )]
-        public AboutData About(bool asCsv = false)
+        public ServerAboutData About(bool asCsv = false)
         {
             string context = GetContext( nameof( About ) );
 
@@ -86,7 +86,7 @@ namespace Synapse.Services
             {
                 SynapseServer.Logger.Debug( context );
 
-                AboutData about = new AboutData() { Config = SynapseServer.Config };
+                ServerAboutData about = new ServerAboutData() { Config = SynapseServer.Config };
                 about.GetFiles( asCsv );
 
                 return about;
