@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 
 using Synapse.Common.WebApi;
+using Synapse.Common.Utilities;
 using Synapse.Core;
 using Synapse.Core.Utilities;
 
@@ -34,6 +35,14 @@ namespace Synapse.Services
         {
             string requestUri = $"{_rootPath}/hello/whoami";
             return await GetAsync<string>( requestUri );
+        }
+
+        public object About(bool asCsv = false) { return AboutAsync( asCsv ).Result; }
+
+        public async Task<object> AboutAsync(bool asCsv = false)
+        {
+            string requestUri = $"{_rootPath}/hello/about/?asCsv={asCsv}";
+            return await GetAsync<object>( requestUri );
         }
 
 
