@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.ServiceProcess;
-using System.Text;
 using System.Threading.Tasks;
+
 using HappyBin.AutoUpdater;
 
 namespace Synapse.Server.AutoUpdater
@@ -15,45 +14,101 @@ namespace Synapse.Server.AutoUpdater
 
         static void Main(string[] args)
         {
-            UpdateInfo updateInfo = UpdateInfo.Deserialize();
-
-            foreach( string config in updateInfo.ConfigFiles )
+            if( args.Length > 0 && args[0].ToLower() == "genconfig" )
             {
-                ServiceConfig c = ServiceConfig.Deserialize( config );
-
-                ServiceController sc = new ServiceController( c.Name );
-                SetLogMessage( $"The {c.Name} service status is currently set to {sc.Status}." );
-
-                if( !((sc.Status.Equals( ServiceControllerStatus.Stopped )) || (sc.Status.Equals( ServiceControllerStatus.StopPending ))) )
-                {
-                    SetLogMessage( $"Stopping the {c.Name} service..." );
-                    sc.Stop();
-                    sc.WaitForStatus( ServiceControllerStatus.Stopped, new TimeSpan( 0, 0, 0, 0, updateInfo.WaitForExitMillseconds ) );
-                    SetLogMessage( $"The {c.Name} service status is currently set to {sc.Status}." );
-                }
+                UpdateInfo.SerializeSample();
+                return;
             }
 
-            _updater = new Updater( updateInfo );
-            _updater.PropertyChanged += new PropertyChangedEventHandler( updater_PropertyChanged );
+            UpdateInfo updateInfo = UpdateInfo.Deserialize();
 
-            _updater.InitializePatchStatus();
+            if( StopServices( updateInfo.ConfigFiles, updateInfo.WaitForExitMillseconds ) )
+            {
+                _updater = new Updater( updateInfo );
+                _updater.PropertyChanged += Updater_PropertyChanged;
+                _updater.InitializePatchStatus();
+                if( _updater.Status.PatchIsValid )
+                    Task.Run( () =>
+                    {
+                        _updater.InstallExistingPatches( _updater.Status.ExeInfo.Name, _updater.Status.ExeInfo.FolderPath );
+                    } ).Wait();
 
-            if( _updater.Status.PatchIsValid )
-                Task.Run( () =>
-                {
-                    _updater.InstallExistingPatches( _updater.Status.ExeInfo.Name, _updater.Status.ExeInfo.FolderPath );
-                } ).Wait();
+                StartServices( updateInfo.ConfigFiles, updateInfo.WaitForExitMillseconds );
+            }
         }
 
-        private static void SetLogMessage(string v)
+        static bool StopServices(List<string> configs, int timeout)
         {
-            throw new NotImplementedException();
+            bool ok = false;
+            try
+            {
+                foreach( string config in configs )
+                {
+                    ServiceConfig c = ServiceConfig.Deserialize( config );
+
+                    ServiceController sc = new ServiceController( c.Name );
+                    LogMessage( $"The {c.Name} service status is currently set to {sc.Status}." );
+
+                    if( !((sc.Status.Equals( ServiceControllerStatus.Stopped )) || (sc.Status.Equals( ServiceControllerStatus.StopPending ))) )
+                    {
+                        LogMessage( $"Stopping the {c.Name} service..." );
+                        sc.Stop();
+                        sc.WaitForStatus( ServiceControllerStatus.Stopped, new TimeSpan( 0, 0, 0, 0, timeout ) );
+                        LogMessage( $"The {c.Name} service status is currently set to {sc.Status}." );
+                    }
+                }
+
+                ok = true;
+            }
+            catch( Exception ex )
+            {
+                LogMessage( ex.Message );
+                StartServices( configs, timeout );
+            }
+
+            return ok;
         }
 
-        static void updater_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        static bool StartServices(List<string> configs, int timeout)
+        {
+            bool ok = false;
+            try
+            {
+                foreach( string config in configs )
+                {
+                    ServiceConfig c = ServiceConfig.Deserialize( config );
+
+                    ServiceController sc = new ServiceController( c.Name );
+                    LogMessage( $"The {c.Name} service status is currently set to {sc.Status}." );
+
+                    if( !((sc.Status.Equals( ServiceControllerStatus.StartPending )) || (sc.Status.Equals( ServiceControllerStatus.Running ))) )
+                    {
+                        LogMessage( $"Stopping the {c.Name} service..." );
+                        sc.Start();
+                        sc.WaitForStatus( ServiceControllerStatus.Stopped, new TimeSpan( 0, 0, 0, 0, timeout ) );
+                        LogMessage( $"The {c.Name} service status is currently set to {sc.Status}." );
+                    }
+                }
+
+                ok = true;
+            }
+            catch( Exception ex )
+            {
+                LogMessage( ex.Message );
+            }
+
+            return ok;
+        }
+
+        static void Updater_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if( e.PropertyName == "LogMessage" )
-                Console.WriteLine( "{0}\t{1}", _updater.LogMessage.TimeStamp, _updater.LogMessage.Message );
+                LogMessage( $"{_updater.LogMessage.TimeStamp}\t{_updater.LogMessage.Message}" );
+        }
+
+        static void LogMessage(string v)
+        {
+            Console.WriteLine( v );
         }
     }
 }
