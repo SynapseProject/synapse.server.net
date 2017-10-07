@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.ServiceProcess;
+using System.Text;
 using System.Threading.Tasks;
 
 using HappyBin.AutoUpdater;
@@ -12,6 +14,7 @@ namespace Synapse.Server.AutoUpdater
     class Program
     {
         static Updater _updater = null;
+        static StringBuilder _log = new StringBuilder();
 
         static void Main(string[] args)
         {
@@ -28,6 +31,17 @@ namespace Synapse.Server.AutoUpdater
                     case "update":
                     {
                         ExecuteUpdate();
+
+                        string currentPath = $@"{Path.GetDirectoryName( typeof( Program ).Assembly.Location )}\AutoUpdater";
+                        string logfile = $"{DateTime.Now.Ticks}_{Path.GetFileNameWithoutExtension( Path.GetTempFileName() )}.log";
+                        string logPath = Path.Combine( currentPath, logfile );
+                        if( args.Length > 1 )
+                            logPath = args[1];
+                        try
+                        {
+                            File.WriteAllText( logPath, _log.ToString() );
+                        }
+                        catch { }//eat the error
                         break;
                     }
                     default:
@@ -82,7 +96,7 @@ namespace Synapse.Server.AutoUpdater
                         string service = c.Service.Name;
 
                         ServiceController sc = new ServiceController( service );
-                        LogMessage( $"The {service} service status is currently set to {sc.Status}." );
+                        LogMessage( $"[{service}] service status is [{sc.Status}]." );
 
                         bool working = false;
                         if( desiredStatus == ServiceControllerStatus.Stopped )
@@ -90,7 +104,7 @@ namespace Synapse.Server.AutoUpdater
                             if( !((sc.Status.Equals( ServiceControllerStatus.StopPending )) || (sc.Status.Equals( ServiceControllerStatus.Stopped ))) )
                             {
                                 working = true;
-                                LogMessage( $"Stopping the {service} service..." );
+                                LogMessage( $"Stopping [{service}] service..." );
                                 sc.Stop();
                             }
                         }
@@ -99,15 +113,15 @@ namespace Synapse.Server.AutoUpdater
                             if( !((sc.Status.Equals( ServiceControllerStatus.StartPending )) || (sc.Status.Equals( ServiceControllerStatus.Running ))) )
                             {
                                 working = true;
-                                LogMessage( $"Stopping the {service} service..." );
-                                sc.Stop();
+                                LogMessage( $"Starting [{service}] service..." );
+                                sc.Start();
                             }
                         }
 
                         if( working )
                         {
                             sc.WaitForStatus( desiredStatus, new TimeSpan( 0, 0, 0, 0, timeout ) );
-                            LogMessage( $"The {service} service status is currently set to {sc.Status}." );
+                            LogMessage( $"[{service}] service status is [{sc.Status}]." );
                         }
                     }
 
@@ -127,12 +141,18 @@ namespace Synapse.Server.AutoUpdater
         static void Updater_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if( e.PropertyName == "LogMessage" )
-                LogMessage( $"{_updater.LogMessage.TimeStamp}|{_updater.LogMessage.Message}" );
+                LogMessageString( $"{_updater.LogMessage.TimeStamp}|{_updater.LogMessage.Message}" );
         }
 
         static void LogMessage(string v)
         {
+            LogMessageString( $"{DateTime.Now}|{v}" );
+        }
+
+        static void LogMessageString(string v)
+        {
             Console.WriteLine( v );
+            _log.AppendLine( v );
         }
 
         #region Help
@@ -144,7 +164,7 @@ namespace Synapse.Server.AutoUpdater
 
             Console_WriteLine( $"synapse.server.autoupdater.exe, Version: {typeof( Program ).Assembly.GetName().Version}\r\n", ConsoleColor.Green );
             Console.WriteLine( "Syntax:" );
-            Console_WriteLine( "  synapse.server.autoupdater.exe [update|genconfig]\r\n", ConsoleColor.Cyan, "{", "}" );
+            Console_WriteLine( "  synapse.server.autoupdater.exe [update [logfile] | genconfig]\r\n", ConsoleColor.Cyan, "{", "}" );
             Console_WriteLine( "  update:{0,-6}Runs updater, sources yaml config.", ConsoleColor.Green, "" );
             Console.WriteLine( "  genconfig:{0,-3}Creates a new autoupdater yaml config file.", "", "{", "}" );
             Console.WriteLine( "{0,-15}- List every server.config.yaml file in autoupdater yaml that", "", "{", "}" );

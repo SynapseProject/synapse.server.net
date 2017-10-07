@@ -523,7 +523,7 @@ namespace Synapse.Services
         }
 
         [HttpGet]
-        [Route( "update/log" )]
+        [Route( "update/logs/{name}" )]
         public List<AutoUpdaterMessage> FetchAutoUpdateLog(string name = null)
         {
             string context = GetContext( nameof( FetchAutoUpdateLog ), nameof( name ), name );

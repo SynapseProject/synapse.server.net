@@ -20,7 +20,7 @@ namespace Synapse.Services
             {
                 FileName = Path.Combine( CurrentPath, @"Synapse.Server.AutoUpdater.exe" ),
                 WorkingDirectory = CurrentPath,
-                Arguments = $" > {logPath}",
+                Arguments = $"update {logPath}",
                 CreateNoWindow = true,
                 WindowStyle = ProcessWindowStyle.Hidden
             };
@@ -28,7 +28,7 @@ namespace Synapse.Services
             try
             {
                 result = AutoUpdaterMessage.LoadOneMessage( DateTime.Now, $"Starting update, logging to [{logfile}]." );
-                Process.Start( psi );
+                Process p = Process.Start( psi );
             }
             catch( Exception ex )
             {
