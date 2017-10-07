@@ -54,6 +54,19 @@ namespace Synapse.Services
             else
                 return AutoUpdaterMessage.LoadOneMessage( DateTime.Now, $"Could not find logfile {logfile}" );
         }
+
+        public static List<AutoUpdaterMessage> FetchLogList()
+        {
+            DirectoryInfo directory = new DirectoryInfo( CurrentPath );
+            IEnumerable<FileInfo> logs = directory.GetFiles( "*.log", SearchOption.TopDirectoryOnly )
+                .OrderByDescending( f => f.LastWriteTime );
+
+            List<AutoUpdaterMessage> logFiles = new List<AutoUpdaterMessage>();
+            foreach( FileInfo log in logs )
+                logFiles.Add( new AutoUpdaterMessage() { TimeStamp = log.LastWriteTime, Message = log.Name } );
+
+            return logFiles;
+        }
     }
 
     public class AutoUpdaterMessage

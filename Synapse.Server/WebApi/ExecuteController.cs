@@ -482,6 +482,8 @@ namespace Synapse.Services
             }
         }
 
+
+        #region AutoUpdate
         [HttpGet]
         [Route( "update" )]
         public List<AutoUpdaterMessage> AutoUpdate()
@@ -502,15 +504,15 @@ namespace Synapse.Services
         }
 
         [HttpGet]
-        [Route( "update/log" )]
-        public List<AutoUpdaterMessage> FetchAutoUpdateLog(string logfile = null)
+        [Route( "update/logs" )]
+        public List<AutoUpdaterMessage> FetchAutoUpdateLogList()
         {
-            string context = GetContext( nameof( FetchAutoUpdateLog ), nameof( logfile ), logfile );
+            string context = GetContext( nameof( FetchAutoUpdateLogList ) );
 
             try
             {
                 SynapseServer.Logger.Debug( context );
-                return AutoUpdater.FetchLog( logfile );
+                return AutoUpdater.FetchLogList();
             }
             catch( Exception ex )
             {
@@ -520,6 +522,25 @@ namespace Synapse.Services
             }
         }
 
+        [HttpGet]
+        [Route( "update/log" )]
+        public List<AutoUpdaterMessage> FetchAutoUpdateLog(string name = null)
+        {
+            string context = GetContext( nameof( FetchAutoUpdateLog ), nameof( name ), name );
+
+            try
+            {
+                SynapseServer.Logger.Debug( context );
+                return AutoUpdater.FetchLog( name );
+            }
+            catch( Exception ex )
+            {
+                SynapseServer.Logger.Error(
+                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
+                throw;
+            }
+        }
+        #endregion
 
         #region utility methods
         void InitPlanServer()
