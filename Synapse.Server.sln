@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.Server", "Synapse.Server\Synapse.Server.csproj", "{6335FE8D-72F6-40E6-98B8-F921EAF9377D}"
 EndProject
@@ -20,6 +20,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.Server.Extensibility", "Synapse.Server.Extensibility\Synapse.Server.Extensibility.csproj", "{0D7ED137-55C0-4D6F-9E9B-F526F86DD2F8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.Authentication", "Synapse.Authentication\Synapse.Authentication.csproj", "{FF7FFFEB-C3F3-46DF-A3DB-BA3D70B53EDE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.Server.AutoUpdater", "Synapse.Server.AutoUpdater\Synapse.Server.AutoUpdater.csproj", "{82A36E34-D310-44D2-942E-15816B64F1A8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -63,8 +65,15 @@ Global
 		{FF7FFFEB-C3F3-46DF-A3DB-BA3D70B53EDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FF7FFFEB-C3F3-46DF-A3DB-BA3D70B53EDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FF7FFFEB-C3F3-46DF-A3DB-BA3D70B53EDE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82A36E34-D310-44D2-942E-15816B64F1A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82A36E34-D310-44D2-942E-15816B64F1A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82A36E34-D310-44D2-942E-15816B64F1A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82A36E34-D310-44D2-942E-15816B64F1A8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {795D8FAD-582C-4520-86FF-2EC1C02EE907}
 	EndGlobalSection
 EndGlobal
