@@ -230,6 +230,46 @@ namespace Synapse.Services
             }
         }
 
+        [HttpGet]
+        [Route( "update" )]
+        public List<AutoUpdaterMessage> AutoUpdate(bool drainstop = true)
+        {
+            string context = GetContext( nameof( AutoUpdate ), nameof( drainstop ), drainstop );
+
+            try
+            {
+                SynapseServer.Logger.Info( context );
+                if( drainstop )
+                    Drainstop();
+                return AutoUpdater.Update();
+            }
+            catch( Exception ex )
+            {
+                SynapseServer.Logger.Error(
+                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
+                throw;
+            }
+        }
+
+        [HttpGet]
+        [Route( "update/log" )]
+        public List<AutoUpdaterMessage> FetchAutoUpdateLog(string logfile = null)
+        {
+            string context = GetContext( nameof( FetchAutoUpdateLog ), nameof( logfile ), logfile );
+
+            try
+            {
+                SynapseServer.Logger.Debug( context );
+                return AutoUpdater.FetchLog( logfile );
+            }
+            catch( Exception ex )
+            {
+                SynapseServer.Logger.Error(
+                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
+                throw;
+            }
+        }
+
 
         #region drainstop
         [HttpGet]

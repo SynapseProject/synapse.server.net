@@ -482,6 +482,44 @@ namespace Synapse.Services
             }
         }
 
+        [HttpGet]
+        [Route( "update" )]
+        public List<AutoUpdaterMessage> AutoUpdate()
+        {
+            string context = GetContext( nameof( AutoUpdate ) );
+
+            try
+            {
+                SynapseServer.Logger.Info( context );
+                return AutoUpdater.Update();
+            }
+            catch( Exception ex )
+            {
+                SynapseServer.Logger.Error(
+                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
+                throw;
+            }
+        }
+
+        [HttpGet]
+        [Route( "update/log" )]
+        public List<AutoUpdaterMessage> FetchAutoUpdateLog(string logfile = null)
+        {
+            string context = GetContext( nameof( FetchAutoUpdateLog ), nameof( logfile ), logfile );
+
+            try
+            {
+                SynapseServer.Logger.Debug( context );
+                return AutoUpdater.FetchLog( logfile );
+            }
+            catch( Exception ex )
+            {
+                SynapseServer.Logger.Error(
+                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
+                throw;
+            }
+        }
+
 
         #region utility methods
         void InitPlanServer()
@@ -542,28 +580,3 @@ namespace Synapse.Services
         #endregion
     }
 }
-
-//////[Route( "{domainUId:Guid}" )]
-//////[HttpGet]
-////// GET api/demo 
-//[Route( "foo/" )]
-//public IEnumerable<string> Get()
-//{
-//    return new string[] { "Hello", "World", CurrentUser };
-//}
-
-//// GET api/demo/5 
-//public string Get(int id)
-//{
-//    return "Hello, World!";
-//}
-
-////[Route( "" )]
-////[Route( "byrls/" )]
-////[HttpPost]
-//// POST api/demo 
-//public void Post([FromBody]string value) { }
-//// PUT api/demo/5 
-//public void Put(int id, [FromBody]string value) { }
-//// DELETE api/demo/5 
-//public void Delete(int id) { }

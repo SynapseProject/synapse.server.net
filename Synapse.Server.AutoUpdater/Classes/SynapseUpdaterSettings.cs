@@ -13,6 +13,10 @@ namespace Synapse.Server.AutoUpdater
 
         [YamlIgnore]
         new public string ProcessToStop { get { return base.ProcessToStop; } }
+        [YamlIgnore]
+        new public bool StartProcessAfterInstall { get { return false; } }
+
+        public bool StartServicesAfterInstall { get; set; }
 
 
         public static void SerializeSample()
@@ -24,7 +28,7 @@ namespace Synapse.Server.AutoUpdater
                 RuntimeExe = @"..\Synapse.Server.exe",
                 DownloadFolder = "patches",
                 WaitForExitMillseconds = 30000,
-                StartProcessAfterInstall = true,
+                StartServicesAfterInstall = true,
                 ServiceName = null,
             }.Serialize();
         }

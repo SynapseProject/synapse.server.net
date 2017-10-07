@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using HappyBin.AutoUpdater;
 
+
 namespace Synapse.Server.AutoUpdater
 {
     class Program
@@ -46,7 +47,7 @@ namespace Synapse.Server.AutoUpdater
         {
             SynapseUpdaterSettings settings = SynapseUpdaterSettings.Deserialize();
 
-            if( StopServices( settings.ServiceConfigs, settings.WaitForExitMillseconds ) )
+            if( ManageServices( settings.ServiceConfigs, ServiceControllerStatus.Stopped, settings.WaitForExitMillseconds ) )
             {
                 try
                 {
@@ -64,7 +65,8 @@ namespace Synapse.Server.AutoUpdater
                     LogMessage( ex.Message );
                 }
 
-                StartServices( settings.ServiceConfigs, settings.WaitForExitMillseconds );
+                if( settings.StartServicesAfterInstall )
+                    ManageServices( settings.ServiceConfigs, ServiceControllerStatus.Running, settings.WaitForExitMillseconds );
             }
         }
 
@@ -82,10 +84,12 @@ namespace Synapse.Server.AutoUpdater
                         ServiceController sc = new ServiceController( service );
                         LogMessage( $"The {service} service status is currently set to {sc.Status}." );
 
+                        bool working = false;
                         if( desiredStatus == ServiceControllerStatus.Stopped )
                         {
-                            if( !((sc.Status.Equals( ServiceControllerStatus.Stopped )) || (sc.Status.Equals( ServiceControllerStatus.StopPending ))) )
+                            if( !((sc.Status.Equals( ServiceControllerStatus.StopPending )) || (sc.Status.Equals( ServiceControllerStatus.Stopped ))) )
                             {
+                                working = true;
                                 LogMessage( $"Stopping the {service} service..." );
                                 sc.Stop();
                             }
@@ -94,45 +98,15 @@ namespace Synapse.Server.AutoUpdater
                         {
                             if( !((sc.Status.Equals( ServiceControllerStatus.StartPending )) || (sc.Status.Equals( ServiceControllerStatus.Running ))) )
                             {
+                                working = true;
                                 LogMessage( $"Stopping the {service} service..." );
                                 sc.Stop();
                             }
                         }
 
-                        sc.WaitForStatus( desiredStatus, new TimeSpan( 0, 0, 0, 0, timeout ) );
-                        LogMessage( $"The {service} service status is currently set to {sc.Status}." );
-                    }
-
-                ok = true;
-            }
-            catch( Exception ex )
-            {
-                LogMessage( ex.Message );
-                StartServices( configs, timeout );
-            }
-
-            return ok;
-        }
-
-        static bool StopServices(List<string> configs, int timeout)
-        {
-            bool ok = false;
-            try
-            {
-                if( configs?.Count > 0 )
-                    foreach( string config in configs )
-                    {
-                        SynapseServerConfig c = SynapseServerConfig.Deserialize( config );
-                        string service = c.Service.Name;
-
-                        ServiceController sc = new ServiceController( service );
-                        LogMessage( $"The {service} service status is currently set to {sc.Status}." );
-
-                        if( !((sc.Status.Equals( ServiceControllerStatus.Stopped )) || (sc.Status.Equals( ServiceControllerStatus.StopPending ))) )
+                        if( working )
                         {
-                            LogMessage( $"Stopping the {service} service..." );
-                            sc.Stop();
-                            sc.WaitForStatus( ServiceControllerStatus.Stopped, new TimeSpan( 0, 0, 0, 0, timeout ) );
+                            sc.WaitForStatus( desiredStatus, new TimeSpan( 0, 0, 0, 0, timeout ) );
                             LogMessage( $"The {service} service status is currently set to {sc.Status}." );
                         }
                     }
@@ -142,40 +116,9 @@ namespace Synapse.Server.AutoUpdater
             catch( Exception ex )
             {
                 LogMessage( ex.Message );
-                StartServices( configs, timeout );
-            }
 
-            return ok;
-        }
-
-        static bool StartServices(List<string> configs, int timeout)
-        {
-            bool ok = false;
-            try
-            {
-                if( configs?.Count > 0 )
-                    foreach( string config in configs )
-                    {
-                        SynapseServerConfig c = SynapseServerConfig.Deserialize( config );
-                        string service = c.Service.Name;
-
-                        ServiceController sc = new ServiceController( service );
-                        LogMessage( $"The {service} service status is currently set to {sc.Status}." );
-
-                        if( !((sc.Status.Equals( ServiceControllerStatus.StartPending )) || (sc.Status.Equals( ServiceControllerStatus.Running ))) )
-                        {
-                            LogMessage( $"Starting the {service} service..." );
-                            sc.Start();
-                            sc.WaitForStatus( ServiceControllerStatus.Stopped, new TimeSpan( 0, 0, 0, 0, timeout ) );
-                            LogMessage( $"The {service} service status is currently set to {sc.Status}." );
-                        }
-                    }
-
-                ok = true;
-            }
-            catch( Exception ex )
-            {
-                LogMessage( ex.Message );
+                if( desiredStatus == ServiceControllerStatus.Stopped )
+                    ManageServices( configs, ServiceControllerStatus.Running, timeout );
             }
 
             return ok;
@@ -184,7 +127,7 @@ namespace Synapse.Server.AutoUpdater
         static void Updater_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if( e.PropertyName == "LogMessage" )
-                LogMessage( $"{_updater.LogMessage.TimeStamp}\t{_updater.LogMessage.Message}" );
+                LogMessage( $"{_updater.LogMessage.TimeStamp}|{_updater.LogMessage.Message}" );
         }
 
         static void LogMessage(string v)
