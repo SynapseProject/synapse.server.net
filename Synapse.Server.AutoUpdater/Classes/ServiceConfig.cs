@@ -27,15 +27,20 @@ namespace Synapse.Server.AutoUpdater
         internal bool IsRoleController { get { return (Role & ServerRole.Controller) == ServerRole.Controller; } }
         internal bool IsRoleNode { get { return (Role & ServerRole.Node) == ServerRole.Node; } }
         internal bool IsRoleServer { get { return (Role & ServerRole.Server) == ServerRole.Server; } }
+    }
 
-        public static ServiceConfig Deserialize(string fileName)
+    public class SynapseServerConfig
+    {
+        public ServiceConfig Service { get; set; } = new ServiceConfig();
+
+        public static SynapseServerConfig Deserialize(string fileName)
         {
             if( !File.Exists( fileName ) )
                 throw new FileNotFoundException( $"Could not find {fileName}" );
 
-            ServiceConfig ssc = null;
+            SynapseServerConfig ssc = null;
             using( StreamReader reader = new StreamReader( fileName ) )
-                ssc = new DeserializerBuilder().IgnoreUnmatchedProperties().Build().Deserialize<ServiceConfig>( reader );
+                ssc = new DeserializerBuilder().IgnoreUnmatchedProperties().Build().Deserialize<SynapseServerConfig>( reader );
             return ssc;
         }
     }
