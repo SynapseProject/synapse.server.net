@@ -55,7 +55,7 @@ namespace Synapse.Services
 
         public static void DeserialzeConfig(string[] args)
         {
-            string configFile = null;
+            string configFile = SynapseServerConfig.FileName;
 
             if( args != null && args.Length > 0 )
             {
@@ -105,7 +105,7 @@ namespace Synapse.Services
 
                     bool quiet = false;
                     if( !cliParseError )
-                        if( options.ContainsKey( "quiet" ) )
+                        if( options != null && options.ContainsKey( "quiet" ) )
                         {
                             bool.TryParse( options["quiet"], out quiet );
                             options.Remove( "quiet" );
@@ -126,7 +126,7 @@ namespace Synapse.Services
                     {
                         string configFile = null;
                         if( !cliParseError )
-                            if( options.ContainsKey( "filepath" ) )
+                            if( options != null && options.ContainsKey( "filepath" ) )
                                 configFile = options["filepath"];
 
                         SynapseServerConfig.DeserializeOrNew( ServerRole.Server, configFile );
