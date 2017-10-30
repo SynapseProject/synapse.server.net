@@ -94,7 +94,10 @@ namespace Synapse.Services
 
         public async Task<ExecuteResult> StartPlanAsyncWithParametersAsPost(Plan plan, long planInstanceId, bool dryRun = false, Dictionary<string, string> dynamicParameters = null)
         {
-            dynamicParameters?.PrepareValuesForPost();
+            //[ss]: 30102017, not needed, causing issues, was originally related to YamlHelpers.ConvertPathElementToDict
+            //this next line turned out to be superfluous, overzealous, erroneous error checking
+            //dynamicParameters?.PrepareValuesForPost();
+
             StartPlanEnvelope planEnvelope = new StartPlanEnvelope()
             {
                 Plan = plan,
