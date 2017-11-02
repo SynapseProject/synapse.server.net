@@ -55,15 +55,22 @@ function DownloadRelease( $repo, $destination )
 
     (New-Object System.Net.WebClient).DownloadFile( $url, $name )
 
-    Unzip $name $destination
+    $repDest = $dir + '\' + $repo
+    Unzip $name $repDest
+    Copy-Item ($repDest + '\*') $destination -Force -Recurse
     CleanFolder $destination $true
 
+    Remove-Item $repDest -Recurse
     Remove-Item $name
 }
 
 function GetSynapseCli( $destination )
 {
     $cli = ($dir + '\cli')
+    if(!(Test-Path $cli ))
+    {
+        New-Item -ItemType Directory -Path $cli | Out-Null
+    }
     DownloadRelease 'synapse.core.net' $cli
     Move-Item ($cli + '\synapse.cli.exe') $destination -Force
     RemoveFile( $cli + '\*' );
@@ -122,7 +129,13 @@ function MakeServerRelease()
     DownloadRelease 'handlers.CommandLine.net' $handlers
     DownloadRelease 'handlers.Sql.net' $handlers
     DownloadRelease 'handlers.ActiveDirectory.net' $handlers
-
+    DownloadRelease 'handlers.Legacy.WinUtil.net' $handlers
+    DownloadRelease 'handlers.Legacy.ConfigFile.net' $handlers
+    DownloadRelease 'handlers.Legacy.RemoteCommand.net' $handlers
+    DownloadRelease 'handlers.Legacy.Database.net' $handlers
+    DownloadRelease 'handlers.Legacy.SQLCommand.net' $handlers
+    DownloadRelease 'handlers.Aws.net' $handlers
+    
     #GetSynapseCli...
     GetSynapseCli $fr
 
