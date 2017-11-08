@@ -170,36 +170,6 @@ namespace Synapse.Server.AutoUpdater
         }
         #endregion
 
-        #region Help
-        static void WriteHelpAndExit(string errorMessage = null)
-        {
-            bool haveError = !string.IsNullOrWhiteSpace( errorMessage );
-
-            ConsoleColor defaultColor = Console.ForegroundColor;
-
-            Console_WriteLine( $"synapse.server.autoupdater.exe, Version: {typeof( Program ).Assembly.GetName().Version}\r\n", ConsoleColor.Green );
-            Console.WriteLine( "Syntax:" );
-            Console_WriteLine( "  synapse.server.autoupdater.exe [update [logfile] | genconfig]\r\n", ConsoleColor.Cyan, "{", "}" );
-            Console_WriteLine( "  update:{0,-6}Runs updater, sources yaml config.", ConsoleColor.Green, "" );
-            Console.WriteLine( "  genconfig:{0,-3}Creates a new autoupdater yaml config file.", "", "{", "}" );
-            Console.WriteLine( "{0,-15}- List every server.config.yaml file in autoupdater yaml that", "", "{", "}" );
-            Console.WriteLine( "{0,-15}  sources the local synapse.server.exe.\r\n", "", "{", "}" );
-
-            if( haveError )
-                Console_WriteLine( $"\r\n\r\n*** Last error:\r\n{errorMessage}\r\n", ConsoleColor.Red );
-
-            Console.ForegroundColor = defaultColor;
-
-            Environment.Exit( haveError ? 1 : 0 );
-        }
-
-        static void Console_WriteLine(string s, ConsoleColor color, params object[] args)
-        {
-            Console.ForegroundColor = color;
-            Console.WriteLine( s, args );
-        }
-        #endregion
-
         #region ShadowCopy
         static void ShadowCopy(string logPath)
         {
@@ -228,6 +198,37 @@ namespace Synapse.Server.AutoUpdater
 
             LogMessageString( $"Starting update, logging to [{logPath}]." );
             WriteLogToFile( shadowLogPath );
+        }
+        #endregion
+
+        #region Help
+        static void WriteHelpAndExit(string errorMessage = null)
+        {
+            bool haveError = !string.IsNullOrWhiteSpace( errorMessage );
+
+            ConsoleColor defaultColor = Console.ForegroundColor;
+
+            Console_WriteLine( $"synapse.server.autoupdater.exe, Version: {typeof( Program ).Assembly.GetName().Version}\r\n", ConsoleColor.Green );
+            Console.WriteLine( "Syntax:" );
+            Console_WriteLine( "  synapse.server.autoupdater.exe [update|shadowcopy [logfile] | genconfig]\r\n", ConsoleColor.Cyan, "{", "}" );
+            Console_WriteLine( "  update:{0,-6}Runs updater, sources yaml config.", ConsoleColor.Green, "" );
+            Console.WriteLine( "  shadowcopy:{0,-2}Creates a shadow copy of the AutoUpdater and runs update.", "", "{", "}" );
+            Console.WriteLine( "  genconfig:{0,-3}Creates a new autoupdater yaml config file.", "", "{", "}" );
+            Console.WriteLine( "{0,-15}- List every server.config.yaml file in autoupdater yaml that", "", "{", "}" );
+            Console.WriteLine( "{0,-15}  sources the local synapse.server.exe.\r\n", "", "{", "}" );
+
+            if( haveError )
+                Console_WriteLine( $"\r\n\r\n*** Last error:\r\n{errorMessage}\r\n", ConsoleColor.Red );
+
+            Console.ForegroundColor = defaultColor;
+
+            Environment.Exit( haveError ? 1 : 0 );
+        }
+
+        static void Console_WriteLine(string s, ConsoleColor color, params object[] args)
+        {
+            Console.ForegroundColor = color;
+            Console.WriteLine( s, args );
         }
         #endregion
     }
