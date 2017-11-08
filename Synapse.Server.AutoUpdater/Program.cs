@@ -214,7 +214,8 @@ namespace Synapse.Server.AutoUpdater
 
             LogMessageString( "Updating shadow copy of AutoUpdater." );
             foreach( FileInfo file in new DirectoryInfo( currentPath ).GetFiles() )
-                file.CopyTo( Path.Combine( shadowDirPath, file.Name ), true );
+                if( file.Extension.ToLower() != ".log" )
+                    file.CopyTo( Path.Combine( shadowDirPath, file.Name ), true );
 
             Process.Start( new ProcessStartInfo()
             {
