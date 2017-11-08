@@ -20,10 +20,14 @@ namespace Synapse.Server.AutoUpdater
 
         static void Main(string[] args)
         {
-            ShadowCopy();
-
             if( args.Length > 0 )
             {
+                string currentPath = $@"{Path.GetDirectoryName( typeof( Program ).Assembly.Location )}\AutoUpdater";
+                string logfile = $"{DateTime.Now.Ticks}_{Path.GetFileNameWithoutExtension( Path.GetTempFileName() )}.log";
+                string logPath = Path.Combine( currentPath, logfile );
+                if( args.Length > 1 )
+                    logPath = args[1];
+
                 string arg0 = args[0].ToLower();
                 switch( arg0 )
                 {
@@ -32,20 +36,14 @@ namespace Synapse.Server.AutoUpdater
                         SynapseUpdaterSettings.SerializeSample();
                         break;
                     }
+                    case "shadowcopy":
+                    {
+                        ShadowCopy( logPath );
+                        break;
+                    }
                     case "update":
                     {
-                        ExecuteUpdate();
-
-                        string currentPath = $@"{Path.GetDirectoryName( typeof( Program ).Assembly.Location )}\AutoUpdater";
-                        string logfile = $"{DateTime.Now.Ticks}_{Path.GetFileNameWithoutExtension( Path.GetTempFileName() )}.log";
-                        string logPath = Path.Combine( currentPath, logfile );
-                        if( args.Length > 1 )
-                            logPath = args[1];
-                        try
-                        {
-                            File.WriteAllText( logPath, _log.ToString() );
-                        }
-                        catch { }//eat the error
+                        ExecuteUpdate( logPath );
                         break;
                     }
                     default:
@@ -61,7 +59,7 @@ namespace Synapse.Server.AutoUpdater
             WriteHelpAndExit();
         }
 
-        static void ExecuteUpdate()
+        static void ExecuteUpdate(string logPath)
         {
             SynapseUpdaterSettings settings = SynapseUpdaterSettings.Deserialize();
 
@@ -86,6 +84,8 @@ namespace Synapse.Server.AutoUpdater
                 if( settings.StartServicesAfterInstall )
                     ManageServices( settings.ServiceConfigs, ServiceControllerStatus.Running, settings.WaitForExitMillseconds );
             }
+
+            WriteLogToFile( logPath );
         }
 
         static bool ManageServices(List<string> configs, ServiceControllerStatus desiredStatus, int timeout)
@@ -148,6 +148,7 @@ namespace Synapse.Server.AutoUpdater
                 LogMessageString( $"{_updater.LogMessage.TimeStamp}|{_updater.LogMessage.Message}" );
         }
 
+        #region logging
         static void LogMessage(string v)
         {
             LogMessageString( $"{DateTime.Now}|{v}" );
@@ -158,6 +159,16 @@ namespace Synapse.Server.AutoUpdater
             Console.WriteLine( v );
             _log.AppendLine( v );
         }
+
+        static void WriteLogToFile(string logPath)
+        {
+            try
+            {
+                File.WriteAllText( logPath, _log.ToString() );
+            }
+            catch { }//eat the error
+        }
+        #endregion
 
         #region Help
         static void WriteHelpAndExit(string errorMessage = null)
@@ -190,29 +201,32 @@ namespace Synapse.Server.AutoUpdater
         #endregion
 
         #region ShadowCopy
-        static void ShadowCopy()
+        static void ShadowCopy(string logPath)
         {
             Assembly assm = Assembly.GetExecutingAssembly();
             string currentPath = Path.GetDirectoryName( assm.Location );
+            string shadowDirPath = Path.Combine( currentPath, ".shadow" );
+            string shadowLogPath = logPath.Replace( ".log", ".shadow.log" );
 
-            string shadowPath = Path.Combine( currentPath, ".shadow" );
 
-            if( !Directory.Exists( shadowPath ) )
-                Directory.CreateDirectory( shadowPath );
+            if( !Directory.Exists( shadowDirPath ) )
+                Directory.CreateDirectory( shadowDirPath );
 
+            LogMessageString( "Updating shadow copy of AutoUpdater." );
             foreach( FileInfo file in new DirectoryInfo( currentPath ).GetFiles() )
-                file.CopyTo( Path.Combine( shadowPath, file.Name ), true );
+                file.CopyTo( Path.Combine( shadowDirPath, file.Name ), true );
 
-            string logfile = $"{DateTime.Now.Ticks}_{Path.GetFileNameWithoutExtension( Path.GetTempFileName() )}.log";
-            string logPath = Path.Combine( currentPath, logfile );
-            ProcessStartInfo psi = new ProcessStartInfo()
+            Process.Start( new ProcessStartInfo()
             {
-                FileName = Path.Combine( shadowPath, Path.GetFileName( assm.Location ) ),
-                WorkingDirectory = shadowPath,
+                FileName = Path.Combine( shadowDirPath, Path.GetFileName( assm.Location ) ),
+                WorkingDirectory = shadowDirPath,
                 Arguments = $"update {logPath}",
                 CreateNoWindow = true,
                 WindowStyle = ProcessWindowStyle.Hidden
-            };
+            } );
+
+            LogMessageString( $"Starting update, logging to [{logPath}]." );
+            WriteLogToFile( shadowLogPath );
         }
         #endregion
     }

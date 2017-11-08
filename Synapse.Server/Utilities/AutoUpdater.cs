@@ -20,7 +20,7 @@ namespace Synapse.Services
             {
                 FileName = Path.Combine( CurrentPath, @"Synapse.Server.AutoUpdater.exe" ),
                 WorkingDirectory = CurrentPath,
-                Arguments = $"update {logPath}",
+                Arguments = $"shadowcopy {logPath}",
                 CreateNoWindow = true,
                 WindowStyle = ProcessWindowStyle.Hidden
             };
