@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.ServiceProcess;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,6 +20,8 @@ namespace Synapse.Server.AutoUpdater
 
         static void Main(string[] args)
         {
+            ShadowCopy();
+
             if( args.Length > 0 )
             {
                 string arg0 = args[0].ToLower();
@@ -182,6 +186,33 @@ namespace Synapse.Server.AutoUpdater
         {
             Console.ForegroundColor = color;
             Console.WriteLine( s, args );
+        }
+        #endregion
+
+        #region ShadowCopy
+        static void ShadowCopy()
+        {
+            Assembly assm = Assembly.GetExecutingAssembly();
+            string currentPath = Path.GetDirectoryName( assm.Location );
+
+            string shadowPath = Path.Combine( currentPath, ".shadow" );
+
+            if( !Directory.Exists( shadowPath ) )
+                Directory.CreateDirectory( shadowPath );
+
+            foreach( FileInfo file in new DirectoryInfo( currentPath ).GetFiles() )
+                file.CopyTo( Path.Combine( shadowPath, file.Name ), true );
+
+            string logfile = $"{DateTime.Now.Ticks}_{Path.GetFileNameWithoutExtension( Path.GetTempFileName() )}.log";
+            string logPath = Path.Combine( currentPath, logfile );
+            ProcessStartInfo psi = new ProcessStartInfo()
+            {
+                FileName = Path.Combine( shadowPath, Path.GetFileName( assm.Location ) ),
+                WorkingDirectory = shadowPath,
+                Arguments = $"update {logPath}",
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden
+            };
         }
         #endregion
     }
