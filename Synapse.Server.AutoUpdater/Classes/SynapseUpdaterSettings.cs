@@ -23,9 +23,9 @@ namespace Synapse.Server.AutoUpdater
         {
             new SynapseUpdaterSettings()
             {
-                ServiceConfigs = new List<string>() { { @"..\Synapse.Server.config.yaml" } },
+                ServiceConfigs = new List<string>() { { @"..\..\Synapse.Server.config.yaml" } },
                 UpdateConfigUri = "http://host:port/updates/updateconfig.xml",
-                RuntimeExe = @"..\Synapse.Server.exe",
+                RuntimeExe = @"..\..\Synapse.Server.exe",
                 DownloadFolder = "patches",
                 WaitForExitMillseconds = 30000,
                 StartServicesAfterInstall = true,
