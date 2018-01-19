@@ -151,6 +151,9 @@ namespace Synapse.Services
         {
             InitPlanServer();
 
+            if( !string.IsNullOrWhiteSpace( requestNumber ) ) { requestNumber = System.Web.HttpUtility.UrlDecode( requestNumber ); }
+            if( !string.IsNullOrWhiteSpace( nodeRootUrl ) ) { requestNumber = System.Web.HttpUtility.UrlDecode( nodeRootUrl ); }
+
             Uri uri = CurrentUrl.Request.RequestUri;
             string context = GetContext( nameof( StartPlan ), nameof( CurrentUserName ), CurrentUserName,
                 nameof( planUniqueName ), planUniqueName, nameof( dryRun ), dryRun,
@@ -192,8 +195,10 @@ namespace Synapse.Services
         [HttpPost]
         public long StartPlan([FromBody]StartPlanEnvelope planEnvelope, string planUniqueName, bool dryRun = false, string requestNumber = null, string nodeRootUrl = null)
         {
-
             InitPlanServer();
+
+            if( !string.IsNullOrWhiteSpace( requestNumber ) ) { requestNumber = System.Web.HttpUtility.UrlDecode( requestNumber ); }
+            if( !string.IsNullOrWhiteSpace( nodeRootUrl ) ) { requestNumber = System.Web.HttpUtility.UrlDecode( nodeRootUrl ); }
 
             bool failedToDeserialize = false;
             Dictionary<string, string> dynamicParameters = planEnvelope?.DynamicParameters;
@@ -261,6 +266,9 @@ namespace Synapse.Services
             string path = "Actions[0]:Result:ExitData", SerializationType serializationType = SerializationType.Json,
             bool setContentType = true, int pollingIntervalSeconds = 1, int timeoutSeconds = 120, string nodeRootUrl = null)
         {
+            if( !string.IsNullOrWhiteSpace( requestNumber ) ) { requestNumber = System.Web.HttpUtility.UrlDecode( requestNumber ); }
+            if( !string.IsNullOrWhiteSpace( nodeRootUrl ) ) { requestNumber = System.Web.HttpUtility.UrlDecode( nodeRootUrl ); }
+
             Uri uri = CurrentUrl.Request.RequestUri;
             string context = GetContext( nameof( StartPlanSync ), nameof( CurrentUserName ), CurrentUserName,
                 nameof( planUniqueName ), planUniqueName, nameof( dryRun ), dryRun, nameof( requestNumber ), requestNumber,
@@ -281,6 +289,9 @@ namespace Synapse.Services
             string path = "Actions[0]:Result:ExitData", SerializationType serializationType = SerializationType.Json,
             bool setContentType = true, int pollingIntervalSeconds = 1, int timeoutSeconds = 120, string nodeRootUrl = null)
         {
+            if( !string.IsNullOrWhiteSpace( requestNumber ) ) { requestNumber = System.Web.HttpUtility.UrlDecode( requestNumber ); }
+            if( !string.IsNullOrWhiteSpace( nodeRootUrl ) ) { requestNumber = System.Web.HttpUtility.UrlDecode( nodeRootUrl ); }
+
             string context = GetContext( nameof( StartPlanSync ), nameof( CurrentUserName ), CurrentUserName,
                 nameof( planUniqueName ), planUniqueName, nameof( dryRun ), dryRun, nameof( requestNumber ), requestNumber,
                 nameof( path ), path, nameof( serializationType ), serializationType, nameof( setContentType ), setContentType,
