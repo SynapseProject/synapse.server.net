@@ -233,7 +233,7 @@ namespace Synapse.Services.Controller.Dal
 
                 splxApi.UIElement uie = _splxStore.UIElements.GetByUniqueNameRecursiveIgnoreCase( uniqueName );
                 if( uie == null )
-                    throw new Exception( $"Could not find security element {uniqueName}." );
+                    throw new SecurityException( $"Could not find security element [{uniqueName}] in the permissione configuration." );
 
 
                 ISecureControl curr = context;
