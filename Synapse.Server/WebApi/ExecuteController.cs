@@ -12,6 +12,8 @@ using Synapse.Core;
 using Synapse.Common.WebApi;
 using Synapse.Core.Utilities;
 using Synapse.Common;
+using System.Net.Http;
+using System.Net;
 
 namespace Synapse.Services
 {
@@ -550,6 +552,26 @@ namespace Synapse.Services
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
+        }
+        #endregion
+
+        #region logs
+        [HttpGet]
+        [Route( "admin/logs/{name}" )]
+        public HttpResponseMessage FetchLog4netLog(string name)
+        {
+            byte[] dataBytes = File.ReadAllBytes( name );
+            MemoryStream dataStream = new MemoryStream( dataBytes );
+
+            HttpResponseMessage msg = Request.CreateResponse( HttpStatusCode.OK );
+            msg.Content = new StreamContent( dataStream );
+            msg.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue( "attachment" )
+            {
+                FileName = name
+            };
+            msg.Content.Headers.ContentType = new MediaTypeHeaderValue( "application/octet-stream" );
+
+            return msg;
         }
         #endregion
 
