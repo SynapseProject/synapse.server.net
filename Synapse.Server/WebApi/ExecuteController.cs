@@ -12,8 +12,7 @@ using Synapse.Core;
 using Synapse.Common.WebApi;
 using Synapse.Core.Utilities;
 using Synapse.Common;
-using System.Net.Http;
-using System.Net;
+
 
 namespace Synapse.Services
 {
@@ -557,21 +556,53 @@ namespace Synapse.Services
 
         #region logs
         [HttpGet]
-        [Route( "admin/logs/{name}" )]
-        public HttpResponseMessage FetchLog4netLog(string name)
+        [Route( "admin/logs" )]
+        public List<AutoUpdaterMessage> FetchSynapseLogList()
         {
-            byte[] dataBytes = File.ReadAllBytes( name );
-            MemoryStream dataStream = new MemoryStream( dataBytes );
+            string context = GetContext( nameof( FetchSynapseLogList ) );
 
-            HttpResponseMessage msg = Request.CreateResponse( HttpStatusCode.OK );
-            msg.Content = new StreamContent( dataStream );
-            msg.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue( "attachment" )
+            try
             {
-                FileName = name
-            };
-            msg.Content.Headers.ContentType = new MediaTypeHeaderValue( "application/octet-stream" );
+                SynapseServer.Logger.Debug( context );
+                return Log4netUtil.FetchLogList();
+            }
+            catch( Exception ex )
+            {
+                SynapseServer.Logger.Error(
+                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
+                throw;
+            }
+        }
 
-            return msg;
+        [HttpGet]
+        [Route( "admin/logs/{name}" )]
+        public netHttp.HttpResponseMessage FetchSynapseLog(string name)
+        {
+            string context = GetContext( nameof( FetchSynapseLogList ) );
+
+            try
+            {
+                byte[] dataBytes = File.ReadAllBytes( Log4netUtil.GetLogfilePath( name ) );
+                MemoryStream dataStream = new MemoryStream( dataBytes );
+
+                netHttp.HttpResponseMessage msg = new netHttp.HttpResponseMessage( System.Net.HttpStatusCode.OK )
+                {
+                    Content = new netHttp.StreamContent( dataStream )
+                };
+                msg.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue( "attachment" )
+                {
+                    FileName = name
+                };
+                msg.Content.Headers.ContentType = new MediaTypeHeaderValue( "application/octet-stream" );
+
+                return msg;
+            }
+            catch( Exception ex )
+            {
+                SynapseServer.Logger.Error(
+                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
+                throw;
+            }
         }
         #endregion
 

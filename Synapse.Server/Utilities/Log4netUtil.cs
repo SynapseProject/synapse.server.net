@@ -24,21 +24,11 @@ namespace Synapse.Services
             return logFiles;
         }
 
-        public static List<AutoUpdaterMessage> FetchLog(string logfile = null)
+        public static string GetLogfilePath(string logfile)
         {
-            if( string.IsNullOrWhiteSpace( logfile ) )
-            {
-                DirectoryInfo directory = new DirectoryInfo( CurrentPath );
-                logfile = directory.GetFiles( "*.log", SearchOption.TopDirectoryOnly )
-                             .OrderByDescending( f => f.LastWriteTime )
-                             .First().Name;
-            }
-
-            string logPath = Path.Combine( CurrentPath, logfile );
-            if( File.Exists( logPath ) )
-                return AutoUpdaterMessage.LoadFile( logPath );
-            else
-                return AutoUpdaterMessage.LoadOneMessage( DateTime.Now, $"Could not find logfile {logfile}" );
+            string currentPath = Log4netHelpers.GetLogFileFolder( "SynapseServer" );
+            DirectoryInfo directory = new DirectoryInfo( currentPath );
+            return Path.Combine( currentPath, logfile );
         }
     }
 }
