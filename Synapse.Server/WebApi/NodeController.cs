@@ -56,16 +56,39 @@ namespace Synapse.Services
             }
         }
 
+        [HttpGet]
+        [Route( "hello/whoami" )]
+        public string WhoAmI()
+        {
+            string context = GetContext( nameof( WhoAmI ) );
+
+            try
+            {
+                SynapseServer.Logger.Debug( context );
+                return CurrentUser;
+            }
+            catch( Exception ex )
+            {
+                SynapseServer.Logger.Error(
+                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
+                throw;
+            }
+        }
+
         //[HttpGet]
-        //[Route( "hello/whoami" )]
-        //public string WhoAmI()
+        //[Route( "hello/about" )]
+        //public ServerAboutData About(bool asCsv = false)
         //{
-        //    string context = GetContext( nameof( WhoAmI ) );
+        //    string context = GetContext( nameof( About ) );
 
         //    try
         //    {
         //        SynapseServer.Logger.Debug( context );
-        //        return CurrentUser;
+
+        //        ServerAboutData about = new ServerAboutData() { Config = SynapseServer.Config };
+        //        about.GetFiles( asCsv );
+
+        //        return about;
         //    }
         //    catch( Exception ex )
         //    {
@@ -75,29 +98,6 @@ namespace Synapse.Services
         //    }
         //}
 
-
-        [HttpGet]
-        [Route( "hello/about" )]
-        public ServerAboutData About(bool asCsv = false)
-        {
-            string context = GetContext( nameof( About ) );
-
-            try
-            {
-                SynapseServer.Logger.Debug( context );
-
-                ServerAboutData about = new ServerAboutData() { Config = SynapseServer.Config };
-                about.GetFiles( asCsv );
-
-                return about;
-            }
-            catch( Exception ex )
-            {
-                SynapseServer.Logger.Error(
-                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
-                throw;
-            }
-        }
 
         [Route( "{planInstanceId}/" )]
         [HttpPost]
@@ -292,6 +292,7 @@ namespace Synapse.Services
         //}
         //#endregion
 
+
         #region drainstop
         [HttpGet]
         [Route( "drainstop/" )]
@@ -397,6 +398,7 @@ namespace Synapse.Services
             }
         }
         #endregion
+
 
         #region utility methods
         string GetContext(string context, params object[] parms)

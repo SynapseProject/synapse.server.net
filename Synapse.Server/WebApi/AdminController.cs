@@ -8,10 +8,7 @@ using System.Web.Http;
 using System.Web.Http.Routing;
 using System.Net.Http.Headers;
 
-using Synapse.Core;
 using Synapse.Common.WebApi;
-using Synapse.Core.Utilities;
-using Synapse.Common;
 
 
 namespace Synapse.Services
@@ -19,6 +16,11 @@ namespace Synapse.Services
     [RoutePrefix( "synapse/admin" )]
     public class AdminController : ApiController
     {
+        /// <summary>
+        /// Returns 'Hello World'.
+        /// </summary>
+        /// <param name="log">Option to create entry in logs.</param>
+        /// <returns></returns>
         [HttpGet]
         [Route( "hello" )]
         public string Hello(bool log = true)
@@ -173,13 +175,15 @@ namespace Synapse.Services
 
             try
             {
+                if( string.IsNullOrWhiteSpace( name ) )
+                    throw new ArgumentNullException( nameof( name ), $"Logfile name is required." );
+
                 string path = Log4netUtil.GetLogfilePath( name );
 
                 if( !File.Exists( path ) )
                     throw new FileNotFoundException( $"Log [{name}] not found.", name );
 
                 FileStream stream = new FileStream( path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite );
-
                 netHttp.HttpResponseMessage msg = new netHttp.HttpResponseMessage( System.Net.HttpStatusCode.OK )
                 {
                     Content = new netHttp.StreamContent( stream )
@@ -251,7 +255,6 @@ namespace Synapse.Services
             get { return _authenticationHeader ?? this?.Request?.Headers?.Authorization; }
             set { _authenticationHeader = value; }
         }
-
         #endregion
     }
 }

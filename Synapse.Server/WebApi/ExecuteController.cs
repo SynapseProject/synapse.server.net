@@ -663,7 +663,6 @@ namespace Synapse.Services
             get { return _authenticationHeader ?? this?.Request?.Headers?.Authorization; }
             set { _authenticationHeader = value; }
         }
-
         #endregion
     }
 }
