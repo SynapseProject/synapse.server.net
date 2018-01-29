@@ -60,28 +60,28 @@ namespace Synapse.Services
             }
         }
 
-        [HttpGet]
-        [Route( "hello/about" )]
-        public ServerAboutData About(bool asCsv = false)
-        {
-            string context = GetContext( nameof( About ) );
+        //[HttpGet]
+        //[Route( "hello/about" )]
+        //public ServerAboutData About(bool asCsv = false)
+        //{
+        //    string context = GetContext( nameof( About ) );
 
-            try
-            {
-                SynapseServer.Logger.Debug( context );
+        //    try
+        //    {
+        //        SynapseServer.Logger.Debug( context );
 
-                ServerAboutData about = new ServerAboutData() { Config = SynapseServer.Config };
-                about.GetFiles( asCsv );
+        //        ServerAboutData about = new ServerAboutData() { Config = SynapseServer.Config };
+        //        about.GetFiles( asCsv );
 
-                return about;
-            }
-            catch( Exception ex )
-            {
-                SynapseServer.Logger.Error(
-                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
-                throw;
-            }
-        }
+        //        return about;
+        //    }
+        //    catch( Exception ex )
+        //    {
+        //        SynapseServer.Logger.Error(
+        //            Utilities.UnwindException( context, ex, asSingleLine: true ) );
+        //        throw;
+        //    }
+        //}
 
         [HttpGet]
         [Route( "{planUniqueName}/item" )]
@@ -495,116 +495,118 @@ namespace Synapse.Services
         }
 
 
-        #region AutoUpdate
-        [HttpGet]
-        [Route( "update" )]
-        public List<AutoUpdaterMessage> AutoUpdate()
-        {
-            string context = GetContext( nameof( AutoUpdate ) );
+        //#region AutoUpdate
+        //[HttpGet]
+        //[Route( "admin/update" )]
+        //public List<AutoUpdaterMessage> AutoUpdate()
+        //{
+        //    string context = GetContext( nameof( AutoUpdate ) );
 
-            try
-            {
-                SynapseServer.Logger.Info( context );
-                return AutoUpdater.Update();
-            }
-            catch( Exception ex )
-            {
-                SynapseServer.Logger.Error(
-                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
-                throw;
-            }
-        }
+        //    try
+        //    {
+        //        SynapseServer.Logger.Info( context );
+        //        return AutoUpdater.Update();
+        //    }
+        //    catch( Exception ex )
+        //    {
+        //        SynapseServer.Logger.Error(
+        //            Utilities.UnwindException( context, ex, asSingleLine: true ) );
+        //        throw;
+        //    }
+        //}
 
-        [HttpGet]
-        [Route( "update/logs" )]
-        public List<AutoUpdaterMessage> FetchAutoUpdateLogList()
-        {
-            string context = GetContext( nameof( FetchAutoUpdateLogList ) );
+        //[HttpGet]
+        //[Route( "admin/update/logs" )]
+        //public List<AutoUpdaterMessage> FetchAutoUpdateLogList()
+        //{
+        //    string context = GetContext( nameof( FetchAutoUpdateLogList ) );
 
-            try
-            {
-                SynapseServer.Logger.Debug( context );
-                return AutoUpdater.FetchLogList();
-            }
-            catch( Exception ex )
-            {
-                SynapseServer.Logger.Error(
-                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
-                throw;
-            }
-        }
+        //    try
+        //    {
+        //        SynapseServer.Logger.Debug( context );
+        //        return AutoUpdater.FetchLogList();
+        //    }
+        //    catch( Exception ex )
+        //    {
+        //        SynapseServer.Logger.Error(
+        //            Utilities.UnwindException( context, ex, asSingleLine: true ) );
+        //        throw;
+        //    }
+        //}
 
-        [HttpGet]
-        [Route( "update/logs/{name}" )]
-        public List<AutoUpdaterMessage> FetchAutoUpdateLog(string name = null)
-        {
-            string context = GetContext( nameof( FetchAutoUpdateLog ), nameof( name ), name );
+        //[HttpGet]
+        //[Route( "admin/update/logs/{name}" )]
+        //public List<AutoUpdaterMessage> FetchAutoUpdateLog(string name = null)
+        //{
+        //    string context = GetContext( nameof( FetchAutoUpdateLog ), nameof( name ), name );
 
-            try
-            {
-                SynapseServer.Logger.Debug( context );
-                return AutoUpdater.FetchLog( name );
-            }
-            catch( Exception ex )
-            {
-                SynapseServer.Logger.Error(
-                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
-                throw;
-            }
-        }
-        #endregion
+        //    try
+        //    {
+        //        SynapseServer.Logger.Debug( context );
+        //        return AutoUpdater.FetchLog( name );
+        //    }
+        //    catch( Exception ex )
+        //    {
+        //        SynapseServer.Logger.Error(
+        //            Utilities.UnwindException( context, ex, asSingleLine: true ) );
+        //        throw;
+        //    }
+        //}
+        //#endregion
 
-        #region logs
-        [HttpGet]
-        [Route( "admin/logs" )]
-        public List<AutoUpdaterMessage> FetchSynapseLogList()
-        {
-            string context = GetContext( nameof( FetchSynapseLogList ) );
 
-            try
-            {
-                SynapseServer.Logger.Debug( context );
-                return Log4netUtil.FetchLogList();
-            }
-            catch( Exception ex )
-            {
-                SynapseServer.Logger.Error(
-                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
-                throw;
-            }
-        }
+        //#region logs
+        //[HttpGet]
+        //[Route( "admin/logs" )]
+        //public List<AutoUpdaterMessage> FetchSynapseLogList()
+        //{
+        //    string context = GetContext( nameof( FetchSynapseLogList ) );
 
-        [HttpGet]
-        [Route( "admin/logs/{name}" )]
-        public netHttp.HttpResponseMessage FetchSynapseLog(string name)
-        {
-            string context = GetContext( nameof( FetchSynapseLogList ) );
+        //    try
+        //    {
+        //        SynapseServer.Logger.Debug( context );
+        //        return Log4netUtil.FetchLogList();
+        //    }
+        //    catch( Exception ex )
+        //    {
+        //        SynapseServer.Logger.Error(
+        //            Utilities.UnwindException( context, ex, asSingleLine: true ) );
+        //        throw;
+        //    }
+        //}
 
-            try
-            {
-                byte[] dataBytes = File.ReadAllBytes( Log4netUtil.GetLogfilePath( name ) );
-                MemoryStream dataStream = new MemoryStream( dataBytes );
+        //[HttpGet]
+        //[Route( "admin/logs/{name}" )]
+        //public netHttp.HttpResponseMessage FetchSynapseLog(string name)
+        //{
+        //    string context = GetContext( nameof( FetchSynapseLogList ) );
 
-                netHttp.HttpResponseMessage msg = new netHttp.HttpResponseMessage( System.Net.HttpStatusCode.OK )
-                {
-                    Content = new netHttp.StreamContent( dataStream )
-                };
-                msg.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue( "attachment" )
-                {
-                    FileName = name
-                };
-                msg.Content.Headers.ContentType = new MediaTypeHeaderValue( "application/octet-stream" );
+        //    try
+        //    {
+        //        string path = Log4netUtil.GetLogfilePath( name );
+        //        FileStream stream = new FileStream( path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite );
 
-                return msg;
-            }
-            catch( Exception ex )
-            {
-                SynapseServer.Logger.Error(
-                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
-                throw;
-            }
-        }
-        #endregion
+        //        netHttp.HttpResponseMessage msg = new netHttp.HttpResponseMessage( System.Net.HttpStatusCode.OK )
+        //        {
+        //            Content = new netHttp.StreamContent( stream )
+        //        };
+        //        msg.Content.Headers.ContentDisposition = new ContentDispositionHeaderValue( "attachment" )
+        //        {
+        //            FileName = name
+        //        };
+        //        msg.Content.Headers.ContentType = new MediaTypeHeaderValue( "application/octet-stream" );
+
+        //        return msg;
+        //    }
+        //    catch( Exception ex )
+        //    {
+        //        SynapseServer.Logger.Error(
+        //            Utilities.UnwindException( context, ex, asSingleLine: true ) );
+        //        throw;
+        //    }
+        //}
+        //#endregion
+
 
         #region utility methods
         void InitPlanServer()

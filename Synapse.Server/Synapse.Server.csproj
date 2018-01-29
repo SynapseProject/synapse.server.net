@@ -125,6 +125,7 @@
     <Compile Include="Classes\Controller\SyncExecuteHelper.cs" />
     <Compile Include="Utilities\Log4netUtil.cs" />
     <Compile Include="Utilities\AutoUpdater.cs" />
+    <Compile Include="WebApi\AdminController.cs" />
     <Compile Include="WebApi\SwaggerConfig.cs" />
     <Compile Include="Classes\Controller\SynapseDalConfig.cs" />
     <Compile Include="Classes\Node\IPlanRuntimeContainer.cs" />

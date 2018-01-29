@@ -56,24 +56,24 @@ namespace Synapse.Services
             }
         }
 
-        [HttpGet]
-        [Route( "hello/whoami" )]
-        public string WhoAmI()
-        {
-            string context = GetContext( nameof( WhoAmI ) );
+        //[HttpGet]
+        //[Route( "hello/whoami" )]
+        //public string WhoAmI()
+        //{
+        //    string context = GetContext( nameof( WhoAmI ) );
 
-            try
-            {
-                SynapseServer.Logger.Debug( context );
-                return CurrentUser;
-            }
-            catch( Exception ex )
-            {
-                SynapseServer.Logger.Error(
-                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
-                throw;
-            }
-        }
+        //    try
+        //    {
+        //        SynapseServer.Logger.Debug( context );
+        //        return CurrentUser;
+        //    }
+        //    catch( Exception ex )
+        //    {
+        //        SynapseServer.Logger.Error(
+        //            Utilities.UnwindException( context, ex, asSingleLine: true ) );
+        //        throw;
+        //    }
+        //}
 
 
         [HttpGet]
@@ -231,66 +231,66 @@ namespace Synapse.Services
         }
 
 
-        #region AutoUpdate
-        [HttpGet]
-        [Route( "update" )]
-        public List<AutoUpdaterMessage> AutoUpdate(bool drainstop = true)
-        {
-            string context = GetContext( nameof( AutoUpdate ), nameof( drainstop ), drainstop );
+        //#region AutoUpdate
+        //[HttpGet]
+        //[Route( "update" )]
+        //public List<AutoUpdaterMessage> AutoUpdate(bool drainstop = true)
+        //{
+        //    string context = GetContext( nameof( AutoUpdate ), nameof( drainstop ), drainstop );
 
-            try
-            {
-                SynapseServer.Logger.Info( context );
-                if( drainstop )
-                    Drainstop();
-                return AutoUpdater.Update();
-            }
-            catch( Exception ex )
-            {
-                SynapseServer.Logger.Error(
-                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
-                throw;
-            }
-        }
+        //    try
+        //    {
+        //        SynapseServer.Logger.Info( context );
+        //        if( drainstop )
+        //            Drainstop();
+        //        return AutoUpdater.Update();
+        //    }
+        //    catch( Exception ex )
+        //    {
+        //        SynapseServer.Logger.Error(
+        //            Utilities.UnwindException( context, ex, asSingleLine: true ) );
+        //        throw;
+        //    }
+        //}
 
-        [HttpGet]
-        [Route( "update/logs" )]
-        public List<AutoUpdaterMessage> FetchAutoUpdateLogList()
-        {
-            string context = GetContext( nameof( FetchAutoUpdateLogList ) );
+        //[HttpGet]
+        //[Route( "update/logs" )]
+        //public List<AutoUpdaterMessage> FetchAutoUpdateLogList()
+        //{
+        //    string context = GetContext( nameof( FetchAutoUpdateLogList ) );
 
-            try
-            {
-                SynapseServer.Logger.Debug( context );
-                return AutoUpdater.FetchLogList();
-            }
-            catch( Exception ex )
-            {
-                SynapseServer.Logger.Error(
-                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
-                throw;
-            }
-        }
+        //    try
+        //    {
+        //        SynapseServer.Logger.Debug( context );
+        //        return AutoUpdater.FetchLogList();
+        //    }
+        //    catch( Exception ex )
+        //    {
+        //        SynapseServer.Logger.Error(
+        //            Utilities.UnwindException( context, ex, asSingleLine: true ) );
+        //        throw;
+        //    }
+        //}
 
-        [HttpGet]
-        [Route( "update/logs/{name}" )]
-        public List<AutoUpdaterMessage> FetchAutoUpdateLog(string name = null)
-        {
-            string context = GetContext( nameof( FetchAutoUpdateLog ), nameof( name ), name );
+        //[HttpGet]
+        //[Route( "update/logs/{name}" )]
+        //public List<AutoUpdaterMessage> FetchAutoUpdateLog(string name = null)
+        //{
+        //    string context = GetContext( nameof( FetchAutoUpdateLog ), nameof( name ), name );
 
-            try
-            {
-                SynapseServer.Logger.Debug( context );
-                return AutoUpdater.FetchLog( name );
-            }
-            catch( Exception ex )
-            {
-                SynapseServer.Logger.Error(
-                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
-                throw;
-            }
-        }
-        #endregion
+        //    try
+        //    {
+        //        SynapseServer.Logger.Debug( context );
+        //        return AutoUpdater.FetchLog( name );
+        //    }
+        //    catch( Exception ex )
+        //    {
+        //        SynapseServer.Logger.Error(
+        //            Utilities.UnwindException( context, ex, asSingleLine: true ) );
+        //        throw;
+        //    }
+        //}
+        //#endregion
 
         #region drainstop
         [HttpGet]
