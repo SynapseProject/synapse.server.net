@@ -50,18 +50,22 @@ function DownloadRelease( $repo, $destination )
     Write-Host ("Downloading: " + $repo)
     $uri = ('https://api.github.com/repos/synapseproject/' + $repo + '/releases')
     $rel = Invoke-WebRequest -Uri $uri | ConvertFrom-Json
-    $url = $rel[0].assets[0].browser_download_url
-    $name = $dir + '\' + $rel[0].assets[0].name
 
-    (New-Object System.Net.WebClient).DownloadFile( $url, $name )
-
-    $repDest = $dir + '\' + $repo
-    Unzip $name $repDest
-    Copy-Item ($repDest + '\*') $destination -Force -Recurse
-    CleanFolder $destination $true
-
-    Remove-Item $repDest -Recurse
-    Remove-Item $name
+    foreach ($asset in $rel[0].assets) 
+    {
+        $url = $asset.browser_download_url
+        $name = $dir + '\' + $asset.name
+    
+        (New-Object System.Net.WebClient).DownloadFile( $url, $name )
+    
+        $repDest = $dir + '\' + $repo
+        Unzip $name $repDest
+        Copy-Item ($repDest + '\*') $destination -Force -Recurse
+        CleanFolder $destination $true
+    
+        Remove-Item $repDest -Recurse
+        Remove-Item $name
+    }
 }
 
 function GetSynapseCli( $destination )
@@ -126,15 +130,20 @@ function MakeServerRelease()
     Write-Host "Creating Handlers folders."
     $handlers = ($fr + '\Handlers')
     New-Item  $handlers -Type directory | Out-Null
-    DownloadRelease 'handlers.CommandLine.net' $handlers
-    DownloadRelease 'handlers.Sql.net' $handlers
-    DownloadRelease 'handlers.ActiveDirectory.net' $handlers
-    DownloadRelease 'handlers.Legacy.WinUtil.net' $handlers
-    DownloadRelease 'handlers.Legacy.ConfigFile.net' $handlers
-    DownloadRelease 'handlers.Legacy.RemoteCommand.net' $handlers
-    DownloadRelease 'handlers.Legacy.Database.net' $handlers
-    DownloadRelease 'handlers.Legacy.SQLCommand.net' $handlers
+    DownloadRelease 'handlers.ActiveDirectoryUtil.net' $handlers
     DownloadRelease 'handlers.Aws.net' $handlers
+    DownloadRelease 'handlers.CommandLine.net' $handlers
+    DownloadRelease 'handlers.DataTransformation.net' $handlers
+    DownloadRelease 'handlers.Dns.net' $handlers
+    DownloadRelease 'handlers.FileUtil.net' $handlers
+    DownloadRelease 'handlers.Sql.net' $handlers
+    DownloadRelease 'handlers.Uri.net' $handlers
+    DownloadRelease 'handlers.WinUtil.net' $handlers
+    DownloadRelease 'handlers.Legacy.ConfigFile.net' $handlers
+    DownloadRelease 'handlers.Legacy.Database.net' $handlers
+    DownloadRelease 'handlers.Legacy.RemoteCommand.net' $handlers
+    DownloadRelease 'handlers.Legacy.SQLCommand.net' $handlers
+    DownloadRelease 'handlers.Legacy.WinUtil.net' $handlers
     
     #GetSynapseCli...
     GetSynapseCli $fr
