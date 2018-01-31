@@ -89,7 +89,15 @@ namespace Synapse.Services
             SynapseServer.Logger.Info( $"Starting {PlanInstanceId}_{Plan.Name}, Responding to ControllerService: {_url}" );
 
             token.Register( () => CancelPlanExecution() );
-            Plan.Start( DynamicParameters, IsDryRun );
+
+            try
+            {
+                Plan.Start( DynamicParameters, IsDryRun );
+            }
+            catch( Exception ex )
+            {
+                SynapseServer.Logger.Fatal( $"Exception in {PlanInstanceId}_{Plan.Name}.", ex );
+            }
 
             SynapseServer.Logger.Info( $"SerializeResultPlan: {SynapseServer.Config.Node.SerializeResultPlan}, {_logRootPath.FullName}\\{PlanInstanceId}_{Plan.Name}.result.yaml" );
             if( SynapseServer.Config.Node.SerializeResultPlan )
