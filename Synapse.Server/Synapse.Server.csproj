@@ -121,8 +121,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Classes\Admin\SynapseAdminConfig.cs" />
     <Compile Include="Classes\ServerAboutData.cs" />
     <Compile Include="Classes\Controller\SyncExecuteHelper.cs" />
+    <Compile Include="Classes\Admin\AdminAuthorizer.cs" />
     <Compile Include="Utilities\Log4netUtil.cs" />
     <Compile Include="Utilities\AutoUpdater.cs" />
     <Compile Include="WebApi\AdminController.cs" />

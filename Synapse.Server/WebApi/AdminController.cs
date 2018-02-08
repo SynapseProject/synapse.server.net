@@ -21,6 +21,7 @@ namespace Synapse.Services
         /// </summary>
         /// <param name="log">Option to create entry in logs.</param>
         /// <returns></returns>
+        [AdminAuthorizer]
         [HttpGet]
         [Route( "hello" )]
         public string Hello(bool log = true)
@@ -86,6 +87,7 @@ namespace Synapse.Services
         #region AutoUpdate
         [HttpGet]
         [Route( "update" )]
+        [Authorize]
         public List<AutoUpdaterMessage> AutoUpdate(bool drainstopNode = true)
         {
             string context = GetContext( nameof( AutoUpdate ), "Role", SynapseServer.Config.Service.Role, nameof( drainstopNode ), drainstopNode );
