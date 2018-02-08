@@ -202,7 +202,7 @@ namespace Synapse.Services
             if( !string.IsNullOrWhiteSpace( nodeRootUrl ) ) { requestNumber = System.Web.HttpUtility.UrlDecode( nodeRootUrl ); }
 
             bool failedToDeserialize = false;
-            Dictionary<string, string> dynamicParameters = planEnvelope?.DynamicParameters;
+            Dictionary<string, string> dynamicParameters = planEnvelope?.GetCaseInsensitiveDynamicParameters();
 
             StringBuilder parms = new StringBuilder();
             if( dynamicParameters != null )

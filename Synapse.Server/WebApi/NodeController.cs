@@ -171,7 +171,7 @@ namespace Synapse.Services
                     runAsUser.Start( SynapseServer.Logger );
                 }
 
-                PlanRuntimePod p = new PlanRuntimePod( plan, dryRun, planEnvelope.DynamicParameters, plan.InstanceId, this.Url.Request.Headers.Referrer, this.Request?.Headers?.Authorization );
+                PlanRuntimePod p = new PlanRuntimePod( plan, dryRun, planEnvelope.GetCaseInsensitiveDynamicParameters(), plan.InstanceId, this.Url.Request.Headers.Referrer, this.Request?.Headers?.Authorization );
                 _scheduler.StartPlan( p );
             }
             catch( Exception ex )
