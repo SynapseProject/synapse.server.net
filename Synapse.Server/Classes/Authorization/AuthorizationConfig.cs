@@ -8,9 +8,9 @@ namespace Synapse.Services
     /// <summary>
     /// Hold the startup config for Synapse.Controller; written as an independent class (not using .NET config) for cross-platform compatibility.
     /// </summary>
-    public class SynapseAdminConfig : IConfigurationProvider
+    public class AuthorizationConfig : IConfigurationProvider
     {
-        public SynapseAdminConfig() { }
+        public AuthorizationConfig() { }
 
 
         public bool AllowAnonymous { get; set; } = true;
@@ -33,7 +33,7 @@ namespace Synapse.Services
 
         public object GetDefaultConfig()
         {
-            SynapseAdminConfig synapseAdminConfig = new SynapseAdminConfig();
+            AuthorizationConfig synapseAdminConfig = new AuthorizationConfig();
             synapseAdminConfig.Providers.Add( new AuthorizationProviderInfo() );
             return synapseAdminConfig;
         }
@@ -47,6 +47,8 @@ namespace Synapse.Services
     {
         public string Type { get; set; } = "Synapse.Common:Synapse.Common.UserIdProvider";
         internal bool HasType { get { return !string.IsNullOrWhiteSpace( Type ); } }
+
+        public ServerRole ServerRole { get; set; } = ServerRole.Admin;
 
 
         public object Config { get; set; }

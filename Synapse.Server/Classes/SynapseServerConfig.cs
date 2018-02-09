@@ -101,7 +101,7 @@ namespace Synapse.Services
 
         public AuthenticationConfig Authentication { get; set; } = new AuthenticationConfig();
 
-        public SynapseAdminConfig AdminAuthorization { get; set; } = new SynapseAdminConfig();
+        public AuthorizationConfig Authorization { get; set; } = new AuthorizationConfig();
 
 
         public string GetHost(bool isUserInteractive)

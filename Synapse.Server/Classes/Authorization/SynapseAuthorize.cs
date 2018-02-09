@@ -9,11 +9,11 @@ using System.Web.Http.Controllers;
 
 namespace Synapse.Services
 {
-    public class AdminAuthorizer : AuthorizeAttribute
+    public class SynapseAuthorize : AuthorizeAttribute
     {
         protected override bool IsAuthorized(HttpActionContext actionContext)
         {
-            return SynapseServer.Config.WebApi.AdminAuthorization.HasAccess( actionContext.RequestContext.Principal?.Identity?.Name );
+            return SynapseServer.Config.WebApi.Authorization.HasAccess( actionContext.RequestContext.Principal?.Identity?.Name );
 
             //string[] admins = "LAPTOP-TK2D9TB6\\steve".Split( ',' );
 

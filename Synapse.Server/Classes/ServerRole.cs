@@ -7,8 +7,9 @@ namespace Synapse.Services
     {
         Controller = 1,
         Node = 2,
-        Server = 3,
-        Enterprise = 4,
-        Universal = 7
+        Admin = 4,
+        Server = 7,
+        Enterprise = 8,
+        Universal = 15
     }
 }
