@@ -101,7 +101,12 @@ namespace Synapse.Services
 
         public AuthenticationConfig Authentication { get; set; } = new AuthenticationConfig();
 
-        public AuthorizationConfig Authorization { get; set; } = new AuthorizationConfig();
+        public AuthorizationConfig Authorization { get; set; }
+
+    //    _dal = AssemblyLoader.Load<IControllerDal>(
+    //SynapseServer.Config.Controller.Dal.Type, SynapseServer.Config.Controller.Dal.DefaultType);
+    //                Dictionary<string, string> props = _dal.Configure( SynapseServer.Config.Controller.Dal );
+
 
 
         public string GetHost(bool isUserInteractive)

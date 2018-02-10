@@ -21,7 +21,7 @@ namespace Synapse.Services
         /// </summary>
         /// <param name="log">Option to create entry in logs.</param>
         /// <returns></returns>
-        [SynapseAuthorize]
+        [SynapseAuthorize( serverRole: ServerRole.Admin )]
         [HttpGet]
         [Route( "hello" )]
         public string Hello(bool log = true)

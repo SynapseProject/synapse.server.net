@@ -122,6 +122,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Classes\Authorization\AuthorizationConfig.cs" />
+    <Compile Include="Classes\Authorization\AuthorizationProvider.cs" />
     <Compile Include="Classes\ServerAboutData.cs" />
     <Compile Include="Classes\Controller\SyncExecuteHelper.cs" />
     <Compile Include="Classes\Authorization\SynapseAuthorize.cs" />
@@ -164,6 +165,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Synapse.Authorization\Synapse.Authorization.csproj">
+      <Project>{8a4ba837-fbe4-435a-a355-c4884419b412}</Project>
+      <Name>Synapse.Authorization</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Synapse.Controller.Common\Synapse.Controller.Common.csproj">
       <Project>{c2d081ef-8454-4d63-8d36-ea67bb9183ea}</Project>
       <Name>Synapse.Controller.Common</Name>

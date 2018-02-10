@@ -1,57 +1,47 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 
 
 namespace Synapse.Services
 {
-    /// <summary>
-    /// Hold the startup config for Synapse.Controller; written as an independent class (not using .NET config) for cross-platform compatibility.
-    /// </summary>
-    public class AuthorizationConfig : IConfigurationProvider
+    public class AuthorizationConfig
     {
         public AuthorizationConfig() { }
 
 
         public bool AllowAnonymous { get; set; } = true;
 
-        public List<AuthorizationProviderInfo> Providers { get; set; } = new List<AuthorizationProviderInfo>();
+        public List<AuthorizationProvider> Providers { get; set; } = new List<AuthorizationProvider>();
         internal bool HasProviders { get { return Providers != null && Providers.Count > 0; } }
 
-        public bool HasAccess(string id)
+        public bool IsAuthorized(string id, ServerRole serverRole)
         {
             if( string.IsNullOrWhiteSpace( id ) && !AllowAnonymous )
                 return false;
+
+            bool? isAuthorized = null;
+            bool ok = false;
+
+            IEnumerable<AuthorizationProvider> providers = Providers.Where( p => (p.ServerRole & serverRole) == serverRole );
+            foreach( AuthorizationProvider provider in providers )
+            {
+                isAuthorized = provider.IsAuthorized( id );
+
+                if( isAuthorized.HasValue )
+                {
+                    ok = isAuthorized.Value;
+                    break;
+                }
+            }
+
 
             //process denies
             //if( !denied )
               //process allows, break on first match
 
-            return true;
+            return ok;
         }
-
-
-        public object GetDefaultConfig()
-        {
-            AuthorizationConfig synapseAdminConfig = new AuthorizationConfig();
-            synapseAdminConfig.Providers.Add( new AuthorizationProviderInfo() );
-            return synapseAdminConfig;
-        }
-
-        public void Configure(IConfigurationProvider configProvider)
-        {
-        }
-    }
-
-    public class AuthorizationProviderInfo
-    {
-        public string Type { get; set; } = "Synapse.Common:Synapse.Common.UserIdProvider";
-        internal bool HasType { get { return !string.IsNullOrWhiteSpace( Type ); } }
-
-        public ServerRole ServerRole { get; set; } = ServerRole.Admin;
-
-
-        public object Config { get; set; }
-        internal bool HasConfig { get { return Config != null; } }
     }
 }
