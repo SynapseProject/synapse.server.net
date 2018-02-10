@@ -36,6 +36,9 @@ namespace Synapse.Services
                 }
             }
 
+            if( isAuthorized == null )
+                ok = true;
+
 
             //process denies
             //if( !denied )

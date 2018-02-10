@@ -10,6 +10,10 @@ using YamlDotNet.Serialization;
 
 public class UserIdProvider : IAuthorizationProvider
 {
+    static UserIdProvider _listSource = null;
+    static DateTime _listLastWriteTime = DateTime.MinValue;
+
+
     public List<string> Allowed { get; set; }
     [YamlIgnore]
     public bool HasAllowed { get { return Allowed != null && Allowed.Count > 0; } }
@@ -36,19 +40,25 @@ public class UserIdProvider : IAuthorizationProvider
             //if external source declared, merge contents
             if( !string.IsNullOrWhiteSpace( ListSourcePath ) && File.Exists( ListSourcePath ) )
             {
-                UserIdProvider listSource = YamlHelpers.DeserializeFile<UserIdProvider>( ListSourcePath );
-                if( listSource.HasAllowed )
+                DateTime lastWriteTime = File.GetLastWriteTimeUtc( ListSourcePath );
+                if( _listSource == null || !lastWriteTime.Equals( _listLastWriteTime ) )
+                {
+                    _listLastWriteTime = lastWriteTime;
+                    _listSource = YamlHelpers.DeserializeFile<UserIdProvider>( ListSourcePath );
+                }
+
+                if( _listSource.HasAllowed )
                 {
                     if( Allowed == null )
                         Allowed = new List<string>();
-                    Allowed.AddRange( listSource.Allowed );
+                    Allowed.AddRange( _listSource.Allowed );
                 }
 
-                if( listSource.HasDenied )
+                if( _listSource.HasDenied )
                 {
                     if( Denied == null )
                         Denied = new List<string>();
-                    Denied.AddRange( listSource.Denied );
+                    Denied.AddRange( _listSource.Denied );
                 }
             }
         }

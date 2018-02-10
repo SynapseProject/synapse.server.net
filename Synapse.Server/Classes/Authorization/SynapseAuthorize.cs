@@ -20,13 +20,6 @@ namespace Synapse.Services
                 return SynapseServer.Config.WebApi.Authorization.IsAuthorized( actionContext.RequestContext.Principal?.Identity?.Name, _serverRole );
             else
                 return true;
-
-            //string[] admins = "LAPTOP-TK2D9TB6\\steve".Split( ',' );
-
-            //if( admins.Contains( actionContext.RequestContext.Principal.Identity.Name ) )
-            //    return true;
-
-            //return false;
         }
     }
 }
