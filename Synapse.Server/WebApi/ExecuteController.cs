@@ -21,6 +21,7 @@ namespace Synapse.Services
     {
         PlanServer _server = null;
 
+        [SynapseAuthorize( serverRole: ServerRole.Controller )]
         [HttpGet]
         [Route( "hello" )]
         public string Hello(bool log = true)

@@ -10,8 +10,13 @@ using YamlDotNet.Serialization;
 
 public class UserIdProvider : IAuthorizationProvider
 {
-    static UserIdProvider _listSource = null;
-    static DateTime _listLastWriteTime = DateTime.MinValue;
+    static Dictionary<int, UserIdProvider> _cache = new Dictionary<int, UserIdProvider>();
+
+    UserIdProvider _inner = null;
+
+
+    [YamlIgnore]
+    internal DateTime ListLastWriteTime { get; set; } = DateTime.MinValue;
 
 
     public List<string> Allowed { get; set; }
@@ -29,36 +34,43 @@ public class UserIdProvider : IAuthorizationProvider
     {
         if( conifg != null )
         {
-            string s = YamlHelpers.Serialize( conifg.Config );
-            UserIdProvider uidp = YamlHelpers.Deserialize<UserIdProvider>( s );
-
-            //initialize with whatever is declared in synapse.server.config.yaml
-            Allowed = uidp.Allowed;
-            Denied = uidp.Denied;
-            ListSourcePath = uidp.ListSourcePath;
+            int hash = conifg.Config.GetHashCode();
+            if( !_cache.ContainsKey( hash ) || _cache[hash] == null )
+            {
+                string s = YamlHelpers.Serialize( conifg.Config );
+                _cache[hash] = _inner = YamlHelpers.Deserialize<UserIdProvider>( s );
+            }
+            else
+                _inner = _cache[hash];
 
             //if external source declared, merge contents
-            if( !string.IsNullOrWhiteSpace( ListSourcePath ) && File.Exists( ListSourcePath ) )
+            if( !string.IsNullOrWhiteSpace( _inner.ListSourcePath ) && File.Exists( _inner.ListSourcePath ) )
             {
-                DateTime lastWriteTime = File.GetLastWriteTimeUtc( ListSourcePath );
-                if( _listSource == null || !lastWriteTime.Equals( _listLastWriteTime ) )
+                DateTime lastWriteTime = File.GetLastWriteTimeUtc( _inner.ListSourcePath );
+                if( !lastWriteTime.Equals( _inner.ListLastWriteTime ) )
                 {
-                    _listLastWriteTime = lastWriteTime;
-                    _listSource = YamlHelpers.DeserializeFile<UserIdProvider>( ListSourcePath );
-                }
+                    string s = YamlHelpers.Serialize( conifg.Config );
+                    _inner = YamlHelpers.Deserialize<UserIdProvider>( s );
 
-                if( _listSource.HasAllowed )
-                {
-                    if( Allowed == null )
-                        Allowed = new List<string>();
-                    Allowed.AddRange( _listSource.Allowed );
-                }
+                    _inner.ListLastWriteTime = lastWriteTime;
 
-                if( _listSource.HasDenied )
-                {
-                    if( Denied == null )
-                        Denied = new List<string>();
-                    Denied.AddRange( _listSource.Denied );
+                    UserIdProvider listSource = YamlHelpers.DeserializeFile<UserIdProvider>( _inner.ListSourcePath );
+
+                    if( listSource.HasAllowed )
+                    {
+                        if( _inner.Allowed == null )
+                            _inner.Allowed = new List<string>();
+                        _inner.Allowed.AddRange( listSource.Allowed );
+                    }
+
+                    if( listSource.HasDenied )
+                    {
+                        if( _inner.Denied == null )
+                            _inner.Denied = new List<string>();
+                        _inner.Denied.AddRange( listSource.Denied );
+                    }
+
+                    _cache[hash] = _inner;
                 }
             }
         }
@@ -75,13 +87,13 @@ public class UserIdProvider : IAuthorizationProvider
     {
         bool? found = null;
 
-        if( HasDenied )
-            found = Denied.Contains( id, StringComparer.OrdinalIgnoreCase );
+        if( _inner.HasDenied )
+            found = _inner.Denied.Contains( id, StringComparer.OrdinalIgnoreCase );
         if( found.HasValue && found.Value )
             return false;
 
-        if( HasAllowed )
-            found = Allowed.Contains( id, StringComparer.OrdinalIgnoreCase );
+        if( _inner.HasAllowed )
+            found = _inner.Allowed.Contains( id, StringComparer.OrdinalIgnoreCase );
         if( found.HasValue && found.Value )
             return true;
 
