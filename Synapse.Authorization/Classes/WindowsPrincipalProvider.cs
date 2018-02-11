@@ -118,9 +118,9 @@ public class WindowsPrincipalProvider : IAuthorizationProvider
         bool? found = null;
 
         List<string> groupMembership = null;
-        if( _inner.HasGroups && HasLdapRoot )
-            groupMembership = Synapse.Services.Authorization.Utilities.GetNtGroupMembership( userName: id, ldapRoot: LdapRoot );
-        bool haveGm = groupMembership != null && groupMembership.Count > 0;
+        if( _inner.HasGroups && _inner.HasLdapRoot )
+            groupMembership = Synapse.Services.Authorization.Utilities.GetNtGroupMembership( userName: id, ldapRoot: _inner.LdapRoot );
+        bool haveGroupMembership = groupMembership != null && groupMembership.Count > 0;
 
         //process Denies
         if( _inner.HasUsersDenied )
@@ -130,13 +130,18 @@ public class WindowsPrincipalProvider : IAuthorizationProvider
                 return false;
         }
 
-        if( _inner.HasGroupsDenied && haveGm )
+        if( _inner.HasGroupsDenied )
         {
-            IEnumerable<string> denied = from member in groupMembership
-                                         join grp in _inner.Groups.Denied
-                                         on member.ToLower() equals grp.ToLower()
-                                         select member;
-            found = denied.Count() > 0;
+            if( haveGroupMembership )
+            {
+                IEnumerable<string> denied = from member in groupMembership
+                                             join grp in _inner.Groups.Denied
+                                             on member.ToLower() equals grp.ToLower()
+                                             select member;
+                found = denied.Count() > 0;
+            }
+            else
+                found = true;  //no groupMembership == implied Deny
 
             if( found.HasValue && found.Value )
                 return false;
@@ -150,13 +155,18 @@ public class WindowsPrincipalProvider : IAuthorizationProvider
                 return true;
         }
 
-        if( _inner.HasGroupsAllowed && haveGm )
+        if( _inner.HasGroupsAllowed )
         {
-            IEnumerable<string> allowed = from member in groupMembership
-                                          join grp in _inner.Groups.Allowed
-                                          on member.ToLower() equals grp.ToLower()
-                                          select member;
-            found = allowed.Count() > 0;
+            if( haveGroupMembership )
+            {
+                IEnumerable<string> allowed = from member in groupMembership
+                                              join grp in _inner.Groups.Allowed
+                                              on member.ToLower() equals grp.ToLower()
+                                              select member;
+                found = allowed.Count() > 0;
+            }
+            else
+                found = false;  //no groupMembership == implied Deny
 
             if( found.HasValue && found.Value )
                 return true;
