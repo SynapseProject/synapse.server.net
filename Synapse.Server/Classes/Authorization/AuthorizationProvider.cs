@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using Synapse.Core.Utilities;
 
@@ -17,6 +18,10 @@ namespace Synapse.Services
         public List<string> Topics { get; set; } = null;
         [YamlIgnore]
         public bool HasTopics { get { return Topics != null && Topics.Count > 0; } }
+        public bool ContainsTopic(string topic)
+        {
+            return HasTopics ? Topics.Contains( topic, StringComparer.OrdinalIgnoreCase ) : false;
+        }
 
         public object Config { get; set; }
         [YamlIgnore]
