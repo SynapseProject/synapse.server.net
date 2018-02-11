@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 
 
 namespace Synapse.Services
@@ -25,17 +24,18 @@ namespace Synapse.Services
             bool ok = false;
 
             IEnumerable<AuthorizationProvider> providers = Providers.Where( p => (p.ServerRole & serverRole) == serverRole );
+
+            IEnumerable<AuthorizationProvider> topicProviders = null;
+            if( !string.IsNullOrWhiteSpace( topic ) && providers.Count() > 0 )
+                topicProviders = providers.Where( p => p.ContainsTopic( topic ) );
+
+            if( topicProviders != null && topicProviders.Count() > 0 )
+                providers = topicProviders;
+
+
             foreach( AuthorizationProvider provider in providers )
             {
-                if( provider.HasTopics )
-                {
-                    isAuthorized = false;
-                    if( !string.IsNullOrWhiteSpace( topic ) && provider.Topics.Contains( topic, StringComparer.OrdinalIgnoreCase ) )
-                        isAuthorized = provider.IsAuthorized( id );
-                }
-                else
-                    isAuthorized = provider.IsAuthorized( id );
-
+                isAuthorized = provider.IsAuthorized( id );
 
                 if( isAuthorized.HasValue )
                 {
