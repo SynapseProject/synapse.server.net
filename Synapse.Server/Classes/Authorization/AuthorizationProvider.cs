@@ -13,14 +13,27 @@ namespace Synapse.Services
         public string Type { get; set; } = "Synapse.Authorization:UserIdProvider";
         internal bool HasType { get { return !string.IsNullOrWhiteSpace( Type ); } }
 
-        public ServerRole ServerRole { get; set; } = ServerRole.Admin;
+        public AuthorizationProviderFilter AppliesTo { get; set; } = new AuthorizationProviderFilter();
 
-        public List<string> Topics { get; set; } = null;
-        [YamlIgnore]
-        public bool HasTopics { get { return Topics != null && Topics.Count > 0; } }
+        public bool ContainsServerRole(ServerRole serverRole)
+        {
+            if( AppliesTo == null )
+                AppliesTo = new AuthorizationProviderFilter();
+            return (AppliesTo.ServerRole & serverRole) == serverRole;
+        }
+
+        public bool ContainsNoTopics()
+        {
+            if( AppliesTo == null )
+                AppliesTo = new AuthorizationProviderFilter();
+            return AppliesTo.HasTopics == false;
+        }
+
         public bool ContainsTopic(string topic)
         {
-            return HasTopics ? Topics.Contains( topic, StringComparer.OrdinalIgnoreCase ) : false;
+            if( AppliesTo == null )
+                AppliesTo = new AuthorizationProviderFilter();
+            return AppliesTo.HasTopics ? AppliesTo.Topics.Contains( topic, StringComparer.OrdinalIgnoreCase ) : false;
         }
 
         public object Config { get; set; }
@@ -38,5 +51,14 @@ namespace Synapse.Services
             else
                 return true;
         }
+    }
+
+    public class AuthorizationProviderFilter
+    {
+        public ServerRole ServerRole { get; set; } = ServerRole.Universal;
+
+        public List<string> Topics { get; set; } = null;
+        [YamlIgnore]
+        public bool HasTopics { get { return Topics != null && Topics.Count > 0; } }
     }
 }
