@@ -13,8 +13,6 @@ public class WindowsPrincipalProvider : IAuthorizationProvider
 {
     static Dictionary<int, WindowsPrincipalProvider> _cache = new Dictionary<int, WindowsPrincipalProvider>();
 
-    WindowsPrincipalProvider _inner = null;
-
     public PrincipalList Users { get; set; }
     [YamlIgnore]
     public bool HasUsers { get { return Users != null && Users.HasContent; } }
@@ -39,6 +37,8 @@ public class WindowsPrincipalProvider : IAuthorizationProvider
     [YamlIgnore]
     internal bool HasLdapRoot { get { return !string.IsNullOrWhiteSpace( LdapRoot ); } }
 
+    private bool _configured = false;
+
 
     public void Configure(IAuthorizationProviderConfig conifg)
     {
@@ -48,61 +48,72 @@ public class WindowsPrincipalProvider : IAuthorizationProvider
             if( !_cache.ContainsKey( hash ) || _cache[hash] == null )
             {
                 string s = YamlHelpers.Serialize( conifg.Config );
-                _cache[hash] = _inner = YamlHelpers.Deserialize<WindowsPrincipalProvider>( s );
+                _cache[hash] = YamlHelpers.Deserialize<WindowsPrincipalProvider>( s );
             }
-            else
-                _inner = _cache[hash];
+
+            Configure( _cache[hash] );
 
             //if external source declared, merge contents
-            if( !string.IsNullOrWhiteSpace( _inner.ListSourcePath ) && File.Exists( _inner.ListSourcePath ) )
+            if( !string.IsNullOrWhiteSpace( ListSourcePath ) && File.Exists( ListSourcePath ) )
             {
-                DateTime lastWriteTime = File.GetLastWriteTimeUtc( _inner.ListSourcePath );
-                if( !lastWriteTime.Equals( _inner.ListSourceLastWriteTime ) )
+                DateTime lastWriteTime = File.GetLastWriteTimeUtc( ListSourcePath );
+                if( !lastWriteTime.Equals( ListSourceLastWriteTime ) )
                 {
                     string s = YamlHelpers.Serialize( conifg.Config );
-                    _inner = YamlHelpers.Deserialize<WindowsPrincipalProvider>( s );
+                    WindowsPrincipalProvider p = YamlHelpers.Deserialize<WindowsPrincipalProvider>( s );
+                    Configure( p, lastWriteTime );
+                    
 
-                    _inner.ListSourceLastWriteTime = lastWriteTime;
-
-                    WindowsPrincipalProvider listSource = YamlHelpers.DeserializeFile<WindowsPrincipalProvider>( _inner.ListSourcePath );
+                    WindowsPrincipalProvider listSource = YamlHelpers.DeserializeFile<WindowsPrincipalProvider>( ListSourcePath );
 
                     if( listSource.HasUsers )
                     {
                         if( listSource.Users.HasAllowed )
                         {
-                            if( _inner.Users.Allowed == null )
-                                _inner.Users.Allowed = new List<string>();
-                            _inner.Users.Allowed.AddRange( listSource.Users.Allowed );
+                            if( Users.Allowed == null )
+                                Users.Allowed = new List<string>();
+                            Users.Allowed.AddRange( listSource.Users.Allowed );
                         }
 
                         if( listSource.Users.HasDenied )
                         {
-                            if( _inner.Users.Denied == null )
-                                _inner.Users.Denied = new List<string>();
-                            _inner.Users.Denied.AddRange( listSource.Users.Denied );
+                            if( Users.Denied == null )
+                                Users.Denied = new List<string>();
+                            Users.Denied.AddRange( listSource.Users.Denied );
                         }
                     }
                     if( listSource.HasGroups )
                     {
                         if( listSource.Groups.HasAllowed )
                         {
-                            if( _inner.Groups.Allowed == null )
-                                _inner.Groups.Allowed = new List<string>();
-                            _inner.Groups.Allowed.AddRange( listSource.Groups.Allowed );
+                            if( Groups.Allowed == null )
+                                Groups.Allowed = new List<string>();
+                            Groups.Allowed.AddRange( listSource.Groups.Allowed );
                         }
 
                         if( listSource.Groups.HasDenied )
                         {
-                            if( _inner.Groups.Denied == null )
-                                _inner.Groups.Denied = new List<string>();
-                            _inner.Groups.Denied.AddRange( listSource.Groups.Denied );
+                            if( Groups.Denied == null )
+                                Groups.Denied = new List<string>();
+                            Groups.Denied.AddRange( listSource.Groups.Denied );
                         }
                     }
 
-                    _cache[hash] = _inner;
+                    _cache[hash] = this;
                 }
             }
+
+            _configured = true;
         }
+    }
+
+    private void Configure(WindowsPrincipalProvider p, DateTime? listSourceLastWriteTime = null)
+    {
+        Users = p.Users;
+        Groups = p.Groups;
+        LdapRoot = p.LdapRoot;
+        ListSourcePath = p.ListSourcePath;
+        ListSourceLastWriteTime = listSourceLastWriteTime ?? p.ListSourceLastWriteTime;
     }
 
     public object GetDefaultConfig()
@@ -112,30 +123,30 @@ public class WindowsPrincipalProvider : IAuthorizationProvider
 
     public bool? IsAuthorized(string id)
     {
-        if( _inner == null )
+        if( !_configured )
             return true;
 
         bool? found = null;
 
         List<string> groupMembership = null;
-        if( _inner.HasGroups && _inner.HasLdapRoot )
-            groupMembership = Synapse.Services.Authorization.Utilities.GetNtGroupMembership( userName: id, ldapRoot: _inner.LdapRoot );
+        if( HasGroups && HasLdapRoot )
+            groupMembership = Synapse.Services.Authorization.Utilities.GetNtGroupMembership( userName: id, ldapRoot: LdapRoot );
         bool haveGroupMembership = groupMembership != null && groupMembership.Count > 0;
 
         //process Denies
-        if( _inner.HasUsersDenied )
+        if( HasUsersDenied )
         {
-            found = _inner.Users.Denied.Contains( id, StringComparer.OrdinalIgnoreCase );
+            found = Users.Denied.Contains( id, StringComparer.OrdinalIgnoreCase );
             if( found.HasValue && found.Value )
                 return false;
         }
 
-        if( _inner.HasGroupsDenied )
+        if( HasGroupsDenied )
         {
             if( haveGroupMembership )
             {
                 IEnumerable<string> denied = from member in groupMembership
-                                             join grp in _inner.Groups.Denied
+                                             join grp in Groups.Denied
                                              on member.ToLower() equals grp.ToLower()
                                              select member;
                 found = denied.Count() > 0;
@@ -148,19 +159,19 @@ public class WindowsPrincipalProvider : IAuthorizationProvider
         }
 
         //process Allows
-        if( _inner.HasUsersAllowed )
+        if( HasUsersAllowed )
         {
-            found = _inner.Users.Allowed.Contains( id, StringComparer.OrdinalIgnoreCase );
+            found = Users.Allowed.Contains( id, StringComparer.OrdinalIgnoreCase );
             if( found.HasValue && found.Value )
                 return true;
         }
 
-        if( _inner.HasGroupsAllowed )
+        if( HasGroupsAllowed )
         {
             if( haveGroupMembership )
             {
                 IEnumerable<string> allowed = from member in groupMembership
-                                              join grp in _inner.Groups.Allowed
+                                              join grp in Groups.Allowed
                                               on member.ToLower() equals grp.ToLower()
                                               select member;
                 found = allowed.Count() > 0;
@@ -174,7 +185,7 @@ public class WindowsPrincipalProvider : IAuthorizationProvider
 
         //if we got here, the user id wasn't specified in Denied and wasn't specifically Allowed
         //if either of these is true (HasUsers/HasGroups), we take omission as implied Deny
-        if( _inner.HasUsersAllowed || _inner.HasGroupsAllowed )
+        if( HasUsersAllowed || HasGroupsAllowed )
             return false;
 
         //if we got here, the user id wasn't specified in Denied and Allowed wasn't declared at all
