@@ -295,6 +295,7 @@ namespace Synapse.Services
 
 
         #region drainstop
+        [SynapseAuthorize( serverRole: ServerRole.Node, topic: "Drainstop" )]
         [HttpGet]
         [Route( "drainstop/" )]
         public void Drainstop(bool shutdown = true)
@@ -321,6 +322,7 @@ namespace Synapse.Services
             }
         }
 
+        [SynapseAuthorize( serverRole: ServerRole.Node, topic: "Drainstop" )]
         [HttpGet]
         [Route( "drainstop/cancel" )]
         public void CancelDrainstop()
@@ -342,6 +344,7 @@ namespace Synapse.Services
             }
         }
 
+        [SynapseAuthorize( serverRole: ServerRole.Node, topic: "Drainstop" )]
         [HttpGet]
         [Route( "drainstop/iscomplete" )]
         public bool GetIsDrainstopComplete()
@@ -361,6 +364,7 @@ namespace Synapse.Services
             }
         }
 
+        [SynapseAuthorize( serverRole: ServerRole.Node, topic: "Drainstop" )]
         [HttpGet]
         [Route( "queue/count" )]
         public int GetCurrentQueueDepth()
@@ -380,6 +384,7 @@ namespace Synapse.Services
             }
         }
 
+        [SynapseAuthorize( serverRole: ServerRole.Node, topic: "Drainstop" )]
         [HttpGet]
         [Route( "queue" )]
         public List<string> GetCurrentQueueItems()
