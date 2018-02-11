@@ -23,17 +23,16 @@ namespace Synapse.Services
             bool? isAuthorized = null;
             bool ok = false;
 
-            IEnumerable<AuthorizationProvider> providers = Providers.Where( p => (p.ServerRole & serverRole) == serverRole );
 
-            IEnumerable<AuthorizationProvider> topicProviders = null;
-            if( !string.IsNullOrWhiteSpace( topic ) && providers.Count() > 0 )
-                topicProviders = providers.Where( p => p.ContainsTopic( topic ) );
+            IEnumerable<AuthorizationProvider> roleProviders = null;
 
-            if( topicProviders != null && topicProviders.Count() > 0 )
-                providers = topicProviders;
+            if( string.IsNullOrWhiteSpace( topic ) )
+                roleProviders = Providers.Where( p => p.ContainsServerRole( serverRole ) && p.ContainsNoTopics() );
+            else
+                roleProviders = Providers.Where( p => p.ContainsServerRole( serverRole ) && p.ContainsTopic( topic ) );
 
 
-            foreach( AuthorizationProvider provider in providers )
+            foreach( AuthorizationProvider provider in roleProviders )
             {
                 isAuthorized = provider.IsAuthorized( id );
 
