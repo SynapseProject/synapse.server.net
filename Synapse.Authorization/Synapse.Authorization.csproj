@@ -48,9 +48,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Classes\Interfaces\IAuthorizationProvider.cs" />
-    <Compile Include="Classes\DirectoryRoleProvider.cs" />
+    <Compile Include="Classes\PrincipalList.cs" />
+    <Compile Include="Classes\WindowsPrincipalProvider.cs" />
     <Compile Include="Classes\Interfaces\IAuthorizationProviderConfig.cs" />
-    <Compile Include="Classes\UserIdProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

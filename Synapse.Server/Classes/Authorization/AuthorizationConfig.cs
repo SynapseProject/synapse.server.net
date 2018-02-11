@@ -16,7 +16,7 @@ namespace Synapse.Services
         public List<AuthorizationProvider> Providers { get; set; } = new List<AuthorizationProvider>();
         internal bool HasProviders { get { return Providers != null && Providers.Count > 0; } }
 
-        public bool IsAuthorized(string id, ServerRole serverRole)
+        public bool IsAuthorized(string id, ServerRole serverRole, string topic = null)
         {
             if( string.IsNullOrWhiteSpace( id ) && !AllowAnonymous )
                 return false;
@@ -27,7 +27,15 @@ namespace Synapse.Services
             IEnumerable<AuthorizationProvider> providers = Providers.Where( p => (p.ServerRole & serverRole) == serverRole );
             foreach( AuthorizationProvider provider in providers )
             {
-                isAuthorized = provider.IsAuthorized( id );
+                if( provider.HasTopics )
+                {
+                    isAuthorized = false;
+                    if( !string.IsNullOrWhiteSpace( topic ) && provider.Topics.Contains( topic, StringComparer.OrdinalIgnoreCase ) )
+                        isAuthorized = provider.IsAuthorized( id );
+                }
+                else
+                    isAuthorized = provider.IsAuthorized( id );
+
 
                 if( isAuthorized.HasValue )
                 {
@@ -39,10 +47,6 @@ namespace Synapse.Services
             if( isAuthorized == null )
                 ok = true;
 
-
-            //process denies
-            //if( !denied )
-              //process allows, break on first match
 
             return ok;
         }

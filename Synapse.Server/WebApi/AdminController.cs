@@ -21,7 +21,7 @@ namespace Synapse.Services
         /// </summary>
         /// <param name="log">Option to create entry in logs.</param>
         /// <returns></returns>
-        [SynapseAuthorize( serverRole: ServerRole.Admin )]
+        [SynapseAuthorize( serverRole: ServerRole.Admin , topic: "Hello" )]
         [HttpGet]
         [Route( "hello" )]
         public string Hello(bool log = true)
@@ -61,6 +61,7 @@ namespace Synapse.Services
             }
         }
 
+        [SynapseAuthorize( serverRole: ServerRole.Admin, topic: "About" )]
         [HttpGet]
         [Route( "hello/about" )]
         public ServerAboutData About(bool asCsv = false)
@@ -85,6 +86,7 @@ namespace Synapse.Services
         }
 
         #region AutoUpdate
+        [SynapseAuthorize( serverRole: ServerRole.Admin, topic: "AutoUpdate" )]
         [HttpGet]
         [Route( "update" )]
         [Authorize]
@@ -109,6 +111,7 @@ namespace Synapse.Services
             }
         }
 
+        [SynapseAuthorize( serverRole: ServerRole.Admin, topic: "AutoUpdateLogs" )]
         [HttpGet]
         [Route( "update/logs" )]
         public List<AutoUpdaterMessage> FetchAutoUpdateLogList()
@@ -128,6 +131,7 @@ namespace Synapse.Services
             }
         }
 
+        [SynapseAuthorize( serverRole: ServerRole.Admin, topic: "AutoUpdateLogs" )]
         [HttpGet]
         [Route( "update/logs/{name}" )]
         public List<AutoUpdaterMessage> FetchAutoUpdateLog(string name = null)
@@ -150,6 +154,7 @@ namespace Synapse.Services
 
 
         #region logs
+        [SynapseAuthorize( serverRole: ServerRole.Admin, topic: "Logs" )]
         [HttpGet]
         [Route( "logs" )]
         public List<AutoUpdaterMessage> FetchSynapseLogList()
@@ -169,6 +174,7 @@ namespace Synapse.Services
             }
         }
 
+        [SynapseAuthorize( serverRole: ServerRole.Admin, topic: "Loga" )]
         [HttpGet]
         [Route( "logs/{name}" )]
         public netHttp.HttpResponseMessage FetchSynapseLog(string name)

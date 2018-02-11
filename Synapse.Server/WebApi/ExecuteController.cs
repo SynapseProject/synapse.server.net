@@ -16,12 +16,12 @@ using Synapse.Common;
 
 namespace Synapse.Services
 {
+    [SynapseAuthorize( serverRole: ServerRole.Controller )]
     [RoutePrefix( "synapse/execute" )]
     public class ExecuteController : ApiController, IExecuteController
     {
         PlanServer _server = null;
 
-        [SynapseAuthorize( serverRole: ServerRole.Controller )]
         [HttpGet]
         [Route( "hello" )]
         public string Hello(bool log = true)

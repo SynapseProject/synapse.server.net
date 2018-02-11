@@ -12,6 +12,7 @@ using Synapse.Common;
 
 namespace Synapse.Services
 {
+    [SynapseAuthorize( serverRole: ServerRole.Node )]
     [RoutePrefix( "synapse/node" )]
     public class NodeController : ApiController
     {

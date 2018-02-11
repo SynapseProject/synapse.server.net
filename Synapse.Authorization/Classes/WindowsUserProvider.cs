@@ -8,11 +8,11 @@ using Synapse.Services;
 
 using YamlDotNet.Serialization;
 
-public class UserIdProvider : IAuthorizationProvider
+public class WindowsUserProvider : IAuthorizationProvider
 {
-    static Dictionary<int, UserIdProvider> _cache = new Dictionary<int, UserIdProvider>();
+    static Dictionary<int, WindowsUserProvider> _cache = new Dictionary<int, WindowsUserProvider>();
 
-    UserIdProvider _inner = null;
+    WindowsUserProvider _inner = null;
 
 
     [YamlIgnore]
@@ -30,7 +30,7 @@ public class UserIdProvider : IAuthorizationProvider
     public string ListSourcePath { get; set; }
 
 
-    public Dictionary<string, string> Configure(IAuthorizationProviderConfig conifg)
+    public void Configure(IAuthorizationProviderConfig conifg)
     {
         if( conifg != null )
         {
@@ -38,7 +38,7 @@ public class UserIdProvider : IAuthorizationProvider
             if( !_cache.ContainsKey( hash ) || _cache[hash] == null )
             {
                 string s = YamlHelpers.Serialize( conifg.Config );
-                _cache[hash] = _inner = YamlHelpers.Deserialize<UserIdProvider>( s );
+                _cache[hash] = _inner = YamlHelpers.Deserialize<WindowsUserProvider>( s );
             }
             else
                 _inner = _cache[hash];
@@ -50,11 +50,11 @@ public class UserIdProvider : IAuthorizationProvider
                 if( !lastWriteTime.Equals( _inner.ListLastWriteTime ) )
                 {
                     string s = YamlHelpers.Serialize( conifg.Config );
-                    _inner = YamlHelpers.Deserialize<UserIdProvider>( s );
+                    _inner = YamlHelpers.Deserialize<WindowsUserProvider>( s );
 
                     _inner.ListLastWriteTime = lastWriteTime;
 
-                    UserIdProvider listSource = YamlHelpers.DeserializeFile<UserIdProvider>( _inner.ListSourcePath );
+                    WindowsUserProvider listSource = YamlHelpers.DeserializeFile<WindowsUserProvider>( _inner.ListSourcePath );
 
                     if( listSource.HasAllowed )
                     {
@@ -74,17 +74,18 @@ public class UserIdProvider : IAuthorizationProvider
                 }
             }
         }
-
-        return null;
     }
 
     public object GetDefaultConfig()
     {
-        return new UserIdProvider();
+        return new WindowsUserProvider();
     }
 
     public bool? IsAuthorized(string id)
     {
+        if( _inner == null )
+            return true;
+
         bool? found = null;
 
         if( _inner.HasDenied )
@@ -94,8 +95,8 @@ public class UserIdProvider : IAuthorizationProvider
 
         if( _inner.HasAllowed )
             found = _inner.Allowed.Contains( id, StringComparer.OrdinalIgnoreCase );
-        if( found.HasValue && found.Value )
-            return true;
+        if( found.HasValue )
+            return found.Value;
 
         return found;
     }

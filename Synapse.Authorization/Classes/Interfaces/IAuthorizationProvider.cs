@@ -5,7 +5,7 @@ namespace Synapse.Services
     public interface IAuthorizationProvider
     {
         object GetDefaultConfig();
-        Dictionary<string, string> Configure(IAuthorizationProviderConfig conifg);
+        void Configure(IAuthorizationProviderConfig conifg);
 
         bool? IsAuthorized(string id);
     }

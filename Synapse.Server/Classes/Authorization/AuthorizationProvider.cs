@@ -1,5 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+
 using Synapse.Core.Utilities;
+
+using YamlDotNet.Serialization;
 
 namespace Synapse.Services
 {
@@ -10,15 +14,20 @@ namespace Synapse.Services
 
         public ServerRole ServerRole { get; set; } = ServerRole.Admin;
 
+        public List<string> Topics { get; set; } = null;
+        [YamlIgnore]
+        public bool HasTopics { get { return Topics != null && Topics.Count > 0; } }
+
         public object Config { get; set; }
-        internal bool HasConfig { get { return Config != null; } }
+        [YamlIgnore]
+        public bool HasConfig { get { return Config != null; } }
 
         public bool? IsAuthorized(string id)
         {
             if( HasType && HasConfig )
             {
                 IAuthorizationProvider auth = AssemblyLoader.Load<IAuthorizationProvider>( Type, Type );
-                Dictionary<string, string> props = auth.Configure( this );
+                auth.Configure( this );
                 return auth.IsAuthorized( id );
             }
             else
