@@ -35,9 +35,9 @@ public class WindowsPrincipalProvider : IAuthorizationProvider
     [YamlIgnore]
     internal DateTime ListSourceLastWriteTime { get; set; } = DateTime.MinValue;
 
-    public string LdapPath { get; set; }
+    public string LdapRoot { get; set; }
     [YamlIgnore]
-    internal bool HasLdapPath { get { return !string.IsNullOrWhiteSpace( LdapPath ); } }
+    internal bool HasLdapRoot { get { return !string.IsNullOrWhiteSpace( LdapRoot ); } }
 
 
     public void Configure(IAuthorizationProviderConfig conifg)
@@ -117,27 +117,50 @@ public class WindowsPrincipalProvider : IAuthorizationProvider
 
         bool? found = null;
 
+        List<string> groupMembership = null;
+        if( _inner.HasGroups && HasLdapRoot )
+            groupMembership = Synapse.Services.Authorization.Utilities.GetNtGroupMembership( userName: id, ldapRoot: LdapRoot );
+        bool haveGm = groupMembership != null && groupMembership.Count > 0;
+
         //process Denies
         if( _inner.HasUsersDenied )
+        {
             found = _inner.Users.Denied.Contains( id, StringComparer.OrdinalIgnoreCase );
-        if( found.HasValue && found.Value )
-            return false;
+            if( found.HasValue && found.Value )
+                return false;
+        }
 
-        if( _inner.HasGroupsDenied )
-            found = _inner.Groups.Denied.Contains( id, StringComparer.OrdinalIgnoreCase );
-        if( found.HasValue && found.Value )
-            return false;
+        if( _inner.HasGroupsDenied && haveGm )
+        {
+            IEnumerable<string> denied = from member in groupMembership
+                                         join grp in _inner.Groups.Denied
+                                         on member.ToLower() equals grp.ToLower()
+                                         select member;
+            found = denied.Count() > 0;
+
+            if( found.HasValue && found.Value )
+                return false;
+        }
 
         //process Allows
         if( _inner.HasUsersAllowed )
+        {
             found = _inner.Users.Allowed.Contains( id, StringComparer.OrdinalIgnoreCase );
-        if( found.HasValue && found.Value )
-            return true;
+            if( found.HasValue && found.Value )
+                return true;
+        }
 
-        if( _inner.HasGroupsAllowed )
-            found = _inner.Groups.Allowed.Contains( id, StringComparer.OrdinalIgnoreCase );
-        if( found.HasValue && found.Value )
-            return true;
+        if( _inner.HasGroupsAllowed && haveGm )
+        {
+            IEnumerable<string> allowed = from member in groupMembership
+                                          join grp in _inner.Groups.Allowed
+                                          on member.ToLower() equals grp.ToLower()
+                                          select member;
+            found = allowed.Count() > 0;
+
+            if( found.HasValue && found.Value )
+                return true;
+        }
 
         //if we got here, the user id wasn't specified in Denied and wasn't specifically Allowed
         //if either of these is true (HasUsers/HasGroups), we take omission as implied Deny
