@@ -13,6 +13,7 @@ using Synapse.Common.WebApi;
 
 namespace Synapse.Services
 {
+    [SynapseAuthorize( serverRole: ServerRole.Admin )]
     [RoutePrefix( "synapse/admin" )]
     public class AdminController : ApiController
     {
