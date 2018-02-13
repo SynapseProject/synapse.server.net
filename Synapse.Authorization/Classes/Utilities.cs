@@ -8,7 +8,13 @@ namespace Synapse.Services.Authorization
     {
         public static List<string> GetNtGroupMembership(string userName, string ldapRoot, string authUser = null, string authPswd = null)
         {
-            List<string> result = null;
+            List<string> result = new List<string>
+            {
+                "group0",
+                "group1",
+                "group2"
+            };
+            return result;
 
             if( !string.IsNullOrWhiteSpace( ldapRoot ) )
             {

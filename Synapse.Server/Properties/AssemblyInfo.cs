@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration( "" )]
 [assembly: AssemblyCompany( "" )]
 [assembly: AssemblyProduct( "Synapse.Server" )]
-[assembly: AssemblyCopyright( "Copyright ©  Steve Shortt, 2016 - 2017" )]
+[assembly: AssemblyCopyright( "Copyright ©  Steve Shortt, 2016 - 2018" )]
 [assembly: AssemblyTrademark( "" )]
 [assembly: AssemblyCulture( "" )]
 
@@ -35,4 +35,4 @@ using System.Runtime.InteropServices;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion( "0.1.0.0" )]
-[assembly: AssemblyFileVersion( "0.1.18042.0" )]
+[assembly: AssemblyFileVersion( "0.1.18043.0" )]
