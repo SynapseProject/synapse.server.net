@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Synapse.Authorization;
 using Synapse.Core.Utilities;
 
 using YamlDotNet.Serialization;
@@ -40,7 +41,7 @@ namespace Synapse.Services
         [YamlIgnore]
         public bool HasConfig { get { return Config != null; } }
 
-        public bool? IsAuthorized(string id)
+        public AuthorizationType IsAuthorized(string id)
         {
             if( HasType && HasConfig )
             {
@@ -49,7 +50,7 @@ namespace Synapse.Services
                 return auth.IsAuthorized( id );
             }
             else
-                return true;
+                return AuthorizationType.ImplicitAllow;
         }
     }
 

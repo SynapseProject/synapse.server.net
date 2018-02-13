@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using Synapse.Authorization;
 
 namespace Synapse.Services
 {
@@ -7,6 +7,6 @@ namespace Synapse.Services
         object GetDefaultConfig();
         void Configure(IAuthorizationProviderConfig conifg);
 
-        bool? IsAuthorized(string id);
+        AuthorizationType IsAuthorized(string id);
     }
 }

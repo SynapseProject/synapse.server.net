@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
+using Synapse.Authorization;
 using Synapse.Core.Utilities;
 using Synapse.Services;
 
@@ -37,7 +38,7 @@ public class WindowsPrincipalProvider : IAuthorizationProvider
     [YamlIgnore]
     internal bool HasLdapRoot { get { return !string.IsNullOrWhiteSpace( LdapRoot ); } }
 
-    private bool _configured = false;
+    private bool HasContent { get { return HasUsers || HasGroups; } }
 
 
     public void Configure(IAuthorizationProviderConfig conifg)
@@ -68,42 +69,28 @@ public class WindowsPrincipalProvider : IAuthorizationProvider
 
                     if( listSource.HasUsers )
                     {
+                        EnsureUsersGroups( isUsers: true );
+
                         if( listSource.Users.HasAllowed )
-                        {
-                            if( Users.Allowed == null )
-                                Users.Allowed = new List<string>();
                             Users.Allowed.AddRange( listSource.Users.Allowed );
-                        }
 
                         if( listSource.Users.HasDenied )
-                        {
-                            if( Users.Denied == null )
-                                Users.Denied = new List<string>();
                             Users.Denied.AddRange( listSource.Users.Denied );
-                        }
                     }
                     if( listSource.HasGroups )
                     {
+                        EnsureUsersGroups( isUsers: false );
+
                         if( listSource.Groups.HasAllowed )
-                        {
-                            if( Groups.Allowed == null )
-                                Groups.Allowed = new List<string>();
                             Groups.Allowed.AddRange( listSource.Groups.Allowed );
-                        }
 
                         if( listSource.Groups.HasDenied )
-                        {
-                            if( Groups.Denied == null )
-                                Groups.Denied = new List<string>();
                             Groups.Denied.AddRange( listSource.Groups.Denied );
-                        }
                     }
 
                     _cache[hash] = this;
                 }
             }
-
-            _configured = true;
         }
     }
 
@@ -116,14 +103,37 @@ public class WindowsPrincipalProvider : IAuthorizationProvider
         ListSourceLastWriteTime = listSourceLastWriteTime ?? p.ListSourceLastWriteTime;
     }
 
+    private void EnsureUsersGroups(bool isUsers)
+    {
+        if( isUsers )
+        {
+            if( Users == null )
+                Users = new PrincipalList();
+            if( Users.Allowed == null )
+                Users.Allowed = new List<string>();
+            if( Users.Denied == null )
+                Users.Denied = new List<string>();
+        }
+
+        if( !isUsers )
+        {
+            if( Groups == null )
+                Groups = new PrincipalList();
+            if( Groups.Allowed == null )
+                Groups.Allowed = new List<string>();
+            if( Groups.Denied == null )
+                Groups.Denied = new List<string>();
+        }
+    }
+
     public object GetDefaultConfig()
     {
         return new WindowsPrincipalProvider();
     }
 
-    public bool? IsAuthorized(string id)
+    public bool? IsAuthorized_(string id)
     {
-        if( !_configured )
+        if( !HasContent )
             return true;
 
         bool? found = null;
@@ -191,5 +201,74 @@ public class WindowsPrincipalProvider : IAuthorizationProvider
         //if we got here, the user id wasn't specified in Denied and Allowed wasn't declared at all
         //in this case omission translates to Allow
         return found;
+    }
+
+    public AuthorizationType IsAuthorized(string id)
+    {
+        if( !HasContent )
+            return AuthorizationType.ImplicitAllow;
+
+        bool? found = null;
+        AuthorizationType result = AuthorizationType.None;
+
+        List<string> groupMembership = null;
+        if( HasGroups && HasLdapRoot )
+            groupMembership = Synapse.Services.Authorization.Utilities.GetNtGroupMembership( userName: id, ldapRoot: LdapRoot );
+        bool haveGroupMembership = groupMembership != null && groupMembership.Count > 0;
+
+        //process Denies
+        if( HasUsersDenied )
+        {
+            found = Users.Denied.Contains( id, StringComparer.OrdinalIgnoreCase );
+            if( found.HasValue && found.Value )
+                return AuthorizationType.ExplicitDeny; //explicit deny is final, return now
+        }
+
+        if( HasGroupsDenied )
+        {
+            if( haveGroupMembership )
+            {
+                IEnumerable<string> denied = from member in groupMembership
+                                             join grp in Groups.Denied
+                                             on member.ToLower() equals grp.ToLower()
+                                             select member;
+                found = denied.Count() > 0;
+                if( found.Value )
+                    return AuthorizationType.ExplicitDeny;  //explicit deny is final, return now
+            }
+            else
+                result |= AuthorizationType.ImplicitAllow;  //no groupMembership == implied Allow (user not specifically denied)
+        }
+
+        //process Allows
+        if( HasUsersAllowed )
+        {
+            found = Users.Allowed.Contains( id, StringComparer.OrdinalIgnoreCase );
+            if( found.HasValue && found.Value )
+                result |= AuthorizationType.ExplicitAllow;
+        }
+
+        if( HasGroupsAllowed )
+        {
+            if( haveGroupMembership )
+            {
+                IEnumerable<string> allowed = from member in groupMembership
+                                              join grp in Groups.Allowed
+                                              on member.ToLower() equals grp.ToLower()
+                                              select member;
+                found = allowed.Count() > 0;
+                if( found.Value )
+                    result |= AuthorizationType.ExplicitAllow;
+            }
+            else
+                result |= AuthorizationType.ImplicitDeny;  //no groupMembership == implied Deny
+        }
+
+        //if we got here, the user id wasn't specified in Denied and wasn't specifically Allowed
+        //if either of these is true (HasUsers/HasGroups), we take omission as implied Deny
+        if( (HasUsersAllowed || HasGroupsAllowed) && (result & AuthorizationType.GeneralAllow) != AuthorizationType.GeneralAllow )
+            result |= AuthorizationType.ImplicitDeny;
+
+        return result;
     }
 }

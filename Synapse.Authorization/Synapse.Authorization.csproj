@@ -48,6 +48,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Classes\Enums\AuthorizationType.cs" />
     <Compile Include="Classes\Interfaces\IAuthorizationProvider.cs" />
     <Compile Include="Classes\PrincipalList.cs" />
     <Compile Include="Classes\Utilities.cs" />
