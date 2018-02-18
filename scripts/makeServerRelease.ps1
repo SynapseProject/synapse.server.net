@@ -112,9 +112,14 @@ function MakeServerRelease()
     New-Item ($release + '\Logs') -Type directory | Out-Null
     New-Item ($release + '\Crypto') -Type directory | Out-Null
 
-    #authentication folder
+    #auth folder: Authentication & Authorization
+	# -copy Authentication
     Write-Host "Copying Authentication release files."
-    CopyFolder '\Synapse.Authentication\bin\Release\*' ($release + '\Authentication')
+	$auth = ($release + '\Auth')
+    CopyFolder '\Synapse.Authentication\bin\Release\*' $auth
+	# -download Suplex Authorization
+    DownloadRelease 'synapse.authorization.suplex' $auth
+
 
     #dal folder
     Write-Host "Creating DAL folders, copying DAL release files."
