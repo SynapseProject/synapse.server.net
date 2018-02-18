@@ -156,7 +156,7 @@ function MakeServerRelease()
     #zip the Release folder
     Write-Host "Creating Release zip."
     $ver = GetVersionInfo $fr
-    $archive = ($dir + '\Synapse.Server.' + $ver + '-beta.zip')
+    $archive = ($dir + '\Synapse.Server.' + $ver) #+ '-beta.zip'
     RemoveFile $archive
     [io.compression.zipfile]::CreateFromDirectory( $fr, $archive, [System.IO.Compression.CompressionLevel]::Optimal, $false );
 
