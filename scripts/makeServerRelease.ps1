@@ -47,6 +47,8 @@ function Unzip( $source, $destination )
 
 function DownloadRelease( $repo, $destination )
 {
+	#apparently github upgraded TLS versions
+	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     Write-Host ("Downloading: " + $repo)
     $uri = ('https://api.github.com/repos/synapseproject/' + $repo + '/releases')
     $rel = Invoke-WebRequest -Uri $uri | ConvertFrom-Json
