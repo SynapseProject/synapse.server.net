@@ -131,6 +131,14 @@ function MakeServerRelease()
     Unzip ($dir + '\_Plans.zip') ($fr + '\Dal')
     Unzip ($dir + '\_Suplex.zip') ($fr + '\Dal\Security')
 
+
+    #samples folder
+    Write-Host "Creating Sample folders, copying Sample release files."
+    New-Item ($release + '\_Samples') -Type directory | Out-Null
+    Write-Host "Unzipping sample scripts."
+    Unzip ($dir + '\_Samples.zip') ($fr + '\_Samples')
+
+
     #handlers folder
     Write-Host "Creating Handlers folders."
     $handlers = ($fr + '\Handlers')
