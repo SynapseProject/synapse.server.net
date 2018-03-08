@@ -75,7 +75,7 @@ function DownloadRelease( $repo, $destination, $headers )
 
 function FindUrl( [string]$uri, [string]$folder, [bool]$istree, $headers )
 {
-	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     Write-Host ("Finding: [" + $folder + "] at: " + $uri)
     $content = Invoke-WebRequest -Headers $headers -Uri $uri | ConvertFrom-Json
 
@@ -101,9 +101,10 @@ function DownloadSamples( $headers )
     $uri = FindUrl 'https://api.github.com/repos/synapseproject/synapse.examples/contents' 'Plans' $false $headers
     if( $uri -ne "" ) {
         $uri = FindUrl $uri 'Release Samples' $true $headers
-    }
-    if( $uri -ne "" ) {
-        $uri = $uri + "?recursive=1"
+
+        if( $uri -ne "" ) {
+            $uri = $uri + "?recursive=1"
+        }
     }
 
     if( $uri -ne "" ) {
