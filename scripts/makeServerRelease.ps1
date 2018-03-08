@@ -1,5 +1,5 @@
 ﻿param( 
-    [string]$workingDir = 'C:\Devo\synapse\synapse.server.net\scripts'
+    [string]$workingDir = ($MyInvocation.MyCommand.Path).Replace( $MyInvocation.MyCommand.Name, "" )
 )
 
 function RemoveFile( $path )
@@ -29,6 +29,7 @@ function CleanFolder
         RemoveFile( $folder + '\System.Web.Http.dll' )
         RemoveFile( $folder + '\Newtonsoft.Json.dll' )
         RemoveFile( $folder + '\Suplex.Core.dll' )
+        RemoveFile( $folder + '\Suplex.Core.dll.config' )
     }
 }
 
@@ -45,13 +46,13 @@ function Unzip( $source, $destination )
     [io.compression.zipfile]::ExtractToDirectory( $source, $destination )
 }
 
-function DownloadRelease( $repo, $destination )
+function DownloadRelease( $repo, $destination, $headers )
 {
 	#apparently github upgraded TLS versions
 	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     Write-Host ("Downloading: " + $repo)
     $uri = ('https://api.github.com/repos/synapseproject/' + $repo + '/releases')
-    $rel = Invoke-WebRequest -Uri $uri | ConvertFrom-Json
+    $rel = Invoke-WebRequest -Headers $headers -Uri $uri | ConvertFrom-Json
 
     foreach ($asset in $rel[0].assets) 
     {
@@ -70,14 +71,75 @@ function DownloadRelease( $repo, $destination )
     }
 }
 
-function GetSynapseCli( $destination )
+function FindUrl( [string]$uri, [string]$folder, [bool]$istree, $headers )
+{
+	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    Write-Host ("Finding: [" + $folder + "] at: " + $uri)
+    $content = Invoke-WebRequest -Headers $headers -Uri $uri | ConvertFrom-Json
+
+    if( $istree ) {
+        $content = $content.tree
+    }
+
+    $url = "";
+    foreach( $item in $content )
+    {
+        if( $item.path -eq $folder ) {
+            if( $istree ) { $url = $item.url; }
+            else { $url = $item._links.git; }
+            break;
+        }
+    }
+
+    return $url;
+}
+
+function DownloadSamples( $headers )
+{
+    $uri = FindUrl 'https://api.github.com/repos/synapseproject/synapse.examples/contents' 'Plans' $false $headers
+    if( $uri -ne "" ) {
+        $uri = FindUrl $uri 'Release Samples' $true $headers
+    }
+    if( $uri -ne "" ) {
+        $uri = $uri + "?recursive=1"
+    }
+
+    if( $uri -ne "" ) {
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        Write-Host ("Getting Samples List from: " + $uri)
+        $content = Invoke-WebRequest -Headers $headers -Uri $uri | ConvertFrom-Json
+
+        $relFolder = "Release\"
+        foreach( $item in $content.tree )
+        {
+            $fp = $relFolder + $item.path
+
+            if( $item.type -eq "tree" ) {
+                if( !(Test-Path $fp ) ) {
+                    New-Item -ItemType directory -Path $fp
+                }
+            }
+            elseif( $item.type -eq "blob" ) {
+                $blob = Invoke-WebRequest -Headers $headers -Uri $item.url | ConvertFrom-Json
+                $bytes = [System.Convert]::FromBase64String( $blob.Content );
+                $str = [System.Text.Encoding]::ASCII.GetString( $bytes ).Replace("`n", "`r`n");
+                New-Item -ItemType File -Path $fp -Value $str -Force
+            }
+        }
+    }
+    else {
+        Write-Host "Could not download Samples."
+    }
+}
+
+function GetSynapseCli( $destination, $headers )
 {
     $cli = ($dir + '\cli')
     if(!(Test-Path $cli ))
     {
         New-Item -ItemType Directory -Path $cli | Out-Null
     }
-    DownloadRelease 'synapse.core.net' $cli
+    DownloadRelease 'synapse.core.net' $cli $headers
     Move-Item ($cli + '\synapse.cli.exe') $destination -Force
     RemoveFile( $cli + '\*' );
     Remove-Item $cli
@@ -90,6 +152,12 @@ function GetVersionInfo( $folder )
 
 function MakeServerRelease()
 {
+    $token = 'username:token'
+    $encToken = [System.Convert]::ToBase64String([char[]]$token);
+    $headers = @{
+        Authorization = 'Basic {0}' -f $encToken;
+    };
+
     $release = 'Release';
     $fr = ($dir + '\' + $release)
 
@@ -103,7 +171,7 @@ function MakeServerRelease()
     $r = $dir.ToLower().Replace( '\scripts', '\Synapse.Server\bin\Release')
     Copy-Item $r $dir -recurse
     CleanFolder $release $false
-    Unzip ($dir + '\_setup.zip') $fr
+    Unzip ($dir + '\_Setup.zip') $fr
 
     #delete any existing folders from Release
     Get-ChildItem $release -directory | ForEach-Object { Remove-Item -recurse -force ( $release + '\' + $_ ) }
@@ -120,7 +188,7 @@ function MakeServerRelease()
 	$auth = ($release + '\Auth')
     CopyFolder '\Synapse.Authentication\bin\Release\*' $auth
 	# -download Suplex Authorization
-    DownloadRelease 'synapse.authorization.suplex' $auth
+    DownloadRelease 'synapse.authorization.suplex' $auth $headers
 
 
     #dal folder
@@ -129,39 +197,36 @@ function MakeServerRelease()
     New-Item ($release + '\Dal\History') -Type directory | Out-Null
     New-Item ($release + '\Dal\Plans') -Type directory | Out-Null
     New-Item ($release + '\Dal\Security') -Type directory | Out-Null
-    Write-Host "Unzipping sample Plans and Suplex."
-    Unzip ($dir + '\_Plans.zip') ($fr + '\Dal')
+    Write-Host "Unzipping Suplex."
     Unzip ($dir + '\_Suplex.zip') ($fr + '\Dal\Security')
 
 
     #samples folder
     Write-Host "Creating Sample folders, copying Sample release files."
-    New-Item ($release + '\_Samples') -Type directory | Out-Null
-    Write-Host "Unzipping sample scripts."
-    Unzip ($dir + '\_Samples.zip') ($fr + '\_Samples')
+    DownloadSamples $headers
 
 
     #handlers folder
     Write-Host "Creating Handlers folders."
     $handlers = ($fr + '\Handlers')
     New-Item  $handlers -Type directory | Out-Null
-    DownloadRelease 'handlers.ActiveDirectoryUtil.net' $handlers
-    DownloadRelease 'handlers.Aws.net' $handlers
-    DownloadRelease 'handlers.CommandLine.net' $handlers
-    DownloadRelease 'handlers.DataTransformation.net' $handlers
-    DownloadRelease 'handlers.Dns.net' $handlers
-    DownloadRelease 'handlers.FileUtil.net' $handlers
-    DownloadRelease 'handlers.Sql.net' $handlers
-    DownloadRelease 'handlers.Uri.net' $handlers
-    DownloadRelease 'handlers.WinUtil.net' $handlers
-    DownloadRelease 'handlers.Legacy.ConfigFile.net' $handlers
-    DownloadRelease 'handlers.Legacy.Database.net' $handlers
-    DownloadRelease 'handlers.Legacy.RemoteCommand.net' $handlers
-    DownloadRelease 'handlers.Legacy.SQLCommand.net' $handlers
-    DownloadRelease 'handlers.Legacy.WinUtil.net' $handlers
+    DownloadRelease 'handlers.ActiveDirectoryUtil.net' $handlers $headers
+    DownloadRelease 'handlers.Aws.net' $handlers $headers
+    DownloadRelease 'handlers.CommandLine.net' $handlers $headers
+    DownloadRelease 'handlers.DataTransformation.net' $handlers $headers
+    DownloadRelease 'handlers.Dns.net' $handlers $headers
+    DownloadRelease 'handlers.FileUtil.net' $handlers $headers
+    DownloadRelease 'handlers.Sql.net' $handlers $headers
+    DownloadRelease 'handlers.Uri.net' $handlers $headers
+    DownloadRelease 'handlers.WinUtil.net' $handlers $headers
+    DownloadRelease 'handlers.Legacy.ConfigFile.net' $handlers $headers
+    DownloadRelease 'handlers.Legacy.Database.net' $handlers $headers
+    DownloadRelease 'handlers.Legacy.RemoteCommand.net' $handlers $headers
+    DownloadRelease 'handlers.Legacy.SQLCommand.net' $handlers $headers
+    DownloadRelease 'handlers.Legacy.WinUtil.net' $handlers $headers
     
     #GetSynapseCli...
-    GetSynapseCli $fr
+    GetSynapseCli $fr $headers
 
     #zip the Release folder
     Write-Host "Creating Release zip."
