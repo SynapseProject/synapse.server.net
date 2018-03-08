@@ -1,7 +1,10 @@
-﻿param( 
+﻿# This script requires a github username and password or Personal Access Token (see https://github.com/settings/tokens).
+param( 
     [string]$workingDir = ($MyInvocation.MyCommand.Path).Replace( $MyInvocation.MyCommand.Name, "" ),
-    [string]$userName = '',
-    [string]$token = ''
+    [Parameter(Mandatory=$true)]
+    [string]$userName,
+    [Parameter(Mandatory=$true)]
+    [string]$passwordOrToken
 )
 
 function RemoveFile( $path )
@@ -153,9 +156,9 @@ function GetVersionInfo( $folder )
     return [System.Diagnostics.FileVersionInfo]::GetVersionInfo($folder + '\Synapse.Server.exe').FileVersion
 }
 
-function MakeServerRelease( $userName, $token )
+function MakeServerRelease( $userName, $passwordOrToken )
 {
-    $authInfo = '{0}:{1}' -f $userName, $token
+    $authInfo = '{0}:{1}' -f $userName, $passwordOrToken
     $encAuth = [System.Convert]::ToBase64String([char[]]$authInfo);
     $headers = @{
         Authorization = 'Basic {0}' -f $encAuth;
@@ -250,4 +253,4 @@ Add-Type -assembly "system.io.compression.filesystem"
 $dir = $workingDir
 Set-Location $dir
 
-MakeServerRelease $userName $token
+MakeServerRelease $userName $passwordOrToken
