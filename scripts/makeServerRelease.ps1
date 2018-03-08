@@ -1,5 +1,7 @@
 ﻿param( 
-    [string]$workingDir = ($MyInvocation.MyCommand.Path).Replace( $MyInvocation.MyCommand.Name, "" )
+    [string]$workingDir = ($MyInvocation.MyCommand.Path).Replace( $MyInvocation.MyCommand.Name, "" ),
+    [string]$userName = '',
+    [string]$token = ''
 )
 
 function RemoveFile( $path )
@@ -150,12 +152,12 @@ function GetVersionInfo( $folder )
     return [System.Diagnostics.FileVersionInfo]::GetVersionInfo($folder + '\Synapse.Server.exe').FileVersion
 }
 
-function MakeServerRelease()
+function MakeServerRelease( $userName, $token )
 {
-    $token = 'username:token'
-    $encToken = [System.Convert]::ToBase64String([char[]]$token);
+    $authInfo = '{0}:{1}' -f $userName, $token
+    $encAuth = [System.Convert]::ToBase64String([char[]]$authInfo);
     $headers = @{
-        Authorization = 'Basic {0}' -f $encToken;
+        Authorization = 'Basic {0}' -f $encAuth;
     };
 
     $release = 'Release';
@@ -247,4 +249,4 @@ Add-Type -assembly "system.io.compression.filesystem"
 $dir = $workingDir
 Set-Location $dir
 
-MakeServerRelease
+MakeServerRelease $userName $token
