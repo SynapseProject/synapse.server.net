@@ -6,20 +6,33 @@ namespace Synapse.Services
 {
     public class SynapseAuthorize : AuthorizeAttribute
     {
-        ServerRole _serverRole = ServerRole.Universal;
-        string _topic = null;
-
+        public SynapseAuthorize() : base() { }
         public SynapseAuthorize(ServerRole serverRole, string topic = null) : base()
         {
-            _serverRole = serverRole;
-            _topic = topic;
+            ServerRole = serverRole;
+            Topic = topic;
+        }
+        public SynapseAuthorize(string serverRole, string topic = null) : base()
+        {
+            ServerRole = (ServerRole)Enum.Parse( typeof( ServerRole ), serverRole, true );
+            Topic = topic;
+        }
+
+
+        public ServerRole ServerRole { get; set; } = ServerRole.Universal;
+        public string Topic { get; set; }  = null;
+
+
+        public bool IsAuthorizedWrapper(HttpActionContext actionContext)
+        {
+            return IsAuthorized( actionContext );
         }
 
         protected override bool IsAuthorized(HttpActionContext actionContext)
         {
             bool? ok = SynapseServer.Config.WebApi.Authorization?.HasProviders;
             if( ok.HasValue && ok.Value )
-                return SynapseServer.Config.WebApi.Authorization.IsAuthorized( actionContext.RequestContext.Principal?.Identity?.Name, _serverRole, _topic );
+                return SynapseServer.Config.WebApi.Authorization.IsAuthorized( actionContext.RequestContext.Principal?.Identity?.Name, ServerRole, Topic );
             else
                 return true;
         }

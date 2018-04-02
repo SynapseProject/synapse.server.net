@@ -10,6 +10,7 @@ namespace Synapse.Services
         Admin = 4,
         Server = 7,
         Enterprise = 8,
-        Universal = 15
+        Custom = 16,
+        Universal = 31
     }
 }
