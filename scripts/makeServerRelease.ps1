@@ -51,7 +51,7 @@ function Unzip( $source, $destination )
     [io.compression.zipfile]::ExtractToDirectory( $source, $destination )
 }
 
-function DownloadRelease( $repo, $destination, $headers )
+function DownloadRelease( $repo, $destination, $headers, $cleanFolder = $true)
 {
 	#apparently github upgraded TLS versions
 	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -69,7 +69,10 @@ function DownloadRelease( $repo, $destination, $headers )
         $repDest = $dir + '\' + $repo
         Unzip $name $repDest
         Copy-Item ($repDest + '\*') $destination -Force -Recurse
-        CleanFolder $destination $true
+
+		if( $cleanFolder ) {
+            CleanFolder $destination $true
+		}
     
         Remove-Item $repDest -Recurse
         Remove-Item $name
@@ -182,9 +185,14 @@ function MakeServerRelease( $userName, $passwordOrToken )
     #delete any existing folders from Release
     Get-ChildItem $release -directory | ForEach-Object { Remove-Item -recurse -force ( $release + '\' + $_ ) }
 
-    #these folders are created as empty
+    #create assemblies folder, download custom assm maker
     Write-Host "Creating folders."
     New-Item ($release + '\Assemblies') -Type directory | Out-Null
+    New-Item ($release + '\Assemblies\Custom') -Type directory | Out-Null
+	$customController = $release + '\Assemblies\Custom'
+	DownloadRelease 'utility.Server.Extensibility' $customController $headers $false
+
+    #these folders are created as empty
     New-Item ($release + '\Logs') -Type directory | Out-Null
     New-Item ($release + '\Crypto') -Type directory | Out-Null
 
