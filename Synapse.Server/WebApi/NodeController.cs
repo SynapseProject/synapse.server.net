@@ -20,7 +20,24 @@ namespace Synapse.Services
 
         public NodeController()
         {
+            IsNodeOrException();
             InitPlanScheduler();
+        }
+
+        void IsNodeOrException()
+        {
+            Exception ex = null;
+
+            if( !SynapseServer.Config.Service.IsRoleNode )
+                ex = new NotSupportedException( $"This instance if Synapse is not configured as a Node.  Check the settings at {SynapseServerConfig.FileName}." );
+            else if( SynapseServer.Config.Node == null )
+                ex = new Exception( $"This instance if Synapse is missing required configuration to execute as a Node.  Check the settings at {SynapseServerConfig.FileName}." );
+
+            if( ex != null )
+            {
+                SynapseServer.Logger.Fatal( ex.Message, ex );
+                throw ex;
+            }
         }
 
         public static Action DrainstopCallback { get; set; }

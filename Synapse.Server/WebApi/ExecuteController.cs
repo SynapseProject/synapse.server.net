@@ -22,6 +22,27 @@ namespace Synapse.Services
     {
         PlanServer _server = null;
 
+        public ExecuteController()
+        {
+            IsControllerOrException();
+        }
+
+        void IsControllerOrException()
+        {
+            Exception ex = null;
+
+            if( !SynapseServer.Config.Service.IsRoleController )
+                ex = new NotSupportedException( $"This instance if Synapse is not configured as a Controller.  Check the settings at {SynapseServerConfig.CurrentPath}." );
+            else if( SynapseServer.Config.Controller == null )
+                ex = new Exception( $"This instance if Synapse is missing required configuration to execute as a Controller.  Check the settings at {SynapseServerConfig.FileName}." );
+
+            if( ex != null )
+            {
+                SynapseServer.Logger.Fatal( ex.Message, ex );
+                throw ex;
+            }
+        }
+
         [HttpGet]
         [Route( "hello" )]
         public string Hello(bool log = true)
@@ -663,6 +684,14 @@ namespace Synapse.Services
         {
             get { return _authenticationHeader ?? this?.Request?.Headers?.Authorization; }
             set { _authenticationHeader = value; }
+        }
+
+        public object GetCustomAssemblyConfig(string name)
+        {
+            if( SynapseServer.Config.Controller.Assemblies.ContainsKey( name ) )
+                return SynapseServer.Config.Controller.Assemblies[name];
+            else
+                return null;
         }
         #endregion
     }

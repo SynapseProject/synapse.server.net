@@ -12,7 +12,7 @@ namespace Synapse.Services
             ICollection<Assembly> baseAssemblies = base.GetAssemblies();
             List<Assembly> assemblies = new List<Assembly>( baseAssemblies );
 
-            foreach( string assm in SynapseServer.Config.Controller.Assemblies )
+            foreach( string assm in SynapseServer.Config.Controller.Assemblies.Keys )
             {
                 Assembly a = Assembly.Load( assm );
                 assemblies.Add( a );

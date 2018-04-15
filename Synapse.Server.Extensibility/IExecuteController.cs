@@ -37,5 +37,7 @@ namespace Synapse.Services
         UrlHelper CurrentUrl { get; set; }
         IPrincipal CurrentUser { get; set; }
         AuthenticationHeaderValue AuthenticationHeader { get; set; }
+
+        object GetCustomAssemblyConfig(string name);
     }
 }
