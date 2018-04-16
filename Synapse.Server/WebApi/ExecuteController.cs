@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using netHttp = System.Net.Http;
 using System.Security.Principal;
 using System.Text;
 using System.Web.Http;
 using System.Web.Http.Routing;
 using System.Net.Http.Headers;
+using netHttp = System.Net.Http;
 
 using Synapse.Core;
 using Synapse.Common.WebApi;
@@ -688,10 +688,10 @@ namespace Synapse.Services
 
         public object GetCustomAssemblyConfig(string name)
         {
-            if( SynapseServer.Config.Controller.Assemblies.ContainsKey( name ) )
-                return SynapseServer.Config.Controller.Assemblies[name];
-            else
-                return null;
+            CustomAssemblyConfig customAssmConfig =
+                SynapseServer.Config.Controller.Assemblies.Find( ca => ca.Name.Equals( name, StringComparison.OrdinalIgnoreCase ) );
+
+            return customAssmConfig?.Config;
         }
         #endregion
     }

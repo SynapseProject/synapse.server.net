@@ -17,7 +17,7 @@ namespace Synapse.Services
         public AuthenticationSchemes NodeAuthenticationScheme { get; set; } = AuthenticationSchemes.None;
         public bool SignPlan { get; set; } = false;
 
-        public Dictionary<string, object> Assemblies { get; set; }
+        public List<CustomAssemblyConfig> Assemblies { get; set; }
         internal bool HasAssemblies { get { return Assemblies != null && Assemblies.Count > 0; } }
 
         public SynapseDalConfig Dal { get; set; } = new SynapseDalConfig();
