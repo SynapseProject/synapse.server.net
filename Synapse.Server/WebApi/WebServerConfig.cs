@@ -2,9 +2,12 @@
 using System.Linq;
 using System.Net;
 using System.Web.Http;
+using System.Web.Http.Routing;
 using System.Web.Http.Dispatcher;
 using Owin;
 using Swashbuckle.Application;
+using System.Web.Http.Controllers;
+using System.Collections.Generic;
 
 namespace Synapse.Services
 {
@@ -25,7 +28,7 @@ namespace Synapse.Services
             config.IncludeErrorDetailPolicy = IncludeErrorDetailPolicy.Always;
 
             // Web API routes
-            config.MapHttpAttributeRoutes();
+            config.MapHttpAttributeRoutes(new ServerConfigFileRouteProvider());
 
             config.Routes.MapHttpRoute(
                 name: "DefaultApi",
@@ -54,6 +57,43 @@ namespace Synapse.Services
 
 
             app.UseWebApi( config );
+        }
+    }
+
+    public class ServerConfigFileRouteProvider : DefaultDirectRouteProvider
+    {
+        private Dictionary<string, string> CustomRoutePrefix = null;
+
+        protected override string GetRoutePrefix(HttpControllerDescriptor controllerDescriptor)
+        {
+            String prefix = base.GetRoutePrefix(controllerDescriptor);
+
+            if (SynapseServer.Config.Controller.HasAssemblies)
+            {
+                if (CustomRoutePrefix == null)
+                {
+                    // Load Custom Route Prefixes From Config
+                    CustomRoutePrefix = new Dictionary<string, string>();
+                    foreach (CustomAssemblyConfig assConfig in SynapseServer.Config.Controller.Assemblies)
+                    {
+                        if (!CustomRoutePrefix.ContainsKey(assConfig.Name))
+                        {
+                            CustomRoutePrefix.Add(assConfig.Name, assConfig.RoutePrefix);
+                            if (!String.IsNullOrWhiteSpace(assConfig.RoutePrefix))
+                                SynapseServer.Logger.Debug($"Custom Route Prefix [{assConfig.RoutePrefix}] Added For [{assConfig.Name}].");
+                        }
+                    }
+                }
+
+                String assemblyName = controllerDescriptor.ControllerType.Assembly.FullName;
+                assemblyName = assemblyName.Substring(0, assemblyName.IndexOf(","));
+
+                if (CustomRoutePrefix.ContainsKey(assemblyName))
+                    if (CustomRoutePrefix[assemblyName] != null)
+                        prefix = CustomRoutePrefix[assemblyName].ToString();
+            }
+
+            return prefix;
         }
     }
 }
