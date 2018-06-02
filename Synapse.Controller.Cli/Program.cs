@@ -57,6 +57,8 @@ namespace Synapse.Services.Controller.Cli
             _methods.Add( "who", "WhoAmI" );
             _methods.Add( "list", "GetPlanList" );
             _methods.Add( "l", "GetPlanList" );
+            _methods.Add( "planhelp", "GetPlanDynamicValues" );
+            _methods.Add( "ph", "GetPlanDynamicValues" );
             _methods.Add( "listinstances", "GetPlanInstanceIdList" );
             _methods.Add( "li", "GetPlanInstanceIdList" );
             _methods.Add( "start", "StartPlan" );
@@ -444,6 +446,7 @@ namespace Synapse.Services.Controller.Cli
             Console.WriteLine( "    - Hello|hi           Returns 'Hello, World!'.", "" );
             Console.WriteLine( "    - WhoAmI|who         Returns ControllerServer User Context.", "" );
             Console.WriteLine( "    - List|l             Get a list of Plans.", "" );
+            Console.WriteLine( "    - PlanHelp|ph        Get help for a Plan.", "" );
             Console.WriteLine( "    - ListInstances|li   Get a list of Plans Instances.", "" );
             Console.WriteLine( "    - Start|s            Start a new Plan Instance.", "" );
             Console.WriteLine( "    - StartWait|sw       Run a new Plan Instance w built-in poller.", "" );

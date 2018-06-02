@@ -29,9 +29,9 @@ namespace Synapse.Services
             Exception ex = null;
 
             if( !SynapseServer.Config.Service.IsRoleNode )
-                ex = new NotSupportedException( $"This instance if Synapse is not configured as a Node.  Check the settings at {SynapseServerConfig.FileName}." );
+                ex = new NotSupportedException( $"This instance of Synapse is not configured as a Node.  Check the settings at {SynapseServerConfig.FileName}." );
             else if( SynapseServer.Config.Node == null )
-                ex = new Exception( $"This instance if Synapse is missing required configuration to execute as a Node.  Check the settings at {SynapseServerConfig.FileName}." );
+                ex = new Exception( $"This instance of Synapse is missing required configuration to execute as a Node.  Check the settings at {SynapseServerConfig.FileName}." );
 
             if( ex != null )
             {

@@ -8,6 +8,7 @@ using Synapse.Common.Utilities;
 using Synapse.Core;
 using Synapse.Core.Utilities;
 
+
 namespace Synapse.Services
 {
     public class ControllerServiceHttpApiClient : HttpApiClientBase
@@ -53,6 +54,18 @@ namespace Synapse.Services
         {
             string requestUri = $"{_rootPath}/{planUniqueName}/item";
             return await GetAsync<Plan>( requestUri );
+        }
+
+
+        public List<DynamicValue> GetPlanDynamicValues(string planUniqueName, bool simplify = true)
+        {
+            return GetPlanDynamicValuesAsync( planUniqueName, simplify ).Result;
+        }
+
+        public async Task<List<DynamicValue>> GetPlanDynamicValuesAsync(string planUniqueName, bool simplify = true)
+        {
+            string requestUri = $"{_rootPath}/{planUniqueName}/help/?simplify={simplify}";
+            return await GetAsync<List<DynamicValue>>( requestUri );
         }
 
 

@@ -32,9 +32,9 @@ namespace Synapse.Services
             Exception ex = null;
 
             if( !SynapseServer.Config.Service.IsRoleController )
-                ex = new NotSupportedException( $"This instance if Synapse is not configured as a Controller.  Check the settings at {SynapseServerConfig.CurrentPath}." );
+                ex = new NotSupportedException( $"This instance of Synapse is not configured as a Controller.  Check the settings at {SynapseServerConfig.FileName}." );
             else if( SynapseServer.Config.Controller == null )
-                ex = new Exception( $"This instance if Synapse is missing required configuration to execute as a Controller.  Check the settings at {SynapseServerConfig.FileName}." );
+                ex = new Exception( $"This instance of Synapse is missing required configuration to execute as a Controller.  Check the settings at {SynapseServerConfig.FileName}." );
 
             if( ex != null )
             {
@@ -117,6 +117,28 @@ namespace Synapse.Services
             {
                 SynapseServer.Logger.Debug( context );
                 return _server.GetPlan( planUniqueName );
+            }
+            catch( Exception ex )
+            {
+                SynapseServer.Logger.Error(
+                    Utilities.UnwindException( context, ex, asSingleLine: true ) );
+                throw;
+            }
+        }
+
+        [HttpGet]
+        [Route( "{planUniqueName}/help" )]
+        public List<DynamicValue> GetPlanDynamicValues(string planUniqueName, bool simplify = true)
+        {
+            InitPlanServer();
+
+            string context = GetContext( nameof( GetPlanList ), nameof( planUniqueName ), planUniqueName, nameof(simplify), simplify );
+
+            try
+            {
+                SynapseServer.Logger.Debug( context );
+                Plan plan = _server.GetPlan( planUniqueName );
+                return plan.GetDynamicValues( simplify );
             }
             catch( Exception ex )
             {

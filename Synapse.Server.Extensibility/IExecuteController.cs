@@ -14,6 +14,7 @@ namespace Synapse.Services
         string Hello(bool log = true);
         string WhoAmI();
         Plan GetPlan(string planUniqueName);
+        List<DynamicValue> GetPlanDynamicValues(string planUniqueName, bool simplify = true);
         IEnumerable<string> GetPlanList(string filter = null, bool isRegexFilter = true);
         IEnumerable<long> GetPlanInstanceIdList(string planUniqueName);
 
