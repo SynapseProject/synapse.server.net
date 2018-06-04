@@ -223,7 +223,10 @@ function MakeServerRelease( $userName, $passwordOrToken )
     #handlers folder
     Write-Host "Creating Handlers folders."
     $handlers = ($fr + '\Handlers')
+    $assemblies = ($fr + '\Assemblies')
     New-Item  $handlers -Type directory | Out-Null
+    DownloadRelease 'handlers.ActiveDirectory.net' $assemblies $headers
+    DownloadRelease 'handlers.ActiveDirectory.net' $handlers $headers
     DownloadRelease 'handlers.ActiveDirectoryUtil.net' $handlers $headers
     DownloadRelease 'handlers.Aws.net' $handlers $headers
     DownloadRelease 'handlers.CommandLine.net' $handlers $headers
