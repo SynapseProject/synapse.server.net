@@ -80,7 +80,8 @@
     <PreBuildEvent>powershell.exe -ExecutionPolicy Bypass -NoProfile -NonInteractive -File $(SolutionDir)scripts\setVersion.ps1 -path $(ProjectDir)Properties\AssemblyInfo.cs -versionFile $(SolutionDir)scripts\AssemblyInfo.xml</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>xcopy $(TargetDir)*.* $(SolutionDir)Synapse.Server\bin\$(ConfigurationName)\Synapse.Controller.Dal.FileSystem /y</PostBuildEvent>
+    <PostBuildEvent>md $(SolutionDir)Synapse.Server\bin\$(ConfigurationName)\Synapse.Controller.Dal.FileSystem
+xcopy $(TargetDir)*.* $(SolutionDir)Synapse.Server\bin\$(ConfigurationName)\Synapse.Controller.Dal.FileSystem /y</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
