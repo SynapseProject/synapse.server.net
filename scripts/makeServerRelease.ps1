@@ -241,6 +241,7 @@ function MakeServerRelease( $userName, $passwordOrToken )
     DownloadRelease 'handlers.Legacy.RemoteCommand.net' $handlers $headers
     DownloadRelease 'handlers.Legacy.SQLCommand.net' $handlers $headers
     DownloadRelease 'handlers.Legacy.WinUtil.net' $handlers $headers
+	DownloadRelease 'zephyr.Crypto' $handlers $headers
     
     #GetSynapseCli...
     GetSynapseCli $fr $headers
