@@ -86,12 +86,14 @@ public partial class FileSystemDal : IControllerDal
             ConfigureDefaults();
         }
 
-        Dictionary<string, string> props = new Dictionary<string, string>();
         string name = nameof( FileSystemDal );
-        props.Add( name, CurrentPath );
-        props.Add( $"{name} Plan path", _planPath );
-        props.Add( $"{name} History path", _histPath );
-        props.Add( $"{name} Security path", _splxPath );
+        Dictionary<string, string> props = new Dictionary<string, string>
+        {
+            { name, CurrentPath },
+            { $"{name} Plan path", _planPath },
+            { $"{name} History path", _histPath },
+            { $"{name} Security path", _splxPath }
+        };
         return props;
     }
 
