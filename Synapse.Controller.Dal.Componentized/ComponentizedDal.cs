@@ -54,25 +54,32 @@ public partial class ComponentizedDal : IControllerDal
             cdc = (ComponentizedDalConfig)GetDefaultConfig();
         }
 
-        ComponentizedDalItem sp = cdc.DalComponents.SingleOrDefault( r => r.Key.Equals( cdc.ExecuteReaderKey, StringComparison.OrdinalIgnoreCase ) );
-        if( sp != null )
+        ComponentizedDalItem cdi = cdc.DalComponents.SingleOrDefault( r => r.Key.Equals( cdc.SecurityProviderKey, StringComparison.OrdinalIgnoreCase ) );
+        if( cdi != null )
         {
-            _planSecurityProvider = AssemblyLoader.Load<IPlanSecurityProvider>( sp.Type, string.Empty );
-            _planSecurityProvider.Configure( new ConfigWrapper { Config = sp.Config, Type = sp.Type } );
+            _planSecurityProvider = AssemblyLoader.Load<IPlanSecurityProvider>( cdi.Type, string.Empty );
+            _planSecurityProvider.Configure( new ConfigWrapper { Config = cdi.Config, Type = cdi.Type } );
         }
-        ComponentizedDalItem rdr = cdc.DalComponents.SingleOrDefault( r => r.Key.Equals( cdc.ExecuteReaderKey, StringComparison.OrdinalIgnoreCase ) );
-        if( rdr != null )
-        {
-            _planExecuteReader = AssemblyLoader.Load<IPlanExecuteReader>( rdr.Type, string.Empty );
-            _planExecuteReader.Configure( new ConfigWrapper { Config = rdr.Config, Type = rdr.Type } );
-        }
-        ComponentizedDalItem wrtr = cdc.DalComponents.SingleOrDefault( r => r.Key.Equals( cdc.ExecuteReaderKey, StringComparison.OrdinalIgnoreCase ) );
-        if( wrtr != null )
-        {
-            _planHistoryWriter = AssemblyLoader.Load<IPlanHistoryWriter>( wrtr.Type, string.Empty );
-            _planHistoryWriter.Configure( new ConfigWrapper { Config = wrtr.Config, Type = wrtr.Type } );
-        }
+        else
+            throw new TypeLoadException( $"Could not load {cdi.Key}/{cdi.Type} for {nameof( IPlanSecurityProvider )}" );
 
+        cdi = cdc.DalComponents.SingleOrDefault( r => r.Key.Equals( cdc.ExecuteReaderKey, StringComparison.OrdinalIgnoreCase ) );
+        if( cdi != null )
+        {
+            _planExecuteReader = AssemblyLoader.Load<IPlanExecuteReader>( cdi.Type, string.Empty );
+            _planExecuteReader.Configure( new ConfigWrapper { Config = cdi.Config, Type = cdi.Type } );
+        }
+        else
+            throw new TypeLoadException( $"Could not load {cdi.Key}/{cdi.Type} for {nameof( IPlanExecuteReader )}" );
+
+        cdi = cdc.DalComponents.SingleOrDefault( r => r.Key.Equals( cdc.HistoryWriterKey, StringComparison.OrdinalIgnoreCase ) );
+        if( cdi != null )
+        {
+            _planHistoryWriter = AssemblyLoader.Load<IPlanHistoryWriter>( cdi.Type, string.Empty );
+            _planHistoryWriter.Configure( new ConfigWrapper { Config = cdi.Config, Type = cdi.Type } );
+        }
+        else
+            throw new TypeLoadException( $"Could not load {cdi.Key}/{cdi.Type} for {nameof( IPlanHistoryWriter )}" );
 
 
         string name = nameof( ComponentizedDal );
