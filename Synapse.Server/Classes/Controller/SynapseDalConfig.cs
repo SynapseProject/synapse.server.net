@@ -14,10 +14,10 @@ namespace Synapse.Services
         {
         }
 
-        internal string DefaultType { get { return "Synapse.Controller.Dal.FileSystem:FileSystemDal"; } }
+        internal string DefaultType { get { return "Synapse.Controller.Dal.Componentized:ComponentizedDal"; } }
 
 
-        public string Type { get; set; } = "Synapse.Controller.Dal.FileSystem:FileSystemDal";
+        public string Type { get; set; } = "Synapse.Controller.Dal.Componentized:ComponentizedDal";
         internal bool HasType { get { return !string.IsNullOrWhiteSpace( Type ); } }
 
         public string LdapRoot { get; set; }

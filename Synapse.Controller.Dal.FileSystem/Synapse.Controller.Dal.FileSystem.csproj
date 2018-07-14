@@ -42,7 +42,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Synapse.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=a6de1cc56b73f982, processorArchitecture=MSIL">
-      <HintPath>..\packages\Synapse.Core.Signed.1.0.18154-pre\lib\net45\Synapse.Core.dll</HintPath>
+      <HintPath>..\packages\Synapse.Core.Signed.1.0.18184\lib\net45\Synapse.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -80,8 +80,8 @@
     <PreBuildEvent>powershell.exe -ExecutionPolicy Bypass -NoProfile -NonInteractive -File $(SolutionDir)scripts\setVersion.ps1 -path $(ProjectDir)Properties\AssemblyInfo.cs -versionFile $(SolutionDir)scripts\AssemblyInfo.xml</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>md $(SolutionDir)Synapse.Server\bin\$(ConfigurationName)\Synapse.Controller.Dal.FileSystem
-xcopy $(TargetDir)*.* $(SolutionDir)Synapse.Server\bin\$(ConfigurationName)\Synapse.Controller.Dal.FileSystem /y</PostBuildEvent>
+    <PostBuildEvent>md $(SolutionDir)Synapse.Server\bin\$(ConfigurationName)\Dal
+xcopy $(TargetDir)*.* $(SolutionDir)Synapse.Server\bin\$(ConfigurationName)\Dal /y</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

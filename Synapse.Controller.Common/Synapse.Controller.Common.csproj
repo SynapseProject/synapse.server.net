@@ -39,7 +39,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Synapse.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=a6de1cc56b73f982, processorArchitecture=MSIL">
-      <HintPath>..\packages\Synapse.Core.Signed.1.0.18154-pre\lib\net45\Synapse.Core.dll</HintPath>
+      <HintPath>..\packages\Synapse.Core.Signed.1.0.18184\lib\net45\Synapse.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -57,6 +57,10 @@
   <ItemGroup>
     <Compile Include="Classes\Interfaces\IAuthenticationProvider.cs" />
     <Compile Include="Classes\Interfaces\IConfigurationProvider.cs" />
+    <Compile Include="Classes\Interfaces\IControllerDalConfig.cs" />
+    <Compile Include="Classes\Interfaces\IPlanExecuteReader.cs" />
+    <Compile Include="Classes\Interfaces\IPlanHistoryWriter.cs" />
+    <Compile Include="Classes\Interfaces\IPlanSecurityProvider.cs" />
     <Compile Include="Classes\Interfaces\ISynapseDalConfig.cs" />
     <Compile Include="Classes\PermissionSet.cs" />
     <Compile Include="Classes\SuplexSecurity.cs" />
