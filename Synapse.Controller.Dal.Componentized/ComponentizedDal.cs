@@ -119,7 +119,7 @@ public partial class ComponentizedDal : IControllerDal
 
     public Plan CreatePlanInstance(string planUniqueName)
     {
-        return CreatePlanInstance( planUniqueName );
+        return _planHistoryWriter.CreatePlanInstance( planUniqueName );
     }
 
     public Plan GetPlanStatus(string planUniqueName, long planInstanceId)
