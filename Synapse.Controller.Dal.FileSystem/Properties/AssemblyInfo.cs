@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle( "Synapse.Services.Controller.Dal.FileSystem" )]
+[assembly: AssemblyTitle( "Synapse.Controller.Dal.FileSystem" )]
 [assembly: AssemblyDescription( "" )]
 [assembly: AssemblyConfiguration( "" )]
 [assembly: AssemblyCompany( "BP" )]
-[assembly: AssemblyProduct( "Synapse.Services.Controller.Dal.FileSystem" )]
+[assembly: AssemblyProduct( "Synapse.Controller.Dal.FileSystem" )]
 [assembly: AssemblyCopyright( "Copyright ©  Steve Shortt, 2016 - 2018" )]
 [assembly: AssemblyTrademark( "" )]
 [assembly: AssemblyCulture( "" )]

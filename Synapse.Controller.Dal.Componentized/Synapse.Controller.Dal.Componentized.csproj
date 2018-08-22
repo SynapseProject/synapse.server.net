@@ -77,4 +77,7 @@
     <PostBuildEvent>md $(SolutionDir)Synapse.Server\bin\$(ConfigurationName)\Dal
 xcopy $(TargetDir)*.* $(SolutionDir)Synapse.Server\bin\$(ConfigurationName)\Dal /y</PostBuildEvent>
   </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent>powershell.exe -ExecutionPolicy Bypass -NoProfile -NonInteractive -File $(SolutionDir)scripts\setVersion.ps1 -path $(ProjectDir)Properties\AssemblyInfo.cs -versionFile $(SolutionDir)scripts\AssemblyInfo.xml</PreBuildEvent>
+  </PropertyGroup>
 </Project>
