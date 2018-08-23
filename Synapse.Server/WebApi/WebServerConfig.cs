@@ -46,7 +46,7 @@ namespace Synapse.Services
 
             if( !SynapseServer.Config.WebApi.AllowContentTypeXml )
             {
-                var appXmlType = config.Formatters.XmlFormatter.SupportedMediaTypes.FirstOrDefault( t => t.MediaType == "application/xml" );
+                var appXmlType = config.Formatters.XmlFormatter.SupportedMediaTypes.FirstOrDefault( t => MediaType.IsApplicationXml( t.MediaType ) );
                 config.Formatters.XmlFormatter.SupportedMediaTypes.Remove( appXmlType );
             }
 

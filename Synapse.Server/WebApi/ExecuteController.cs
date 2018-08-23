@@ -247,6 +247,8 @@ namespace Synapse.Services
 
             string rawBody = CurrentUrl.Request.Properties["body"].ToString();
 
+            bool isFoo = MediaType.IsApplicationXml( Request.Content.Headers.ContentType.MediaType );
+
             if( planEnvelope == null && !string.IsNullOrWhiteSpace( rawBody ) )
             {
                 try { planEnvelope = StartPlanEnvelope.FromXml( rawBody ); }
