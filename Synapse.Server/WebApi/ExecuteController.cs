@@ -245,19 +245,8 @@ namespace Synapse.Services
             if( !string.IsNullOrWhiteSpace( requestNumber ) ) { requestNumber = System.Web.HttpUtility.UrlDecode( requestNumber ); }
             if( !string.IsNullOrWhiteSpace( nodeRootUrl ) ) { requestNumber = System.Web.HttpUtility.UrlDecode( nodeRootUrl ); }
 
-            string rawBody = CurrentUrl.Request.Properties["body"].ToString();
 
-            bool isFoo = MediaType.IsApplicationXml( Request.Content.Headers.ContentType.MediaType );
-
-            if( planEnvelope == null && !string.IsNullOrWhiteSpace( rawBody ) )
-            {
-                try { planEnvelope = StartPlanEnvelope.FromXml( rawBody ); }
-                catch
-                {
-                    try { planEnvelope = StartPlanEnvelope.FromYaml( rawBody ); }
-                    catch { }
-                }
-            }
+            GetPlanEnvelopeFromRawBody( ref planEnvelope );
 
             bool failedToDeserialize = false;
             Dictionary<string, string> dynamicParameters = planEnvelope?.TryGetCaseInsensitiveDynamicParameters();
@@ -275,9 +264,9 @@ namespace Synapse.Services
             }
             else
             {
-                failedToDeserialize = !string.IsNullOrWhiteSpace( rawBody );
+                failedToDeserialize = !string.IsNullOrWhiteSpace( RawBody );
                 if( failedToDeserialize )
-                    parms.Append( rawBody );
+                    parms.Append( RawBody );
             }
 
             string context = GetContext( nameof( StartPlan ), nameof( CurrentUserName ), CurrentUserName,
@@ -740,6 +729,23 @@ namespace Synapse.Services
                 SynapseServer.Config.Controller.Assemblies.Find( ca => ca.Name.Equals( name, StringComparison.OrdinalIgnoreCase ) );
 
             return customAssmConfig?.Config;
+        }
+
+        bool IsMediaTypeApplicationXml { get { return MediaType.IsApplicationXml( Request.Content.Headers.ContentType.MediaType ); } }
+
+        string RawBody { get { return CurrentUrl.Request.Properties["body"].ToString(); } }
+
+        void GetPlanEnvelopeFromRawBody(ref StartPlanEnvelope planEnvelope)
+        {
+            if( planEnvelope == null && !string.IsNullOrWhiteSpace( RawBody ) )
+            {
+                try { planEnvelope = StartPlanEnvelope.FromXml( RawBody ); }
+                catch
+                {
+                    try { planEnvelope = StartPlanEnvelope.FromYaml( RawBody ); }
+                    catch { }
+                }
+            }
         }
         #endregion
     }
