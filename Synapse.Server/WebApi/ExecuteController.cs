@@ -132,7 +132,7 @@ namespace Synapse.Services
         {
             InitPlanServer();
 
-            string context = GetContext( nameof( GetPlanList ), nameof( planUniqueName ), planUniqueName, nameof(simplify), simplify );
+            string context = GetContext( nameof( GetPlanList ), nameof( planUniqueName ), planUniqueName, nameof( simplify ), simplify );
 
             try
             {
@@ -245,8 +245,21 @@ namespace Synapse.Services
             if( !string.IsNullOrWhiteSpace( requestNumber ) ) { requestNumber = System.Web.HttpUtility.UrlDecode( requestNumber ); }
             if( !string.IsNullOrWhiteSpace( nodeRootUrl ) ) { requestNumber = System.Web.HttpUtility.UrlDecode( nodeRootUrl ); }
 
+            string rawBody = CurrentUrl.Request.Properties["body"].ToString();
+
+            if( planEnvelope == null && !string.IsNullOrWhiteSpace( rawBody ) )
+            {
+                try { planEnvelope = StartPlanEnvelope.FromXml( rawBody ); }
+                catch
+                {
+                    try { planEnvelope = StartPlanEnvelope.FromYaml( rawBody ); }
+                    catch { }
+                }
+            }
+
             bool failedToDeserialize = false;
-            Dictionary<string, string> dynamicParameters = planEnvelope?.GetCaseInsensitiveDynamicParameters();
+            Dictionary<string, string> dynamicParameters = planEnvelope?.TryGetCaseInsensitiveDynamicParameters();
+
 
             StringBuilder parms = new StringBuilder();
             if( dynamicParameters != null )
@@ -260,7 +273,6 @@ namespace Synapse.Services
             }
             else
             {
-                string rawBody = CurrentUrl.Request.Properties["body"].ToString();
                 failedToDeserialize = !string.IsNullOrWhiteSpace( rawBody );
                 if( failedToDeserialize )
                     parms.Append( rawBody );
@@ -374,7 +386,19 @@ namespace Synapse.Services
         {
             switch( serializationType )
             {
-                case SerializationType.Xml: { return XmlHelpers.Serialize<string>( content, omitXmlDeclaration: false, omitXmlNamespace: true ); }
+                case SerializationType.Xml:
+                {
+                    try
+                    {
+                        return XmlHelpers.Serialize<string>( content, omitXmlDeclaration: false, omitXmlNamespace: true );
+                    }
+                    catch
+                    {
+                        string serializedData = YamlHelpers.Serialize( content, serializeAsJson: true, formatJson: true, emitDefaultValues: false );
+                        System.Xml.XmlDocument doc = Newtonsoft.Json.JsonConvert.DeserializeXmlNode( serializedData );
+                        return XmlHelpers.Serialize<string>( doc );
+                    }
+                }
                 default: { return content.ToString(); }
             }
         }

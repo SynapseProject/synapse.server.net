@@ -44,8 +44,11 @@ namespace Synapse.Services
                 auth.ConfigureBasicAuthentication( ac.LdapRoot, ac.Domain, SynapseServer.Config.WebApi.IsSecure );
             }
 
-            var appXmlType = config.Formatters.XmlFormatter.SupportedMediaTypes.FirstOrDefault( t => t.MediaType == "application/xml" );
-            config.Formatters.XmlFormatter.SupportedMediaTypes.Remove( appXmlType );
+            if( !SynapseServer.Config.WebApi.AllowContentTypeXml )
+            {
+                var appXmlType = config.Formatters.XmlFormatter.SupportedMediaTypes.FirstOrDefault( t => t.MediaType == "application/xml" );
+                config.Formatters.XmlFormatter.SupportedMediaTypes.Remove( appXmlType );
+            }
 
             config.EnableSwagger( x => x.SingleApiVersion( "v1", "Synapse Server" ) ).EnableSwaggerUi();
             //didn't work :(.
