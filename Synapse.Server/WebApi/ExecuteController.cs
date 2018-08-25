@@ -219,8 +219,10 @@ namespace Synapse.Services
             try
             {
                 SynapseServer.Logger.Debug( context );
+
                 Dictionary<string, string> dynamicParameters = uri.ParseQueryString();
                 if( dynamicParameters.ContainsKey( nameof( dryRun ) ) ) dynamicParameters.Remove( nameof( dryRun ) );
+
                 return _server.StartPlan( CurrentUserName, planUniqueName, dryRun, requestNumber, dynamicParameters, nodeRootUrl: nodeRootUrl,
                     referrer: CurrentUrl.Request.RequestUri, authHeader: this.AuthenticationHeader );
             }
@@ -250,8 +252,6 @@ namespace Synapse.Services
 
             bool failedToDeserialize = false;
             Dictionary<string, string> dynamicParameters = planEnvelope?.TryGetCaseInsensitiveDynamicParameters();
-
-
             StringBuilder parms = new StringBuilder();
             if( dynamicParameters != null )
             {
@@ -360,38 +360,9 @@ namespace Synapse.Services
                 this, planUniqueName, instanceId, path, serializationType, pollingIntervalSeconds, timeoutSeconds );
 
             if( setContentType )
-            {
-                Encoding encoding = serializationType == SerializationType.Xml ? Encoding.Unicode : Encoding.UTF8;
-                netHttp.HttpResponseMessage response = new netHttp.HttpResponseMessage( System.Net.HttpStatusCode.OK );
-                response.Content = new netHttp.StringContent( GetStringContent( result, serializationType ),
-                    encoding, SerializationContentType.GetContentType( serializationType ) );
-                return response;
-            }
+                return GetHttpResponse( result, serializationType );
             else
-            {
                 return result;
-            }
-        }
-
-        string GetStringContent(object content, SerializationType serializationType)
-        {
-            switch( serializationType )
-            {
-                case SerializationType.Xml:
-                {
-                    try
-                    {
-                        return XmlHelpers.Serialize<string>( content, omitXmlDeclaration: false, omitXmlNamespace: true );
-                    }
-                    catch
-                    {
-                        string serializedData = YamlHelpers.Serialize( content, serializeAsJson: true, formatJson: true, emitDefaultValues: false );
-                        System.Xml.XmlDocument doc = Newtonsoft.Json.JsonConvert.DeserializeXmlNode( serializedData );
-                        return XmlHelpers.Serialize<string>( doc );
-                    }
-                }
-                default: { return content.ToString(); }
-            }
         }
         #endregion
 
@@ -504,24 +475,15 @@ namespace Synapse.Services
             {
                 SynapseServer.Logger.Debug( context );
 
-                PlanElementParms pep = new PlanElementParms();
-                pep.Type = serializationType;
+                PlanElementParms pep = new PlanElementParms { Type = serializationType };
                 pep.ElementPaths.Add( elementPath );
 
                 object result = _server.GetPlanElements( planUniqueName, planInstanceId, pep );
 
                 if( setContentType )
-                {
-                    Encoding encoding = serializationType == SerializationType.Xml ? Encoding.Unicode : Encoding.UTF8;
-                    netHttp.HttpResponseMessage response = new netHttp.HttpResponseMessage( System.Net.HttpStatusCode.OK );
-                    response.Content = new netHttp.StringContent( GetStringContent( result, serializationType ),
-                        encoding, SerializationContentType.GetContentType( serializationType ) );
-                    return response;
-                }
+                    return GetHttpResponse( result, serializationType );
                 else
-                {
                     return result;
-                }
             }
             catch( Exception ex )
             {
@@ -729,6 +691,38 @@ namespace Synapse.Services
                 SynapseServer.Config.Controller.Assemblies.Find( ca => ca.Name.Equals( name, StringComparison.OrdinalIgnoreCase ) );
 
             return customAssmConfig?.Config;
+        }
+
+
+        netHttp.HttpResponseMessage GetHttpResponse(object content, SerializationType serializationType)
+        {
+            string s = GetStringContent( content, serializationType );
+            Encoding encoding = serializationType == SerializationType.Xml ? Encoding.Unicode : Encoding.UTF8;
+            return new netHttp.HttpResponseMessage( System.Net.HttpStatusCode.OK )
+            {
+                Content = new netHttp.StringContent( s, encoding, SerializationContentType.GetContentType( serializationType ) )
+            };
+        }
+
+        string GetStringContent(object content, SerializationType serializationType)
+        {
+            switch( serializationType )
+            {
+                case SerializationType.Xml:
+                {
+                    try
+                    {
+                        return XmlHelpers.Serialize<string>( content, omitXmlDeclaration: false, omitXmlNamespace: true );
+                    }
+                    catch
+                    {
+                        string serializedData = YamlHelpers.Serialize( content, serializeAsJson: true, formatJson: true, emitDefaultValues: false );
+                        System.Xml.XmlDocument doc = Newtonsoft.Json.JsonConvert.DeserializeXmlNode( serializedData );
+                        return XmlHelpers.Serialize<string>( doc );
+                    }
+                }
+                default: { return content.ToString(); }
+            }
         }
 
         bool IsMediaTypeApplicationXml { get { return MediaType.IsApplicationXml( Request.Content.Headers.ContentType.MediaType ); } }
