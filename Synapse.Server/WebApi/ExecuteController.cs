@@ -315,8 +315,16 @@ namespace Synapse.Services
         public object StartPlanAsync(string planUniqueName, bool dryRun = false, string requestNumber = null, string nodeRootUrl = null)
         {
             SerializationType serializationType = IsMediaTypeApplicationXml ? SerializationType.Xml : SerializationType.Json;
-            long pid = StartPlan( planUniqueName, dryRun, requestNumber, nodeRootUrl );
-            return GetHttpResponse( new StartPlanResponse { PlanInstanceId = pid }, serializationType: serializationType );
+            try
+            {
+                long pid = StartPlan( planUniqueName, dryRun, requestNumber, nodeRootUrl );
+                return GetHttpResponse( new StartPlanResponse { PlanInstanceId = pid }, serializationType: serializationType );
+            }
+            catch( Exception ex )
+            {
+                string exc = Utilities.UnwindException( "StartPlanAsync", ex, asSingleLine: true );
+                return GetHttpResponse( new ExceptionWrapper { Exception = exc }, serializationType: serializationType );
+            }
         }
 
         [Route( "{planUniqueName}/start/async/" )]
@@ -324,8 +332,16 @@ namespace Synapse.Services
         public object StartPlanAsync([FromBody]StartPlanEnvelope planEnvelope, string planUniqueName, bool dryRun = false, string requestNumber = null, string nodeRootUrl = null)
         {
             SerializationType serializationType = IsMediaTypeApplicationXml ? SerializationType.Xml : SerializationType.Json;
-            long pid = StartPlan( planEnvelope, planUniqueName, dryRun, requestNumber, nodeRootUrl );
-            return GetHttpResponse( new StartPlanResponse { PlanInstanceId = pid }, serializationType: serializationType );
+            try
+            {
+                long pid = StartPlan( planEnvelope, planUniqueName, dryRun, requestNumber, nodeRootUrl );
+                return GetHttpResponse( new StartPlanResponse { PlanInstanceId = pid }, serializationType: serializationType );
+            }
+            catch( Exception ex )
+            {
+                string exc = Utilities.UnwindException( "StartPlanAsync", ex, asSingleLine: true );
+                return GetHttpResponse( new ExceptionWrapper { Exception = exc }, serializationType: serializationType );
+            }
         }
         #endregion
         #endregion
