@@ -124,10 +124,11 @@
     <Compile Include="Classes\Authorization\AuthorizationConfig.cs" />
     <Compile Include="Classes\Authorization\AuthorizationProvider.cs" />
     <Compile Include="Classes\Controller\CustomAssemblyConfig.cs" />
-    <Compile Include="Classes\MediaType.cs" />
+    <Compile Include="Classes\Utlity\RootNode.cs" />
     <Compile Include="Classes\ServerAboutData.cs" />
     <Compile Include="Classes\Controller\SyncExecuteHelper.cs" />
     <Compile Include="Classes\Authorization\SynapseAuthorize.cs" />
+    <Compile Include="Classes\Utlity\StartPlanResponse.cs" />
     <Compile Include="Utilities\Log4netUtil.cs" />
     <Compile Include="Utilities\AutoUpdater.cs" />
     <Compile Include="WebApi\AdminController.cs" />

@@ -2,8 +2,11 @@
 using System.Net;
 using System.Web.Http;
 using System.Web.Http.Dispatcher;
+
 using Owin;
 using Swashbuckle.Application;
+
+using Synapse.Core;
 
 namespace Synapse.Services
 {
@@ -46,7 +49,7 @@ namespace Synapse.Services
 
             if( !SynapseServer.Config.WebApi.AllowContentTypeXml )
             {
-                var appXmlType = config.Formatters.XmlFormatter.SupportedMediaTypes.FirstOrDefault( t => MediaType.IsApplicationXml( t.MediaType ) );
+                var appXmlType = config.Formatters.XmlFormatter.SupportedMediaTypes.FirstOrDefault( t => SerializationContentType.IsApplicationXml( t.MediaType ) );
                 config.Formatters.XmlFormatter.SupportedMediaTypes.Remove( appXmlType );
             }
 

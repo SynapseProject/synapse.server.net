@@ -190,6 +190,8 @@ namespace Synapse.Services
             }
         }
 
+
+        #region StartPlanAsync
         [Route( "{planUniqueName}/start/" )]
         [HttpGet]
         public long StartPlan(string planUniqueName, bool dryRun = false, string requestNumber = null, string nodeRootUrl = null)
@@ -306,6 +308,27 @@ namespace Synapse.Services
                 runAsUser?.Stop( SynapseServer.Logger );
             }
         }
+
+        #region StartPlan, Async with ContentType
+        [Route( "{planUniqueName}/start/async/" )]
+        [HttpGet]
+        public object StartPlanAsync(string planUniqueName, bool dryRun = false, string requestNumber = null, string nodeRootUrl = null)
+        {
+            SerializationType serializationType = IsMediaTypeApplicationXml ? SerializationType.Xml : SerializationType.Json;
+            long pid = StartPlan( planUniqueName, dryRun, requestNumber, nodeRootUrl );
+            return GetHttpResponse( new StartPlanResponse { PlanInstanceId = pid }, serializationType: serializationType );
+        }
+
+        [Route( "{planUniqueName}/start/async/" )]
+        [HttpPost]
+        public object StartPlanAsync([FromBody]StartPlanEnvelope planEnvelope, string planUniqueName, bool dryRun = false, string requestNumber = null, string nodeRootUrl = null)
+        {
+            SerializationType serializationType = IsMediaTypeApplicationXml ? SerializationType.Xml : SerializationType.Json;
+            long pid = StartPlan( planEnvelope, planUniqueName, dryRun, requestNumber, nodeRootUrl );
+            return GetHttpResponse( new StartPlanResponse { PlanInstanceId = pid }, serializationType: serializationType );
+        }
+        #endregion
+        #endregion
 
         #region StartPlanSync
         [Route( "{planUniqueName}/start/sync/" )]
@@ -708,6 +731,10 @@ namespace Synapse.Services
         {
             switch( serializationType )
             {
+                case SerializationType.Json:
+                {
+                    return YamlHelpers.Serialize( content, serializeAsJson: true, formatJson: true, emitDefaultValues: false );
+                }
                 case SerializationType.Xml:
                 {
                     try
@@ -716,6 +743,9 @@ namespace Synapse.Services
                     }
                     catch
                     {
+                        if( content is IDictionary<object, object> kvps )
+                            content = new RootNode { KeyValuePairs = kvps };
+
                         string serializedData = YamlHelpers.Serialize( content, serializeAsJson: true, formatJson: true, emitDefaultValues: false );
                         System.Xml.XmlDocument doc = Newtonsoft.Json.JsonConvert.DeserializeXmlNode( serializedData );
                         return XmlHelpers.Serialize<string>( doc );
@@ -725,7 +755,7 @@ namespace Synapse.Services
             }
         }
 
-        bool IsMediaTypeApplicationXml { get { return MediaType.IsApplicationXml( Request.Content.Headers.ContentType.MediaType ); } }
+        bool IsMediaTypeApplicationXml { get { return SerializationContentType.IsApplicationXml( Request.Content.Headers.ContentType.MediaType ); } }
 
         string RawBody { get { return CurrentUrl.Request.Properties["body"].ToString(); } }
 
