@@ -52,6 +52,11 @@ namespace Synapse.Services
                 var appXmlType = config.Formatters.XmlFormatter.SupportedMediaTypes.FirstOrDefault( t => SerializationContentType.IsApplicationXml( t.MediaType ) );
                 config.Formatters.XmlFormatter.SupportedMediaTypes.Remove( appXmlType );
             }
+            else
+            {
+                // Must have this line to support XML body
+                config.Formatters.XmlFormatter.UseXmlSerializer = true;
+            }
 
             config.EnableSwagger( x => x.SingleApiVersion( "v1", "Synapse Server" ) ).EnableSwaggerUi();
             //didn't work :(.
