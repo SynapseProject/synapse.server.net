@@ -250,7 +250,7 @@ namespace Synapse.Services
             if( !string.IsNullOrWhiteSpace( nodeRootUrl ) ) { requestNumber = System.Web.HttpUtility.UrlDecode( nodeRootUrl ); }
 
 
-            GetPlanEnvelopeFromRawBody( ref planEnvelope );
+            TryGetPlanEnvelopeFromRawBodyIfNull( ref planEnvelope );
 
             bool failedToDeserialize = false;
             Dictionary<string, string> dynamicParameters = planEnvelope?.TryGetCaseInsensitiveDynamicParameters();
@@ -775,7 +775,7 @@ namespace Synapse.Services
 
         string RawBody { get { return CurrentUrl.Request.Properties["body"].ToString(); } }
 
-        void GetPlanEnvelopeFromRawBody(ref StartPlanEnvelope planEnvelope)
+        void TryGetPlanEnvelopeFromRawBodyIfNull(ref StartPlanEnvelope planEnvelope)
         {
             if( planEnvelope == null && !string.IsNullOrWhiteSpace( RawBody ) )
             {
