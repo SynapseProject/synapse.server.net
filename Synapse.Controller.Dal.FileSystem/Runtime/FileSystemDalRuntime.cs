@@ -91,7 +91,7 @@ public partial class FileSystemDal : IControllerDal
         List<long> ids = new List<long>();
         foreach( string file in files )
         {
-            Match m = Regex.Match( file, @"(?<instanceId>\d+)" );
+            Match m = Regex.Match( file, @"_(?<instanceId>\d+)" );
             string iid = m.Groups["instanceId"].Value;
             if( !string.IsNullOrWhiteSpace( iid ) )
                 ids.Add( long.Parse( iid ) );
