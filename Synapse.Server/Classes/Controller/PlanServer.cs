@@ -170,6 +170,7 @@ namespace Synapse.Services
                         {
                             string json = results[i] is Dictionary<object, object> ?
                                 YamlHelpers.Serialize( results[i], serializeAsJson: true ) : results[i].ToString();
+
                             try { results[i] = Newtonsoft.Json.Linq.JObject.Parse( json ); }
                             catch { results[i] = json; }
                             break;
@@ -184,11 +185,10 @@ namespace Synapse.Services
                             }
                             catch
                             {
-                                object content = results[i];
-                                if( content is IDictionary<object, object> kvps )
-                                    content = new RootNode { KeyValuePairs = kvps };
+                                //RootNode wrapper to guarantee XML serialization
+                                object content = new RootNode { Content = results[i] };
 
-                                string serializedData = YamlHelpers.Serialize( content, serializeAsJson: true, formatJson: true, emitDefaultValues: false );
+                                string serializedData = Newtonsoft.Json.JsonConvert.SerializeObject( content, Newtonsoft.Json.Formatting.Indented );
                                 System.Xml.XmlDocument xml = Newtonsoft.Json.JsonConvert.DeserializeXmlNode( serializedData );
                                 results[i] = xml;
                             }

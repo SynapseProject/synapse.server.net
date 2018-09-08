@@ -6,6 +6,7 @@ namespace Synapse.Services
     //  when converting a dict from json -> xml, there may be many "root nodes" (peer kvps in json), so this provides a wrapper el
     public class RootNode
     {
-        public IDictionary<object, object> KeyValuePairs { get; set; }
+        //public IDictionary<object, object> KeyValuePairs { get; set; }
+        public object Content { get; set; }
     }
 }

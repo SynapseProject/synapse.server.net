@@ -749,7 +749,10 @@ namespace Synapse.Services
             {
                 case SerializationType.Json:
                 {
-                    return YamlHelpers.Serialize( content, serializeAsJson: true, formatJson: true, emitDefaultValues: false );
+                    if( content is Newtonsoft.Json.Linq.JObject )
+                        return content.ToString();
+                    else
+                        return Newtonsoft.Json.JsonConvert.SerializeObject( content, Newtonsoft.Json.Formatting.Indented );
                 }
                 case SerializationType.Xml:
                 {
@@ -759,10 +762,10 @@ namespace Synapse.Services
                     }
                     catch
                     {
-                        if( content is IDictionary<object, object> kvps )
-                            content = new RootNode { KeyValuePairs = kvps };
+                        //RootNode wrapper to guarantee XML serialization
+                        content = new RootNode { Content = content };
 
-                        string serializedData = YamlHelpers.Serialize( content, serializeAsJson: true, formatJson: true, emitDefaultValues: false );
+                        string serializedData = Newtonsoft.Json.JsonConvert.SerializeObject( content, Newtonsoft.Json.Formatting.Indented );
                         System.Xml.XmlDocument doc = Newtonsoft.Json.JsonConvert.DeserializeXmlNode( serializedData );
                         return XmlHelpers.Serialize<string>( doc );
                     }
