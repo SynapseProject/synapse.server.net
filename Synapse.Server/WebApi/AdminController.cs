@@ -175,7 +175,7 @@ namespace Synapse.Services
             }
         }
 
-        [SynapseAuthorize( serverRole: ServerRole.Admin, topic: "Loga" )]
+        [SynapseAuthorize( serverRole: ServerRole.Admin, topic: "Logs" )]
         [HttpGet]
         [Route( "logs/{name}" )]
         public netHttp.HttpResponseMessage FetchSynapseLog(string name)
