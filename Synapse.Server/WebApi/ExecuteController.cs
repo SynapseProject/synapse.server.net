@@ -132,7 +132,7 @@ namespace Synapse.Services
         {
             InitPlanServer();
 
-            string context = GetContext( nameof( GetPlanList ), nameof( planUniqueName ), planUniqueName, nameof(simplify), simplify );
+            string context = GetContext( nameof( GetPlanList ), nameof( planUniqueName ), planUniqueName, nameof( simplify ), simplify );
 
             try
             {
@@ -190,6 +190,8 @@ namespace Synapse.Services
             }
         }
 
+
+        #region StartPlanAsync
         [Route( "{planUniqueName}/start/" )]
         [HttpGet]
         public long StartPlan(string planUniqueName, bool dryRun = false, string requestNumber = null, string nodeRootUrl = null)
@@ -219,8 +221,10 @@ namespace Synapse.Services
             try
             {
                 SynapseServer.Logger.Debug( context );
+
                 Dictionary<string, string> dynamicParameters = uri.ParseQueryString();
                 if( dynamicParameters.ContainsKey( nameof( dryRun ) ) ) dynamicParameters.Remove( nameof( dryRun ) );
+
                 return _server.StartPlan( CurrentUserName, planUniqueName, dryRun, requestNumber, dynamicParameters, nodeRootUrl: nodeRootUrl,
                     referrer: CurrentUrl.Request.RequestUri, authHeader: this.AuthenticationHeader );
             }
@@ -245,9 +249,11 @@ namespace Synapse.Services
             if( !string.IsNullOrWhiteSpace( requestNumber ) ) { requestNumber = System.Web.HttpUtility.UrlDecode( requestNumber ); }
             if( !string.IsNullOrWhiteSpace( nodeRootUrl ) ) { requestNumber = System.Web.HttpUtility.UrlDecode( nodeRootUrl ); }
 
-            bool failedToDeserialize = false;
-            Dictionary<string, string> dynamicParameters = planEnvelope?.GetCaseInsensitiveDynamicParameters();
 
+            TryGetPlanEnvelopeFromRawBodyIfNull( ref planEnvelope );
+
+            bool failedToDeserialize = false;
+            Dictionary<string, string> dynamicParameters = planEnvelope?.TryGetCaseInsensitiveDynamicParameters();
             StringBuilder parms = new StringBuilder();
             if( dynamicParameters != null )
             {
@@ -260,10 +266,9 @@ namespace Synapse.Services
             }
             else
             {
-                string rawBody = CurrentUrl.Request.Properties["body"].ToString();
-                failedToDeserialize = !string.IsNullOrWhiteSpace( rawBody );
+                failedToDeserialize = !string.IsNullOrWhiteSpace( RawBody );
                 if( failedToDeserialize )
-                    parms.Append( rawBody );
+                    parms.Append( RawBody );
             }
 
             string context = GetContext( nameof( StartPlan ), nameof( CurrentUserName ), CurrentUserName,
@@ -303,6 +308,43 @@ namespace Synapse.Services
                 runAsUser?.Stop( SynapseServer.Logger );
             }
         }
+
+        #region StartPlan, Async with ContentType
+        [Route( "{planUniqueName}/start/async/" )]
+        [HttpGet]
+        public object StartPlanAsync(string planUniqueName, bool dryRun = false, string requestNumber = null, string nodeRootUrl = null)
+        {
+            SerializationType serializationType = IsMediaTypeApplicationXml ? SerializationType.Xml : SerializationType.Json;
+            try
+            {
+                long pid = StartPlan( planUniqueName, dryRun, requestNumber, nodeRootUrl );
+                return GetHttpResponse( new StartPlanResponse { PlanInstanceId = pid }, serializationType: serializationType );
+            }
+            catch( Exception ex )
+            {
+                string exc = Utilities.UnwindException( "StartPlanAsync", ex, asSingleLine: true );
+                return GetHttpResponse( new ExceptionWrapper { Exception = exc }, serializationType: serializationType );
+            }
+        }
+
+        [Route( "{planUniqueName}/start/async/" )]
+        [HttpPost]
+        public object StartPlanAsync([FromBody]StartPlanEnvelope planEnvelope, string planUniqueName, bool dryRun = false, string requestNumber = null, string nodeRootUrl = null)
+        {
+            SerializationType serializationType = IsMediaTypeApplicationXml ? SerializationType.Xml : SerializationType.Json;
+            try
+            {
+                long pid = StartPlan( planEnvelope, planUniqueName, dryRun, requestNumber, nodeRootUrl );
+                return GetHttpResponse( new StartPlanResponse { PlanInstanceId = pid }, serializationType: serializationType );
+            }
+            catch( Exception ex )
+            {
+                string exc = Utilities.UnwindException( "StartPlanAsync", ex, asSingleLine: true );
+                return GetHttpResponse( new ExceptionWrapper { Exception = exc }, serializationType: serializationType );
+            }
+        }
+        #endregion
+        #endregion
 
         #region StartPlanSync
         [Route( "{planUniqueName}/start/sync/" )]
@@ -357,26 +399,9 @@ namespace Synapse.Services
                 this, planUniqueName, instanceId, path, serializationType, pollingIntervalSeconds, timeoutSeconds );
 
             if( setContentType )
-            {
-                Encoding encoding = serializationType == SerializationType.Xml ? Encoding.Unicode : Encoding.UTF8;
-                netHttp.HttpResponseMessage response = new netHttp.HttpResponseMessage( System.Net.HttpStatusCode.OK );
-                response.Content = new netHttp.StringContent( GetStringContent( result, serializationType ),
-                    encoding, SerializationContentType.GetContentType( serializationType ) );
-                return response;
-            }
+                return GetHttpResponse( result, serializationType );
             else
-            {
                 return result;
-            }
-        }
-
-        string GetStringContent(object content, SerializationType serializationType)
-        {
-            switch( serializationType )
-            {
-                case SerializationType.Xml: { return XmlHelpers.Serialize<string>( content, omitXmlDeclaration: false, omitXmlNamespace: true ); }
-                default: { return content.ToString(); }
-            }
         }
         #endregion
 
@@ -489,24 +514,15 @@ namespace Synapse.Services
             {
                 SynapseServer.Logger.Debug( context );
 
-                PlanElementParms pep = new PlanElementParms();
-                pep.Type = serializationType;
+                PlanElementParms pep = new PlanElementParms { Type = serializationType };
                 pep.ElementPaths.Add( elementPath );
 
                 object result = _server.GetPlanElements( planUniqueName, planInstanceId, pep );
 
                 if( setContentType )
-                {
-                    Encoding encoding = serializationType == SerializationType.Xml ? Encoding.Unicode : Encoding.UTF8;
-                    netHttp.HttpResponseMessage response = new netHttp.HttpResponseMessage( System.Net.HttpStatusCode.OK );
-                    response.Content = new netHttp.StringContent( GetStringContent( result, serializationType ),
-                        encoding, SerializationContentType.GetContentType( serializationType ) );
-                    return response;
-                }
+                    return GetHttpResponse( result, serializationType );
                 else
-                {
                     return result;
-                }
             }
             catch( Exception ex )
             {
@@ -714,6 +730,65 @@ namespace Synapse.Services
                 SynapseServer.Config.Controller.Assemblies.Find( ca => ca.Name.Equals( name, StringComparison.OrdinalIgnoreCase ) );
 
             return customAssmConfig?.Config;
+        }
+
+
+        netHttp.HttpResponseMessage GetHttpResponse(object content, SerializationType serializationType)
+        {
+            string s = GetStringContent( content, serializationType );
+            Encoding encoding = serializationType == SerializationType.Xml ? Encoding.Unicode : Encoding.UTF8;
+            return new netHttp.HttpResponseMessage( System.Net.HttpStatusCode.OK )
+            {
+                Content = new netHttp.StringContent( s, encoding, SerializationContentType.GetContentType( serializationType ) )
+            };
+        }
+
+        string GetStringContent(object content, SerializationType serializationType)
+        {
+            switch( serializationType )
+            {
+                case SerializationType.Json:
+                {
+                    if( content is Newtonsoft.Json.Linq.JObject )
+                        return content.ToString();
+                    else
+                        return Newtonsoft.Json.JsonConvert.SerializeObject( content, Newtonsoft.Json.Formatting.Indented );
+                }
+                case SerializationType.Xml:
+                {
+                    try
+                    {
+                        return XmlHelpers.Serialize<string>( content, omitXmlDeclaration: false, omitXmlNamespace: true );
+                    }
+                    catch
+                    {
+                        //RootNode wrapper to guarantee XML serialization
+                        content = new RootNode { Content = content };
+
+                        string serializedData = Newtonsoft.Json.JsonConvert.SerializeObject( content, Newtonsoft.Json.Formatting.Indented );
+                        System.Xml.XmlDocument doc = Newtonsoft.Json.JsonConvert.DeserializeXmlNode( serializedData );
+                        return XmlHelpers.Serialize<string>( doc );
+                    }
+                }
+                default: { return content.ToString(); }
+            }
+        }
+
+        bool IsMediaTypeApplicationXml { get { return SerializationContentType.IsApplicationXml( Request.Content.Headers.ContentType.MediaType ); } }
+
+        string RawBody { get { return CurrentUrl.Request.Properties["body"].ToString(); } }
+
+        void TryGetPlanEnvelopeFromRawBodyIfNull(ref StartPlanEnvelope planEnvelope)
+        {
+            if( planEnvelope == null && !string.IsNullOrWhiteSpace( RawBody ) )
+            {
+                try { planEnvelope = StartPlanEnvelope.FromXml( RawBody ); }
+                catch
+                {
+                    try { planEnvelope = StartPlanEnvelope.FromYaml( RawBody ); }
+                    catch { }
+                }
+            }
         }
         #endregion
     }

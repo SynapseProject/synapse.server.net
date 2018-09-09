@@ -12,7 +12,7 @@ namespace Synapse.Services
 {
     public class PlanServer
     {
-		static IControllerDal _dal = null;
+        static IControllerDal _dal = null;
 
         static bool _once = false;
 
@@ -21,9 +21,9 @@ namespace Synapse.Services
             if( SynapseServer.Config.Service.IsRoleController && _dal == null )
                 try
                 {
-					SynapseServer.Logger.Debug( $"Loading Dal: {SynapseServer.Config.Controller.Dal.Type}." );
+                    SynapseServer.Logger.Debug( $"Loading Dal: {SynapseServer.Config.Controller.Dal.Type}." );
 
-					_dal = AssemblyLoader.Load<IControllerDal>(
+                    _dal = AssemblyLoader.Load<IControllerDal>(
                         SynapseServer.Config.Controller.Dal.Type, SynapseServer.Config.Controller.Dal.DefaultType );
                     Dictionary<string, string> props = _dal.Configure( SynapseServer.Config.Controller.Dal );
 
@@ -84,7 +84,7 @@ namespace Synapse.Services
             _dal.UpdatePlanStatus( initResultPlan );
 
             //sign the plan
-            if ( SynapseServer.Config.Controller.SignPlan )
+            if( SynapseServer.Config.Controller.SignPlan )
             {
                 SynapseServer.Logger.Debug( $"Signing Plan [{plan.Name}/{plan.InstanceId}]." );
 
@@ -170,6 +170,7 @@ namespace Synapse.Services
                         {
                             string json = results[i] is Dictionary<object, object> ?
                                 YamlHelpers.Serialize( results[i], serializeAsJson: true ) : results[i].ToString();
+
                             try { results[i] = Newtonsoft.Json.Linq.JObject.Parse( json ); }
                             catch { results[i] = json; }
                             break;
@@ -182,7 +183,15 @@ namespace Synapse.Services
                                 xml.LoadXml( results[i].ToString() );
                                 results[i] = xml;
                             }
-                            catch { }
+                            catch
+                            {
+                                //RootNode wrapper to guarantee XML serialization
+                                object content = new RootNode { Content = results[i] };
+
+                                string serializedData = Newtonsoft.Json.JsonConvert.SerializeObject( content, Newtonsoft.Json.Formatting.Indented );
+                                System.Xml.XmlDocument xml = Newtonsoft.Json.JsonConvert.DeserializeXmlNode( serializedData );
+                                results[i] = xml;
+                            }
                             break;
                         }
                         case SerializationType.Html:
@@ -211,14 +220,14 @@ namespace Synapse.Services
 
             NodeServiceHttpApiClient nodeClient = new NodeServiceHttpApiClient( nodeRootUrl );
             nodeClient.Headers.Referrer = referrer;
-            if ( authHeader != null)
+            if( authHeader != null )
             {
-                if ( SynapseServer.Config?.Node?.ControllerAuthenticationScheme != null )
+                if( SynapseServer.Config?.Node?.ControllerAuthenticationScheme != null )
                 {
-                    if ( SynapseServer.Config.Node.ControllerAuthenticationScheme == System.Net.AuthenticationSchemes.Basic )
+                    if( SynapseServer.Config.Node.ControllerAuthenticationScheme == System.Net.AuthenticationSchemes.Basic )
                         nodeClient.Options.Authentication = new BasicAuthentication( authHeader );
                 }
-                else if ( authHeader.Scheme.ToLower() == "basic" )
+                else if( authHeader.Scheme.ToLower() == "basic" )
                     nodeClient.Options.Authentication = new BasicAuthentication( authHeader );
             }
             return nodeClient;

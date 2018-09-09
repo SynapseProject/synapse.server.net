@@ -98,6 +98,7 @@ namespace Synapse.Services
         public int Port { get; set; }
         public bool IsSecure { get; set; } = false;
         public bool UseImpersonation { get; set; } = false;
+        public bool AllowContentTypeXml { get; set; } = false;
 
         public AuthenticationConfig Authentication { get; set; } = new AuthenticationConfig();
 

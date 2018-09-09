@@ -14,10 +14,14 @@ namespace Synapse.Services
             int pollingIntervalSeconds = 1, int timeoutSeconds = 120)
         {
             StatusType status = Task.Run( () => GetStatus( ec, planName, id, pollingIntervalSeconds, timeoutSeconds ) ).Result;
-            if( status == StatusType.Success )
+            try
+            {
                 return ec.GetPlanElements( planName, id, path, serializationType, setContentType: false );
-            else
+            }
+            catch
+            {
                 return status;
+            }
         }
         public static StatusType GetStatus(IExecuteController ec, string planName, long id, int pollingIntervalSeconds = 1, int timeoutSeconds = 120)
         {
