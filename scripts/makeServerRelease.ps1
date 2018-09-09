@@ -38,12 +38,14 @@ function CleanFolder
     }
 }
 
-function CopyFolder( $source, $destination )
+function CopyFolder( $source, $destination, $cleanCore = $true )
 {
-    New-Item $destination -Type directory | Out-Null
+    if( !(Test-Path $destination) ) {
+        New-Item $destination -Type directory | Out-Null
+    }
     $r = $dir.ToLower().Replace( '\scripts', $source )
     Copy-Item $r $destination -recurse
-    CleanFolder $destination $true
+    CleanFolder $destination $cleanCore
 }
 
 function Unzip( $source, $destination )
@@ -208,11 +210,17 @@ function MakeServerRelease( $userName, $passwordOrToken )
     #dal folder
     Write-Host "Creating DAL folders, copying DAL release files."
     CopyFolder '\Synapse.Controller.Dal.FileSystem\bin\Release\*' ($release + '\Dal')
+    CopyFolder '\Synapse.Controller.Dal.Componentized\bin\Release\*' ($release + '\Dal')
     New-Item ($release + '\Dal\History') -Type directory | Out-Null
     New-Item ($release + '\Dal\Plans') -Type directory | Out-Null
     New-Item ($release + '\Dal\Security') -Type directory | Out-Null
     Write-Host "Unzipping Suplex."
     Unzip ($dir + '\_Suplex.zip') ($fr + '\Dal\Security')
+
+
+    #AutoUpdater folder
+    Write-Host "Creating AutoUpdater folder, copying AutoUpdater release files."
+    CopyFolder '\Synapse.Server.AutoUpdater\bin\Release\*' ($release + '\AutoUpdater') $false
 
 
     #samples folder
