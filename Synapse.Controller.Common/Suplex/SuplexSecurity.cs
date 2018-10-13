@@ -24,6 +24,8 @@ namespace Synapse.Services.Controller.Dal
         DataAccessor _da;
 
 
+        public SuplexDal() { }
+
         public SuplexDal(string filestorePath)
         {
             string folder = io.Path.GetDirectoryName( filestorePath );
@@ -34,6 +36,13 @@ namespace Synapse.Services.Controller.Dal
 
             _splxStore = _splxApi.LoadFile( filestorePath );
             IsFileStore = true;
+        }
+
+        public void LoadStoreData(string storeData)
+        {
+            using( io.StringReader sr = new io.StringReader( storeData ) )
+                _splxStore = _splxApi.LoadFromReader( sr );
+            IsFileStore = false;
         }
 
         private void FilestoreWatcher_Changed(object sender, io.FileSystemEventArgs e)
