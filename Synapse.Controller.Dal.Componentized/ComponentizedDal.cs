@@ -54,29 +54,32 @@ public partial class ComponentizedDal : IControllerDal
             cdc = (ComponentizedDalConfig)GetDefaultConfig();
         }
 
+        Dictionary<string, string> secProps = new Dictionary<string, string>();
         ComponentizedDalItem cdi = cdc.DalComponents.SingleOrDefault( r => r.Key.Equals( cdc.SecurityProviderKey, StringComparison.OrdinalIgnoreCase ) );
         if( cdi != null )
         {
             _planSecurityProvider = AssemblyLoader.Load<IPlanSecurityProvider>( cdi.Type, string.Empty );
-            _planSecurityProvider.Configure( new ConfigWrapper { Config = cdi.Config, Type = cdi.Type } );
+            secProps = _planSecurityProvider.Configure( new ConfigWrapper { Config = cdi.Config, Type = cdi.Type } );
         }
         else
             throw new TypeLoadException( $"Could not load {cdi.Key}/{cdi.Type} for {nameof( IPlanSecurityProvider )}" );
 
+        Dictionary<string, string> execProps = new Dictionary<string, string>();
         cdi = cdc.DalComponents.SingleOrDefault( r => r.Key.Equals( cdc.ExecuteReaderKey, StringComparison.OrdinalIgnoreCase ) );
         if( cdi != null )
         {
             _planExecuteReader = AssemblyLoader.Load<IPlanExecuteReader>( cdi.Type, string.Empty );
-            _planExecuteReader.Configure( new ConfigWrapper { Config = cdi.Config, Type = cdi.Type } );
+            execProps = _planExecuteReader.Configure( new ConfigWrapper { Config = cdi.Config, Type = cdi.Type } );
         }
         else
             throw new TypeLoadException( $"Could not load {cdi.Key}/{cdi.Type} for {nameof( IPlanExecuteReader )}" );
 
+        Dictionary<string, string> histProps = new Dictionary<string, string>();
         cdi = cdc.DalComponents.SingleOrDefault( r => r.Key.Equals( cdc.HistoryWriterKey, StringComparison.OrdinalIgnoreCase ) );
         if( cdi != null )
         {
             _planHistoryWriter = AssemblyLoader.Load<IPlanHistoryWriter>( cdi.Type, string.Empty );
-            _planHistoryWriter.Configure( new ConfigWrapper { Config = cdi.Config, Type = cdi.Type } );
+            histProps = _planHistoryWriter.Configure( new ConfigWrapper { Config = cdi.Config, Type = cdi.Type } );
         }
         else
             throw new TypeLoadException( $"Could not load {cdi.Key}/{cdi.Type} for {nameof( IPlanHistoryWriter )}" );
@@ -85,10 +88,13 @@ public partial class ComponentizedDal : IControllerDal
         string name = nameof( ComponentizedDal );
         Dictionary<string, string> props = new Dictionary<string, string>
         {
-            { $"{name} SecurityProviderKey", cdc.SecurityProviderKey },
             { $"{name} ExecuteReaderKey", cdc.ExecuteReaderKey },
-            { $"{name} HistoryWriterKey", cdc.HistoryWriterKey }
+            { $"{name} HistoryWriterKey", cdc.HistoryWriterKey },
+            { $"{name} SecurityProviderKey", cdc.SecurityProviderKey }
         };
+        props.AddRange( execProps );
+        props.AddRange( histProps );
+        props.AddRange( secProps );
         return props;
     }
 
@@ -145,5 +151,17 @@ public partial class ComponentizedDal : IControllerDal
     public void UpdatePlanActionStatus(ActionUpdateItem item)
     {
         _planHistoryWriter.UpdatePlanActionStatus( item );
+    }
+}
+
+internal static class Util
+{
+    internal static void AddRange<TKey, TValue>(this IDictionary<TKey, TValue> dict, IDictionary<TKey, TValue> values)
+    {
+        if( values?.Count == 0 )
+            return;
+
+        foreach( TKey key in values.Keys )
+            dict[key] = values[key];
     }
 }

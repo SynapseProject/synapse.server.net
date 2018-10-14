@@ -35,14 +35,14 @@ namespace Synapse.Services.Controller.Dal
             filestoreWatcher.EnableRaisingEvents = true;
 
             _splxStore = _splxApi.LoadFile( filestorePath );
-            IsFileStore = true;
+            IsMemoryStore = true;
         }
 
         public void LoadStoreData(string storeData)
         {
             using( io.StringReader sr = new io.StringReader( storeData ) )
                 _splxStore = _splxApi.LoadFromReader( sr );
-            IsFileStore = false;
+            IsMemoryStore = true;
         }
 
         private void FilestoreWatcher_Changed(object sender, io.FileSystemEventArgs e)
@@ -58,7 +58,10 @@ namespace Synapse.Services.Controller.Dal
             }
         }
 
-        public bool IsFileStore { get; internal set; }
+        /// <summary>
+        /// The Suplex store is loaded in memory (vs database)
+        /// </summary>
+        public bool IsMemoryStore { get; internal set; }
 
 
         public string ContainerRootUniqueName { get; set; } = "SynapseRoot";
@@ -200,7 +203,7 @@ namespace Synapse.Services.Controller.Dal
                 };
             }
 
-            DataSet securityCache = IsFileStore ?
+            DataSet securityCache = IsMemoryStore ?
                 sm.Security.Load( _splxStore, slp ) :
                 sm.Security.Load( _splxApi, slp );
 
@@ -234,7 +237,7 @@ namespace Synapse.Services.Controller.Dal
             SplxSecureManagerBase context = null;
 
             #region IsFileStore = true
-            if( IsFileStore )
+            if( IsMemoryStore )
             {
                 context = new SplxRecordManager() { UniqueName = uniqueName };
                 if( aceType == AceType.FileSystem )
