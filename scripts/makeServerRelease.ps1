@@ -209,6 +209,8 @@ function MakeServerRelease( $userName, $passwordOrToken )
 
     #dal folder
     Write-Host "Creating DAL folders, copying DAL release files."
+    $dal = ($fr + '\Dal')
+    DownloadRelease 'Synapse.Controller.Dal.AwsS3' $dal $headers
     CopyFolder '\Synapse.Controller.Dal.FileSystem\bin\Release\*' ($release + '\Dal')
     CopyFolder '\Synapse.Controller.Dal.Componentized\bin\Release\*' ($release + '\Dal')
     New-Item ($release + '\Dal\History') -Type directory | Out-Null
