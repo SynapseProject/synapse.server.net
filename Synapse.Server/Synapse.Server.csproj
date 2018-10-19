@@ -71,7 +71,7 @@
       <HintPath>..\packages\Swashbuckle.Core.5.6.0\lib\net40\Swashbuckle.Core.dll</HintPath>
     </Reference>
     <Reference Include="Synapse.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=a6de1cc56b73f982, processorArchitecture=MSIL">
-      <HintPath>..\packages\Synapse.Common.1.0.18048\lib\net45\Synapse.Common.dll</HintPath>
+      <HintPath>..\packages\Synapse.Common.1.0.18291\lib\net45\Synapse.Common.dll</HintPath>
     </Reference>
     <Reference Include="Synapse.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=a6de1cc56b73f982, processorArchitecture=MSIL">
       <HintPath>..\packages\Synapse.Core.Signed.1.0.18291\lib\net45\Synapse.Core.dll</HintPath>
