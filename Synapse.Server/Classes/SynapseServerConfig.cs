@@ -93,12 +93,14 @@ namespace Synapse.Services
 
     public class WebApiConfig
     {
-        static string localhost = "localhost";
+        static readonly string localhost = "localhost";
         public string Host { get; set; } = localhost;
         public int Port { get; set; }
         public bool IsSecure { get; set; } = false;
         public bool UseImpersonation { get; set; } = false;
         public bool AllowContentTypeXml { get; set; } = false;
+        public CorsConfig Cors { get; set; }
+        public bool HasCors { get { return Cors != null && Cors.IsEnabled; } }
 
         public AuthenticationConfig Authentication { get; set; } = new AuthenticationConfig();
 
@@ -134,5 +136,13 @@ namespace Synapse.Services
         public string KeyContainerName { get; set; }
 
         public CspProviderFlags CspProviderFlags { get; set; } = CspProviderFlags.NoFlags;
+    }
+
+    public class CorsConfig
+    {
+        public bool IsEnabled { get; set; }
+        public string Origins { get; set; } = "*";
+        public string Headers { get; set; } = "*";
+        public string Methods { get; set; } = "*";
     }
 }

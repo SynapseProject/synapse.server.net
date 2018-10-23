@@ -5,8 +5,10 @@ using System.Web.Http.Dispatcher;
 
 using Owin;
 using Swashbuckle.Application;
+using Newtonsoft.Json;
 
 using Synapse.Core;
+using System.Web.Http.Cors;
 
 namespace Synapse.Services
 {
@@ -21,7 +23,17 @@ namespace Synapse.Services
             HttpConfiguration config = new HttpConfiguration();
 
             if( SynapseServer.Config.Service.IsRoleController && SynapseServer.Config.Controller.HasAssemblies )
+            {
                 config.Services.Replace( typeof( IAssembliesResolver ), new CustomAssembliesResolver() );
+
+                foreach( CustomAssemblyConfig assemblyConfig in SynapseServer.Config.Controller.Assemblies )
+                    if( assemblyConfig.HasJsonConverters )
+                        foreach( string converter in assemblyConfig.JsonConverters )
+                        {
+                            JsonConverter jsonConverter = Core.Utilities.AssemblyLoader.Load<JsonConverter>( converter, null );
+                            config.Formatters.JsonFormatter.SerializerSettings.Converters.Add( jsonConverter );
+                        }
+            }
 
             // Web API configuration and services
             config.IncludeErrorDetailPolicy = IncludeErrorDetailPolicy.Always;
@@ -36,6 +48,9 @@ namespace Synapse.Services
             );
 
             config.MessageHandlers.Add( new RawContentHandler() );
+
+            if( SynapseServer.Config.WebApi.Cors is CorsConfig cors )
+                config.EnableCors( new EnableCorsAttribute( cors.Origins, cors.Headers, cors.Methods ) );
 
             //ss: if( (SynapseServer.Config.WebApi.Authentication.Scheme | AuthenticationSchemes.Basic) != 0 )
             if( (SynapseServer.Config.WebApi.Authentication.Scheme & AuthenticationSchemes.Basic) == AuthenticationSchemes.Basic )
