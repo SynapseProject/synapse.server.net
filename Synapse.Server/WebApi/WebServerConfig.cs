@@ -49,7 +49,7 @@ namespace Synapse.Services
 
             config.MessageHandlers.Add( new RawContentHandler() );
 
-            if( SynapseServer.Config.WebApi.Cors is CorsConfig cors )
+            if( SynapseServer.Config.WebApi.Cors is CorsConfig cors && cors.IsEnabled )
                 config.EnableCors( new EnableCorsAttribute( cors.Origins, cors.Headers, cors.Methods ) );
 
             //ss: if( (SynapseServer.Config.WebApi.Authentication.Scheme | AuthenticationSchemes.Basic) != 0 )
