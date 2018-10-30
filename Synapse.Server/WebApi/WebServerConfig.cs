@@ -50,7 +50,7 @@ namespace Synapse.Services
             config.MessageHandlers.Add( new RawContentHandler() );
 
             if( SynapseServer.Config.WebApi.Cors is CorsConfig cors && cors.IsEnabled )
-                config.EnableCors( new EnableCorsAttribute( cors.Origins, cors.Headers, cors.Methods ) );
+                config.EnableCors( new EnableCorsAttribute( cors.Origins, cors.Headers, cors.Methods, cors.ExposedHeaders ) { SupportsCredentials = cors.SupportsCredentials } );
 
             //ss: if( (SynapseServer.Config.WebApi.Authentication.Scheme | AuthenticationSchemes.Basic) != 0 )
             if( (SynapseServer.Config.WebApi.Authentication.Scheme & AuthenticationSchemes.Basic) == AuthenticationSchemes.Basic )
