@@ -1,10 +1,5 @@
 ﻿using System;
 using System.Data;
-
-using Suplex.Forms.SecureManager;
-using Suplex.Security;
-using System.Text;
-using System.Collections.Generic;
 using System.IO;
 
 namespace Synapse.Services.Controller.Dal
@@ -121,7 +116,7 @@ namespace Synapse.Services.Controller.Dal
 
 			if( typeof( T ).IsEnum )
 			{
-				value = r[field] == Convert.DBNull ? altValue : Suplex.General.MiscUtils.ParseEnum<T>( r[field].ToString() );
+				value = r[field] == Convert.DBNull ? altValue : ParseEnum<T>( r[field].ToString() );
 			}
 			else
 			{
@@ -131,8 +126,17 @@ namespace Synapse.Services.Controller.Dal
 			return value;
 		}
 
+        public static T ParseEnum<T>(string data)
+        {
+            return (T)Enum.Parse( typeof( T ), data );
+        }
+        public static T ParseEnum<T>(string data, bool ignoreCase)
+        {
+            return (T)Enum.Parse( typeof( T ), data, ignoreCase );
+        }
 
-		public static DateTimeOffset ToDateTimeOffset(this DateTime datetime, TimeSpan offset)
+
+        public static DateTimeOffset ToDateTimeOffset(this DateTime datetime, TimeSpan offset)
 		{
 			return new DateTimeOffset( datetime, offset );
 		}

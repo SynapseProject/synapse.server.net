@@ -9,19 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.Server.HttpClient",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.Controller.Common", "Synapse.Controller.Common\Synapse.Controller.Common.csproj", "{C2D081EF-8454-4D63-8D36-EA67BB9183EA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.Controller.Dal.MongoDB", "Synapse.Controller.Dal.MongoDB\Synapse.Controller.Dal.MongoDB.csproj", "{EC38BC80-6F04-4508-A83D-19667135BD84}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.Controller.Dal.FileSystem", "Synapse.Controller.Dal.FileSystem\Synapse.Controller.Dal.FileSystem.csproj", "{241A483D-5450-43DC-8E0D-ECAE92DA1138}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.Controller.Cli", "Synapse.Controller.Cli\Synapse.Controller.Cli.csproj", "{8FB2EBE2-EDBF-4CB9-8F85-3771F59E8A51}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.Node.cli", "Synapse.Node.cli\Synapse.Node.cli.csproj", "{871FF00E-C7CA-48D7-92B2-B769333703A4}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.Server.Extensibility", "Synapse.Server.Extensibility\Synapse.Server.Extensibility.csproj", "{0D7ED137-55C0-4D6F-9E9B-F526F86DD2F8}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.Authentication", "Synapse.Authentication\Synapse.Authentication.csproj", "{FF7FFFEB-C3F3-46DF-A3DB-BA3D70B53EDE}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.Server.AutoUpdater", "Synapse.Server.AutoUpdater\Synapse.Server.AutoUpdater.csproj", "{82A36E34-D310-44D2-942E-15816B64F1A8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.Authorization", "Synapse.Authorization\Synapse.Authorization.csproj", "{8A4BA837-FBE4-435A-A355-C4884419B412}"
 EndProject
@@ -30,8 +18,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{F6A9
 		scripts\AssemblyInfo.xml = scripts\AssemblyInfo.xml
 		scripts\makeServerRelease.ps1 = scripts\makeServerRelease.ps1
 	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.Controller.Dal.Componentized", "Synapse.Controller.Dal.Componentized\Synapse.Controller.Dal.Componentized.csproj", "{D762F637-C708-434D-A0B8-20C089D3A706}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,42 +37,14 @@ Global
 		{C2D081EF-8454-4D63-8D36-EA67BB9183EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C2D081EF-8454-4D63-8D36-EA67BB9183EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C2D081EF-8454-4D63-8D36-EA67BB9183EA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EC38BC80-6F04-4508-A83D-19667135BD84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EC38BC80-6F04-4508-A83D-19667135BD84}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EC38BC80-6F04-4508-A83D-19667135BD84}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EC38BC80-6F04-4508-A83D-19667135BD84}.Release|Any CPU.Build.0 = Release|Any CPU
-		{241A483D-5450-43DC-8E0D-ECAE92DA1138}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{241A483D-5450-43DC-8E0D-ECAE92DA1138}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{241A483D-5450-43DC-8E0D-ECAE92DA1138}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{241A483D-5450-43DC-8E0D-ECAE92DA1138}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8FB2EBE2-EDBF-4CB9-8F85-3771F59E8A51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8FB2EBE2-EDBF-4CB9-8F85-3771F59E8A51}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8FB2EBE2-EDBF-4CB9-8F85-3771F59E8A51}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8FB2EBE2-EDBF-4CB9-8F85-3771F59E8A51}.Release|Any CPU.Build.0 = Release|Any CPU
-		{871FF00E-C7CA-48D7-92B2-B769333703A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{871FF00E-C7CA-48D7-92B2-B769333703A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{871FF00E-C7CA-48D7-92B2-B769333703A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{871FF00E-C7CA-48D7-92B2-B769333703A4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0D7ED137-55C0-4D6F-9E9B-F526F86DD2F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0D7ED137-55C0-4D6F-9E9B-F526F86DD2F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0D7ED137-55C0-4D6F-9E9B-F526F86DD2F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0D7ED137-55C0-4D6F-9E9B-F526F86DD2F8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FF7FFFEB-C3F3-46DF-A3DB-BA3D70B53EDE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FF7FFFEB-C3F3-46DF-A3DB-BA3D70B53EDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FF7FFFEB-C3F3-46DF-A3DB-BA3D70B53EDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FF7FFFEB-C3F3-46DF-A3DB-BA3D70B53EDE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{82A36E34-D310-44D2-942E-15816B64F1A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{82A36E34-D310-44D2-942E-15816B64F1A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{82A36E34-D310-44D2-942E-15816B64F1A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{82A36E34-D310-44D2-942E-15816B64F1A8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8A4BA837-FBE4-435A-A355-C4884419B412}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8A4BA837-FBE4-435A-A355-C4884419B412}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8A4BA837-FBE4-435A-A355-C4884419B412}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8A4BA837-FBE4-435A-A355-C4884419B412}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D762F637-C708-434D-A0B8-20C089D3A706}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D762F637-C708-434D-A0B8-20C089D3A706}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D762F637-C708-434D-A0B8-20C089D3A706}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D762F637-C708-434D-A0B8-20C089D3A706}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

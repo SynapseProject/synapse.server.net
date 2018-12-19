@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Synapse.Services.Controller.Common</RootNamespace>
     <AssemblyName>Synapse.Controller.Common</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -30,19 +31,33 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Interop.MSScriptControl, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Suplex.Core.4.0.0.1\lib\net40\Interop.MSScriptControl.dll</HintPath>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="Suplex.Core, Version=4.0.0.1, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Suplex.Core.4.0.0.1\lib\net40\Suplex.Core.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Suplex.Security.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Suplex.Security.Core.1.0.18350\lib\net461\Suplex.Security.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Suplex.Security.FileSystemDal, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Suplex.Security.FileSystemDal.1.0.18296\lib\net45\Suplex.Security.FileSystemDal.dll</HintPath>
+    </Reference>
+    <Reference Include="Suplex.Security.Utilities.Json, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Suplex.Security.Utilities.Json.1.0.18296\lib\net45\Suplex.Security.Utilities.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Suplex.Security.Utilities.Yaml, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Suplex.Security.Utilities.Yaml.1.0.18296\lib\net45\Suplex.Security.Utilities.Yaml.dll</HintPath>
+    </Reference>
+    <Reference Include="Suplex.Security.WebApi.HttpClient, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Suplex.Security.WebApi.HttpClient.1.0.18303\lib\net45\Suplex.Security.WebApi.HttpClient.dll</HintPath>
     </Reference>
     <Reference Include="Synapse.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=a6de1cc56b73f982, processorArchitecture=MSIL">
-      <HintPath>..\packages\Synapse.Core.Signed.1.0.18291\lib\net45\Synapse.Core.dll</HintPath>
+      <HintPath>..\packages\Synapse.Core.Signed.1.0.18350\lib\net461\Synapse.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.6.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.6\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Threading.Tasks" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -62,7 +77,6 @@
     <Compile Include="Classes\Interfaces\IPlanSecurityProvider.cs" />
     <Compile Include="Classes\Interfaces\ISynapseDalConfig.cs" />
     <Compile Include="Classes\PermissionSet.cs" />
-    <Compile Include="Classes\SuplexSecurity.cs" />
     <Compile Include="Suplex\SuplexSecurity.cs" />
     <Compile Include="Utilities\PlanItemSingletonProcessor.cs" />
     <Compile Include="Utilities\ActionItemSingletonProcessor.cs" />
@@ -74,6 +88,7 @@
     <Compile Include="Utilities\Utilities.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
