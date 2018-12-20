@@ -40,6 +40,9 @@
     <Reference Include="Suplex.Security.FileSystemDal, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Suplex.Security.FileSystemDal.1.0.18296\lib\net45\Suplex.Security.FileSystemDal.dll</HintPath>
     </Reference>
+    <Reference Include="Suplex.Security.Utilities.ActiveDirectory, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Suplex.Security.Utilities.ActiveDirectory.1.0.18353\lib\net45\Suplex.Security.Utilities.ActiveDirectory.dll</HintPath>
+    </Reference>
     <Reference Include="Suplex.Security.Utilities.Json, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Suplex.Security.Utilities.Json.1.0.18296\lib\net45\Suplex.Security.Utilities.Json.dll</HintPath>
     </Reference>
@@ -76,8 +79,8 @@
     <Compile Include="Classes\Interfaces\IPlanHistoryWriter.cs" />
     <Compile Include="Classes\Interfaces\IPlanSecurityProvider.cs" />
     <Compile Include="Classes\Interfaces\ISynapseDalConfig.cs" />
-    <Compile Include="Classes\PermissionSet.cs" />
-    <Compile Include="Suplex\SuplexSecurity.cs" />
+    <Compile Include="Suplex\SuplexDal.cs" />
+    <Compile Include="Suplex\SuplexDalConnectionType.cs" />
     <Compile Include="Utilities\PlanItemSingletonProcessor.cs" />
     <Compile Include="Utilities\ActionItemSingletonProcessor.cs" />
     <Compile Include="Classes\PlanUpdateItem.cs" />
