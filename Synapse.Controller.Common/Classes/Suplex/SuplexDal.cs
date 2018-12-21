@@ -70,8 +70,6 @@ namespace Synapse.Services.Controller.Dal
         /// The Suplex store is loaded in memory (vs remote service)
         /// </summary>
         public bool IsMemoryStore { get; internal set; }
-        public string ContainerRootUniqueName { get; set; } = "SynapseRoot";
-        public string ContainerUniqueNamePrefix { get; set; }
         public string LdapRoot { get; set; }
         public string GlobalExternalGroupsCsv { get; set; }
         bool HasGlobalExternalGroupsCsv { get { return !string.IsNullOrWhiteSpace( GlobalExternalGroupsCsv ); } }
@@ -88,11 +86,11 @@ namespace Synapse.Services.Controller.Dal
         public ISecureObject TrySecurityOrException(string userName, string uniqueName, FileSystemRight right = FileSystemRight.Execute, string assetType = "Plan",
             byte[] rowRlsMask = null, Guid? rowOwnerId = null, bool allowOwnerOverride = false)
         {
-            string exceptionMsg = GetNoRightsErrorMessage( right, assetType, uniqueName );
-
             List<string> groupMembership = new List<string>();
+
             if( IsMemoryStore )
                 groupMembership = ActiveDirectoryUtility.GetGroupMembershipSimple( userName, LdapRoot );
+
             if( HasGlobalExternalGroupsCsv )
             {
                 string[] extGroups = GlobalExternalGroupsCsv.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
@@ -102,14 +100,9 @@ namespace Synapse.Services.Controller.Dal
             ISecureObject secureObject = _dal.EvalSecureObjectSecurity( uniqueName, userName, groupMembership );
 
             if( !secureObject.Security.Results.GetByTypeRight( right ).AccessAllowed )
-                throw new Exception( exceptionMsg );
+                throw new Exception( $"You do not have {right.ToString()} rights to {assetType} record {uniqueName}." );
 
             return secureObject;
-        }
-
-        string GetNoRightsErrorMessage(object right, string assetType, string assetName)
-        {
-            return $"You do not have {right.ToString()} rights to {assetType} record {assetName}.";
         }
     }
 }

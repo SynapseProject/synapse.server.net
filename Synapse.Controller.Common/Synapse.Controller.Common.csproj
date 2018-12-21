@@ -35,7 +35,7 @@
       <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="Suplex.Security.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Suplex.Security.Core.1.0.18350\lib\net461\Suplex.Security.Core.dll</HintPath>
+      <HintPath>..\packages\Suplex.Security.Core.1.0.18355\lib\net461\Suplex.Security.Core.dll</HintPath>
     </Reference>
     <Reference Include="Suplex.Security.FileSystemDal, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Suplex.Security.FileSystemDal.1.0.18296\lib\net45\Suplex.Security.FileSystemDal.dll</HintPath>
@@ -79,8 +79,8 @@
     <Compile Include="Classes\Interfaces\IPlanHistoryWriter.cs" />
     <Compile Include="Classes\Interfaces\IPlanSecurityProvider.cs" />
     <Compile Include="Classes\Interfaces\ISynapseDalConfig.cs" />
-    <Compile Include="Suplex\SuplexDal.cs" />
-    <Compile Include="Suplex\SuplexDalConnectionType.cs" />
+    <Compile Include="Classes\Suplex\SuplexDal.cs" />
+    <Compile Include="Classes\Suplex\SuplexDalConnectionType.cs" />
     <Compile Include="Utilities\PlanItemSingletonProcessor.cs" />
     <Compile Include="Utilities\ActionItemSingletonProcessor.cs" />
     <Compile Include="Classes\PlanUpdateItem.cs" />
