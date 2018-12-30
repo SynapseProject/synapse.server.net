@@ -207,17 +207,6 @@ namespace Synapse.Services
                 nameof( requestNumber ), requestNumber, nameof( nodeRootUrl ), nodeRootUrl, "QueryString", uri.Query );
 
             Impersonator runAsUser = null;
-            if( SynapseServer.UseImpersonation( CurrentUser?.Identity ) )
-            {
-                if( Request?.Headers?.Authorization?.Scheme?.ToLower() == "basic" )
-                {
-                    runAsUser = new Impersonator( this.AuthenticationHeader );
-                }
-                else
-                    runAsUser = new Impersonator( (WindowsIdentity)(CurrentUser?.Identity) );
-                runAsUser.Start( SynapseServer.Logger );
-            }
-
             try
             {
                 SynapseServer.Logger.Debug( context );
@@ -225,8 +214,26 @@ namespace Synapse.Services
                 Dictionary<string, string> dynamicParameters = uri.ParseQueryString();
                 if( dynamicParameters.ContainsKey( nameof( dryRun ) ) ) dynamicParameters.Remove( nameof( dryRun ) );
 
-                return _server.StartPlan( CurrentUserName, planUniqueName, dryRun, requestNumber, dynamicParameters, nodeRootUrl: nodeRootUrl,
-                    referrer: CurrentUrl.Request.RequestUri, authHeader: this.AuthenticationHeader );
+                if( SynapseServer.UseImpersonation( CurrentUser?.Identity ) )
+                {
+                    if( Request?.Headers?.Authorization?.Scheme?.ToLower() == "basic" )
+                    {
+                        runAsUser = new Impersonator( AuthenticationHeader );
+                    }
+                    else
+                        runAsUser = new Impersonator( (WindowsIdentity)(CurrentUser?.Identity) );
+
+                    SynapseServer.Logger.Info( $"Impersonation Started.  Now Running As User [{Impersonator.WhoAmI().Name}]." );
+
+                    return WindowsIdentity.RunImpersonated( runAsUser.Identity.AccessToken, () =>
+                    {
+                        return _server.StartPlan( CurrentUserName, planUniqueName, dryRun, requestNumber, dynamicParameters, nodeRootUrl: nodeRootUrl,
+                            referrer: CurrentUrl.Request.RequestUri, authHeader: AuthenticationHeader );
+                    } );
+                }
+                else
+                    return _server.StartPlan( CurrentUserName, planUniqueName, dryRun, requestNumber, dynamicParameters, nodeRootUrl: nodeRootUrl,
+                        referrer: CurrentUrl.Request.RequestUri, authHeader: AuthenticationHeader );
             }
             catch( Exception ex )
             {
@@ -236,7 +243,11 @@ namespace Synapse.Services
             }
             finally
             {
-                runAsUser?.Stop( SynapseServer.Logger );
+                if( runAsUser != null )
+                {
+                    runAsUser.Logoff();
+                    SynapseServer.Logger.Info( $"Impersonation Stopped.  Now Running As User [{Impersonator.WhoAmI().Name}]." );
+                }
             }
         }
 
@@ -276,17 +287,6 @@ namespace Synapse.Services
                 nameof( requestNumber ), requestNumber, nameof( nodeRootUrl ), nodeRootUrl, "planParameters", parms.ToString() );
 
             Impersonator runAsUser = null;
-            if( SynapseServer.UseImpersonation( CurrentUser?.Identity ) )
-            {
-                if( Request?.Headers?.Authorization?.Scheme?.ToLower() == "basic" )
-                {
-                    runAsUser = new Impersonator( this.AuthenticationHeader );
-                }
-                else
-                    runAsUser = new Impersonator( (WindowsIdentity)(CurrentUser?.Identity) );
-                runAsUser.Start( SynapseServer.Logger );
-            }
-
             try
             {
                 SynapseServer.Logger.Info( context );
@@ -294,8 +294,26 @@ namespace Synapse.Services
                 if( failedToDeserialize )
                     throw new Exception( $"Failed to deserialize message body:\r\n{parms.ToString()}" );
 
-                return _server.StartPlan( CurrentUserName, planUniqueName, dryRun, requestNumber, dynamicParameters,
-                    postDynamicParameters: true, nodeRootUrl: nodeRootUrl, referrer: CurrentUrl.Request.RequestUri, authHeader: this.AuthenticationHeader );
+                if( SynapseServer.UseImpersonation( CurrentUser?.Identity ) )
+                {
+                    if( Request?.Headers?.Authorization?.Scheme?.ToLower() == "basic" )
+                    {
+                        runAsUser = new Impersonator( AuthenticationHeader );
+                    }
+                    else
+                        runAsUser = new Impersonator( (WindowsIdentity)(CurrentUser?.Identity) );
+
+                    SynapseServer.Logger.Info( $"Impersonation Started.  Now Running As User [{Impersonator.WhoAmI().Name}]." );
+
+                    return WindowsIdentity.RunImpersonated( runAsUser.Identity.AccessToken, () =>
+                    {
+                        return _server.StartPlan( CurrentUserName, planUniqueName, dryRun, requestNumber, dynamicParameters,
+                            postDynamicParameters: true, nodeRootUrl: nodeRootUrl, referrer: CurrentUrl.Request.RequestUri, authHeader: AuthenticationHeader );
+                    } );
+                }
+                else
+                    return _server.StartPlan( CurrentUserName, planUniqueName, dryRun, requestNumber, dynamicParameters,
+                        postDynamicParameters: true, nodeRootUrl: nodeRootUrl, referrer: CurrentUrl.Request.RequestUri, authHeader: AuthenticationHeader );
             }
             catch( Exception ex )
             {
@@ -305,7 +323,11 @@ namespace Synapse.Services
             }
             finally
             {
-                runAsUser?.Stop( SynapseServer.Logger );
+                if( runAsUser != null )
+                {
+                    runAsUser.Logoff();
+                    SynapseServer.Logger.Info( $"Impersonation Stopped.  Now Running As User [{Impersonator.WhoAmI().Name}]." );
+                }
             }
         }
 

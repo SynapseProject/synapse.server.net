@@ -93,30 +93,6 @@ namespace Synapse.Services
             }
         }
 
-        //[HttpGet]
-        //[Route( "hello/about" )]
-        //public ServerAboutData About(bool asCsv = false)
-        //{
-        //    string context = GetContext( nameof( About ) );
-
-        //    try
-        //    {
-        //        SynapseServer.Logger.Debug( context );
-
-        //        ServerAboutData about = new ServerAboutData() { Config = SynapseServer.Config };
-        //        about.GetFiles( asCsv );
-
-        //        return about;
-        //    }
-        //    catch( Exception ex )
-        //    {
-        //        SynapseServer.Logger.Error(
-        //            Utilities.UnwindException( context, ex, asSingleLine: true ) );
-        //        throw;
-        //    }
-        //}
-
-
         [Route( "{planInstanceId}/" )]
         [HttpPost]
         public void StartPlanAsync(long planInstanceId, bool dryRun, [FromBody]string planString)
@@ -129,15 +105,6 @@ namespace Synapse.Services
                 nameof( plan ), plan.Name, nameof( dryRun ), dryRun, nameof( planInstanceId ), planInstanceId, "QueryString", uri.Query );
 
             Impersonator runAsUser = null;
-            if( SynapseServer.UseImpersonation( User?.Identity ) )
-            {
-                if( Request?.Headers?.Authorization?.Scheme?.ToLower() == "basic" )
-                    runAsUser = new Impersonator( Request.Headers.Authorization );
-                else
-                    runAsUser = new Impersonator( (WindowsIdentity)User.Identity );
-                runAsUser.Start( SynapseServer.Logger );
-            }
-
             try
             {
                 SynapseServer.Logger.Debug( context );
@@ -148,7 +115,23 @@ namespace Synapse.Services
                 Dictionary<string, string> dynamicParameters = uri.ParseQueryString();
                 if( dynamicParameters.ContainsKey( nameof( dryRun ) ) ) dynamicParameters.Remove( nameof( dryRun ) );
                 PlanRuntimePod p = new PlanRuntimePod( plan, dryRun, dynamicParameters, plan.InstanceId, this.Url.Request.Headers.Referrer, this.Request?.Headers?.Authorization );
-                _scheduler.StartPlan( p );
+
+                if( SynapseServer.UseImpersonation( User?.Identity ) )
+                {
+                    if( Request?.Headers?.Authorization?.Scheme?.ToLower() == "basic" )
+                        runAsUser = new Impersonator( Request.Headers.Authorization );
+                    else
+                        runAsUser = new Impersonator( (WindowsIdentity)User.Identity );
+
+                    SynapseServer.Logger.Info( $"Impersonation Started.  Now Running As User [{Impersonator.WhoAmI().Name}]." );
+
+                    WindowsIdentity.RunImpersonated( runAsUser.Identity.AccessToken, () =>
+                    {
+                        _scheduler.StartPlan( p );
+                    } );
+                }
+                else
+                    _scheduler.StartPlan( p );
             }
             catch( Exception ex )
             {
@@ -158,7 +141,11 @@ namespace Synapse.Services
             }
             finally
             {
-                runAsUser?.Stop( SynapseServer.Logger );
+                if( runAsUser != null )
+                {
+                    runAsUser.Logoff();
+                    SynapseServer.Logger.Info( $"Impersonation Stopped.  Now Running As User [{Impersonator.WhoAmI().Name}]." );
+                }
             }
         }
 
@@ -180,17 +167,24 @@ namespace Synapse.Services
 
                 ValidatePlanSignature( plan );
 
+                PlanRuntimePod p = new PlanRuntimePod( plan, dryRun, planEnvelope.GetCaseInsensitiveDynamicParameters(), plan.InstanceId, this.Url.Request.Headers.Referrer, this.Request?.Headers?.Authorization );
+
                 if( SynapseServer.UseImpersonation( User?.Identity ) )
                 {
                     if( Request?.Headers?.Authorization?.Scheme?.ToLower() == "basic" )
                         runAsUser = new Impersonator( Request.Headers.Authorization );
                     else
                         runAsUser = new Impersonator( (WindowsIdentity)User.Identity );
-                    runAsUser.Start( SynapseServer.Logger );
-                }
 
-                PlanRuntimePod p = new PlanRuntimePod( plan, dryRun, planEnvelope.GetCaseInsensitiveDynamicParameters(), plan.InstanceId, this.Url.Request.Headers.Referrer, this.Request?.Headers?.Authorization );
-                _scheduler.StartPlan( p );
+                    SynapseServer.Logger.Info( $"Impersonation Started.  Now Running As User [{Impersonator.WhoAmI().Name}]." );
+
+                    WindowsIdentity.RunImpersonated( runAsUser.Identity.AccessToken, () =>
+                    {
+                        _scheduler.StartPlan( p );
+                    } );
+                }
+                else
+                    _scheduler.StartPlan( p );
             }
             catch( Exception ex )
             {
@@ -200,7 +194,11 @@ namespace Synapse.Services
             }
             finally
             {
-                runAsUser?.Stop( SynapseServer.Logger );
+                if( runAsUser != null )
+                {
+                    runAsUser.Logoff();
+                    SynapseServer.Logger.Info( $"Impersonation Stopped.  Now Running As User [{Impersonator.WhoAmI().Name}]." );
+                }
             }
         }
 
@@ -247,68 +245,6 @@ namespace Synapse.Services
                 throw;
             }
         }
-
-
-        //#region AutoUpdate
-        //[HttpGet]
-        //[Route( "update" )]
-        //public List<AutoUpdaterMessage> AutoUpdate(bool drainstop = true)
-        //{
-        //    string context = GetContext( nameof( AutoUpdate ), nameof( drainstop ), drainstop );
-
-        //    try
-        //    {
-        //        SynapseServer.Logger.Info( context );
-        //        if( drainstop )
-        //            Drainstop();
-        //        return AutoUpdater.Update();
-        //    }
-        //    catch( Exception ex )
-        //    {
-        //        SynapseServer.Logger.Error(
-        //            Utilities.UnwindException( context, ex, asSingleLine: true ) );
-        //        throw;
-        //    }
-        //}
-
-        //[HttpGet]
-        //[Route( "update/logs" )]
-        //public List<AutoUpdaterMessage> FetchAutoUpdateLogList()
-        //{
-        //    string context = GetContext( nameof( FetchAutoUpdateLogList ) );
-
-        //    try
-        //    {
-        //        SynapseServer.Logger.Debug( context );
-        //        return AutoUpdater.FetchLogList();
-        //    }
-        //    catch( Exception ex )
-        //    {
-        //        SynapseServer.Logger.Error(
-        //            Utilities.UnwindException( context, ex, asSingleLine: true ) );
-        //        throw;
-        //    }
-        //}
-
-        //[HttpGet]
-        //[Route( "update/logs/{name}" )]
-        //public List<AutoUpdaterMessage> FetchAutoUpdateLog(string name = null)
-        //{
-        //    string context = GetContext( nameof( FetchAutoUpdateLog ), nameof( name ), name );
-
-        //    try
-        //    {
-        //        SynapseServer.Logger.Debug( context );
-        //        return AutoUpdater.FetchLog( name );
-        //    }
-        //    catch( Exception ex )
-        //    {
-        //        SynapseServer.Logger.Error(
-        //            Utilities.UnwindException( context, ex, asSingleLine: true ) );
-        //        throw;
-        //    }
-        //}
-        //#endregion
 
 
         #region drainstop

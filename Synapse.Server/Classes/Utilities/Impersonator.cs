@@ -1,53 +1,51 @@
 ﻿using System;
-using System.Runtime.InteropServices;
-using System.Security.Principal;
-using System.Security.Permissions;
-using Microsoft.Win32.SafeHandles;
-using System.Runtime.ConstrainedExecution;
-using System.Security;
-using System.Text;
 using System.Net.Http.Headers;
+using System.Runtime.ConstrainedExecution;
+using System.Runtime.InteropServices;
+using System.Security;
+using System.Security.Permissions;
+using System.Security.Principal;
+using System.Text;
 
-using log4net;
+using Microsoft.Win32.SafeHandles;
 
 
 namespace Synapse.Common
 {
-    public class Impersonator
+    public class Impersonator : IDisposable
     {
         [DllImport( "advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode )]
-        public static extern bool LogonUser(String lpszUsername, String lpszDomain, String lpszPassword,
+        public static extern bool LogonUser(string lpszUsername, string lpszDomain, string lpszPassword,
             int dwLogonType, int dwLogonProvider, out SafeTokenHandle phToken);
 
         [DllImport( "kernel32.dll", CharSet = CharSet.Auto )]
         public extern static bool CloseHandle(IntPtr handle);
 
         public WindowsIdentity Identity { get; set; }
-        public WindowsImpersonationContext Context { get; set; }
 
-        public string Domain { get; set; } = System.Environment.UserDomainName;
-        public string UserName { get; set; }
-        public string Password { get; set; }
+        public SecureString Domain { get; set; } = System.Environment.UserDomainName.ToSecureString();
+        public SecureString UserName { get; set; }
+        public SecureString Password { get; set; }
 
-        private SafeTokenHandle safeTokenHandle;
+        private SafeTokenHandle _safeTokenHandle;
         public bool IsStarted = false;
 
-        [PermissionSetAttribute( SecurityAction.Demand, Name = "FullTrust" )]
+        [PermissionSet( SecurityAction.Demand, Name = "FullTrust" )]
         public Impersonator()
         {
             Identity = WindowsIdentity.GetCurrent();
         }
 
-        [PermissionSetAttribute( SecurityAction.Demand, Name = "FullTrust" )]
-        public Impersonator(String username, String password)
+        [PermissionSet( SecurityAction.Demand, Name = "FullTrust" )]
+        public Impersonator(SecureString username, SecureString password)
         {
             UserName = username;
             Password = password;
             Logon();
         }
 
-        [PermissionSetAttribute( SecurityAction.Demand, Name = "FullTrust" )]
-        public Impersonator(String domain, String username, String password)
+        [PermissionSet( SecurityAction.Demand, Name = "FullTrust" )]
+        public Impersonator(SecureString domain, SecureString username, SecureString password)
         {
             Domain = domain;
             UserName = username;
@@ -55,7 +53,7 @@ namespace Synapse.Common
             Logon();
         }
 
-        [PermissionSetAttribute( SecurityAction.Demand, Name = "FullTrust" )]
+        [PermissionSet( SecurityAction.Demand, Name = "FullTrust" )]
         public Impersonator(WindowsIdentity winId)
         {
             Identity = winId;
@@ -63,12 +61,12 @@ namespace Synapse.Common
 
         public Impersonator(AuthenticationHeaderValue basicAuthHeader)
         {
-            String userpass = basicAuthHeader.Parameter.Replace( "Basic ", "" ).Trim();
+            string userpass = basicAuthHeader.Parameter.Replace( "Basic ", "" ).Trim();
             byte[] bytes = Convert.FromBase64String( userpass );
-            String decodedStr = Encoding.UTF8.GetString( bytes );
-            String[] parts = decodedStr.Split( ':' );
-            UserName = parts[0];
-            Password = parts[1];
+            string decodedStr = Encoding.UTF8.GetString( bytes );
+            string[] parts = decodedStr.Split( ':' );
+            UserName = parts[0].ToSecureString();
+            Password = parts[1].ToSecureString();
             Logon();
         }
 
@@ -77,41 +75,35 @@ namespace Synapse.Common
             const int LOGON32_PROVIDER_DEFAULT = 0;
             const int LOGON32_LOGON_INTERACTIVE = 2;
 
-            if ( Context != null )
-                Stop();
-
             // Call LogonUser to obtain a handle to an access token. 
-            bool returnValue = LogonUser( UserName, Domain, Password, LOGON32_LOGON_INTERACTIVE, LOGON32_PROVIDER_DEFAULT, out safeTokenHandle );
+            bool returnValue = LogonUser( UserName.ToUnsecureString(), Domain.ToUnsecureString(), Password.ToUnsecureString(),
+                LOGON32_LOGON_INTERACTIVE, LOGON32_PROVIDER_DEFAULT, out _safeTokenHandle );
 
             if ( false == returnValue )
             {
                 int ret = Marshal.GetLastWin32Error();
-                Console.WriteLine( "LogonUser failed with error code : {0}", ret );
-                throw new System.ComponentModel.Win32Exception( ret );
+                throw new System.ComponentModel.Win32Exception( ret, $"LogonUser failed for use [{Domain}\\{Password}] with error code: {ret}" );
             }
 
-            Identity = new WindowsIdentity( safeTokenHandle.DangerousGetHandle() );
+            Identity = new WindowsIdentity( _safeTokenHandle.DangerousGetHandle() );
         }
 
-        [PermissionSetAttribute( SecurityAction.Demand, Name = "FullTrust" )]
-        public void Start(ILog logger = null)
+        [PermissionSet( SecurityAction.Demand, Name = "FullTrust" )]
+        public void Logoff()
         {
-            if ( !IsStarted )
+            if( _safeTokenHandle != null )
             {
-                IsStarted = true;
-                Context = Identity.Impersonate();
-                logger?.Debug( $"Impersonation Started.  Now Running As User [{WhoAmI().Name}]." );
+                _safeTokenHandle.Close();
+                _safeTokenHandle = null;
             }
+
+            Identity?.Dispose();
+            Identity = null;
         }
 
-        public void Stop(ILog logger = null)
+        public void Dispose()
         {
-            if ( IsStarted )
-            {
-                IsStarted = false;
-                Context.Undo();
-                logger?.Debug( $"Impersonation Stopped.  Now Running As User [{WhoAmI().Name}]." );
-            }
+            Logoff();
         }
 
         public static WindowsIdentity WhoAmI()
@@ -138,5 +130,4 @@ namespace Synapse.Common
             return CloseHandle( handle );
         }
     }
-
 }

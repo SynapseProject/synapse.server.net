@@ -23,6 +23,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -32,6 +33,7 @@
     <DefineConstants>TRACE;RELEASE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>syn_logo_icon.ico</ApplicationIcon>
@@ -113,6 +115,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Classes\Utilities\Impersonator.cs" />
+    <Compile Include="Classes\Utilities\StringUtilities.cs" />
     <Compile Include="WebApi\SwaggerConfig.cs" />
     <Compile Include="Classes\Authorization\AuthorizationConfig.cs" />
     <Compile Include="Classes\Authorization\AuthorizationProvider.cs" />
