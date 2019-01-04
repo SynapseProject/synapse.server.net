@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using Suplex.Security;
+using Suplex.Security.AclModel;
 
 using Synapse.Core;
 using Synapse.Core.Utilities;
