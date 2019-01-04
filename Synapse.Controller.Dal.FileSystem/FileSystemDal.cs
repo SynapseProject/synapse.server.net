@@ -1,12 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
 
-using Suplex.Security;
-
-using Synapse.Core;
 using Synapse.Core.Utilities;
 using Synapse.Services;
 using Synapse.Services.Controller.Dal;
@@ -133,7 +128,7 @@ public partial class FileSystemDal : IControllerDal
     {
         string splx = Utilities.PathCombine( _splxPath, "security.splx" );
         if( File.Exists( splx ) )
-            _splxDal = new SuplexDal( splx );
+            _splxDal = new SuplexDal( splx, SuplexDalConnectionType.File );
     }
 
 

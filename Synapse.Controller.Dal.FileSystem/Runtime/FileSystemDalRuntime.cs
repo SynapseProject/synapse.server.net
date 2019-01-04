@@ -4,11 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-using Suplex.Security;
+using Suplex.Security.AclModel;
 
 using Synapse.Core;
 using Synapse.Core.Utilities;
-using Synapse.Services;
 using Synapse.Services.Controller.Dal;
 
 
@@ -20,20 +19,7 @@ public partial class FileSystemDal : IControllerDal
         bool ok = false;
         try
         {
-            _splxDal?.TrySecurityOrException( securityContext, planUniqueName, AceType.FileSystem, right, "Plan" );
-            ok = true;
-        }
-        catch { }
-
-        return ok;
-    }
-
-    public bool HasAccess(string securityContext, string planUniqueName, AceType aceType, object right)
-    {
-        bool ok = false;
-        try
-        {
-            _splxDal?.TrySecurityOrException( securityContext, planUniqueName, aceType, right, "Plan" );
+            _splxDal?.TrySecurityOrException( securityContext, planUniqueName, right );
             ok = true;
         }
         catch { }
@@ -43,12 +29,7 @@ public partial class FileSystemDal : IControllerDal
 
     public void HasAccessOrException(string securityContext, string planUniqueName, FileSystemRight right = FileSystemRight.Execute)
     {
-        _splxDal?.TrySecurityOrException( securityContext, planUniqueName, AceType.FileSystem, right, "Plan" );
-    }
-
-    public void HasAccessOrException(string securityContext, string planUniqueName, AceType aceType, object right)
-    {
-        _splxDal?.TrySecurityOrException( securityContext, planUniqueName, aceType, right, "Plan" );
+        _splxDal?.TrySecurityOrException( securityContext, planUniqueName, right );
     }
 
 

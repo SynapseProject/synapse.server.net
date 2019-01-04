@@ -19,6 +19,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{F6A9
 		scripts\makeServerRelease.ps1 = scripts\makeServerRelease.ps1
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.Controller.Dal.FileSystem", "Synapse.Controller.Dal.FileSystem\Synapse.Controller.Dal.FileSystem.csproj", "{241A483D-5450-43DC-8E0D-ECAE92DA1138}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{8A4BA837-FBE4-435A-A355-C4884419B412}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8A4BA837-FBE4-435A-A355-C4884419B412}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8A4BA837-FBE4-435A-A355-C4884419B412}.Release|Any CPU.Build.0 = Release|Any CPU
+		{241A483D-5450-43DC-8E0D-ECAE92DA1138}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{241A483D-5450-43DC-8E0D-ECAE92DA1138}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{241A483D-5450-43DC-8E0D-ECAE92DA1138}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{241A483D-5450-43DC-8E0D-ECAE92DA1138}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
