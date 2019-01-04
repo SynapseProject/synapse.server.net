@@ -23,7 +23,7 @@ namespace Synapse.Common
 
         public WindowsIdentity Identity { get; set; }
 
-        public SecureString Domain { get; set; } = System.Environment.UserDomainName.ToSecureString();
+        public SecureString Domain { get; set; } = Environment.UserDomainName.ToSecureString();
         public SecureString UserName { get; set; }
         public SecureString Password { get; set; }
 
@@ -41,6 +41,7 @@ namespace Synapse.Common
         {
             UserName = username;
             Password = password;
+
             Logon();
         }
 
@@ -50,6 +51,7 @@ namespace Synapse.Common
             Domain = domain;
             UserName = username;
             Password = password;
+
             Logon();
         }
 
@@ -67,6 +69,7 @@ namespace Synapse.Common
             string[] parts = decodedStr.Split( ':' );
             UserName = parts[0].ToSecureString();
             Password = parts[1].ToSecureString();
+
             Logon();
         }
 
@@ -79,7 +82,7 @@ namespace Synapse.Common
             bool returnValue = LogonUser( UserName.ToUnsecureString(), Domain.ToUnsecureString(), Password.ToUnsecureString(),
                 LOGON32_LOGON_INTERACTIVE, LOGON32_PROVIDER_DEFAULT, out _safeTokenHandle );
 
-            if ( false == returnValue )
+            if( false == returnValue )
             {
                 int ret = Marshal.GetLastWin32Error();
                 throw new System.ComponentModel.Win32Exception( ret, $"LogonUser failed for use [{Domain}\\{Password}] with error code: {ret}" );
