@@ -30,7 +30,7 @@ namespace Synapse.Services.Controller.Dal
                     InitFileConnection( connectionString );
                     break;
                 }
-                case SuplexDalConnectionType.Http:
+                case SuplexDalConnectionType.RestApi:
                 {
                     _dal = new SuplexSecurityHttpApiClient( connectionString );
                     break;

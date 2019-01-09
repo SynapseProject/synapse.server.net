@@ -3,6 +3,6 @@
     public enum SuplexDalConnectionType
     {
         File,
-        Http
+        RestApi
     }
 }
