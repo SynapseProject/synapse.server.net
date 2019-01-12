@@ -3,19 +3,20 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
-    <FileVersion>1.0.19001.0</FileVersion>
-    <Version>1.0.19001.0</Version>
+    <FileVersion>1.0.19011.0</FileVersion>
+    <Version>1.0.19011.0</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Steve Shortt</Authors>
     <Copyright>Steve Shortt, 2016 - 2019</Copyright>
     <RepositoryType>git</RepositoryType>
     <PackageReleaseNotes>1.0 Release.  All features are presently working and passing unit tests.
 
+- 19011: Updated YamlDotNet nuget ref in package
 - 19001: Includes netstandard20 in distribution
-- 18291 - Update reflects release version and current dependencies
-- 18287 - Update relfects release version and current dependencies
-- 18154 - Adds support for Dynamic Config/Parameter discovery
-- 18105 - Adds support for Custom Controller config, corresponds with Synapse.Server release 1.0.18105.</PackageReleaseNotes>
+- 18291: Update reflects release version and current dependencies
+- 18287: Update relfects release version and current dependencies
+- 18154: Adds support for Dynamic Config/Parameter discovery
+- 18105: Adds support for Custom Controller config, corresponds with Synapse.Server release 1.0.18105.</PackageReleaseNotes>
     <Description>Synapse is a lightweight execution engine designed to take data from disparate, federated sources and connect it to a process. Synapse is built to run as a local or remote process.  Synapse.Server.Extensibility supports injecting custom ApiControllers into Synapse.Server at runtime.</Description>
     <PackageLicenseUrl>https://raw.githubusercontent.com/SynapseProject/synapse.server.net/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>http://synapse.readthedocs.io/en/latest</PackageProjectUrl>
