@@ -80,9 +80,9 @@
       <Project>{059d8c9c-6397-422c-9ae1-9206a6c3d324}</Project>
       <Name>Synapse.Server.HttpClient</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Synapse.Server\Synapse.Server.csproj">
+    <ProjectReference Include="..\Synapse.Server\Synapse.Server.netfrmk.csproj">
       <Project>{6335fe8d-72f6-40e6-98b8-f921eaf9377d}</Project>
-      <Name>Synapse.Server</Name>
+      <Name>Synapse.Server.netfrmk</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

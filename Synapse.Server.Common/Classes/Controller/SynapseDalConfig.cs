@@ -1,7 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using Synapse.Core.Utilities;
 using Synapse.Services.Controller.Dal;
+
+using YamlDotNet.Serialization;
 
 namespace Synapse.Services
 {
@@ -18,13 +19,16 @@ namespace Synapse.Services
 
 
         public string Type { get; set; } = "Synapse.Controller.Dal.Componentized:ComponentizedDal";
-        internal bool HasType { get { return !string.IsNullOrWhiteSpace( Type ); } }
+        [YamlIgnore]
+        public bool HasType { get { return !string.IsNullOrWhiteSpace( Type ); } }
 
         public string LdapRoot { get; set; }
-        internal bool HasLdapRoot { get { return !string.IsNullOrWhiteSpace( LdapRoot ); } }
+        [YamlIgnore]
+        public bool HasLdapRoot { get { return !string.IsNullOrWhiteSpace( LdapRoot ); } }
 
         public object Config { get; set; }
-        internal bool HasConfig { get { return Config != null; } }
+        [YamlIgnore]
+        public bool HasConfig { get { return Config != null; } }
 
 
         public object GetDefaultConfig()

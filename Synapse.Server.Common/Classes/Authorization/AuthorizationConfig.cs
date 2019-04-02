@@ -4,6 +4,7 @@ using System.Linq;
 
 using Synapse.Authorization;
 
+using YamlDotNet.Serialization;
 
 namespace Synapse.Services
 {
@@ -15,7 +16,8 @@ namespace Synapse.Services
         public bool AllowAnonymous { get; set; } = true;
 
         public List<AuthorizationProvider> Providers { get; set; } = new List<AuthorizationProvider>();
-        internal bool HasProviders { get { return Providers != null && Providers.Count > 0; } }
+        [YamlIgnore]
+        public bool HasProviders { get { return Providers != null && Providers.Count > 0; } }
 
         public bool IsAuthorized(string id, ServerRole serverRole, string topic = null)
         {
@@ -49,7 +51,7 @@ namespace Synapse.Services
 
 
             if( !ok )
-                SynapseServer.Logger.Debug( $"Access Denied!  User: [{id}], Role: [{serverRole}], Topic: [{topic}]." );
+                ServerGlobal.Logger.Debug( $"Access Denied!  User: [{id}], Role: [{serverRole}], Topic: [{topic}]." );
 
 
             return ok;

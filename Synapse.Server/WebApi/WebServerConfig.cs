@@ -17,16 +17,16 @@ namespace Synapse.Services
         public void Configuration(IAppBuilder app)
         {
             HttpListener listener = (HttpListener)app.Properties["System.Net.HttpListener"];
-            listener.AuthenticationSchemes = SynapseServer.Config.WebApi.Authentication.Scheme;
+            listener.AuthenticationSchemes = ServerGlobal.Config.WebApi.Authentication.Scheme;
 
             // Configure Web API for self-host. 
             HttpConfiguration config = new HttpConfiguration();
 
-            if( SynapseServer.Config.Service.IsRoleController && SynapseServer.Config.Controller.HasAssemblies )
+            if( ServerGlobal.Config.Service.IsRoleController && ServerGlobal.Config.Controller.HasAssemblies )
             {
                 config.Services.Replace( typeof( IAssembliesResolver ), new CustomAssembliesResolver() );
 
-                foreach( CustomAssemblyConfig assemblyConfig in SynapseServer.Config.Controller.Assemblies )
+                foreach( CustomAssemblyConfig assemblyConfig in ServerGlobal.Config.Controller.Assemblies )
                     if( assemblyConfig.HasJsonConverters )
                         foreach( string converter in assemblyConfig.JsonConverters )
                         {
@@ -49,20 +49,20 @@ namespace Synapse.Services
 
             config.MessageHandlers.Add( new RawContentHandler() );
 
-            if( SynapseServer.Config.WebApi.Cors is CorsConfig cors && cors.IsEnabled )
+            if( ServerGlobal.Config.WebApi.Cors is CorsConfig cors && cors.IsEnabled )
                 config.EnableCors( new EnableCorsAttribute( cors.Origins, cors.Headers, cors.Methods, cors.ExposedHeaders ) { SupportsCredentials = cors.SupportsCredentials } );
 
-            //ss: if( (SynapseServer.Config.WebApi.Authentication.Scheme | AuthenticationSchemes.Basic) != 0 )
-            if( (SynapseServer.Config.WebApi.Authentication.Scheme & AuthenticationSchemes.Basic) == AuthenticationSchemes.Basic )
+            //ss: if( (ServerGlobal.Config.WebApi.Authentication.Scheme | AuthenticationSchemes.Basic) != 0 )
+            if( (ServerGlobal.Config.WebApi.Authentication.Scheme & AuthenticationSchemes.Basic) == AuthenticationSchemes.Basic )
             {
                 IAuthenticationProvider auth = AuthenticationProviderUtil.GetInstance(
                     "Synapse.Authentication", "Synapse.Authentication.AuthenticationProvider", config );
-                string authConfig = Core.Utilities.YamlHelpers.Serialize( SynapseServer.Config.WebApi.Authentication.Config );
+                string authConfig = Core.Utilities.YamlHelpers.Serialize( ServerGlobal.Config.WebApi.Authentication.Config );
                 BasicAuthenticationConfig ac = Core.Utilities.YamlHelpers.Deserialize<BasicAuthenticationConfig>( authConfig );
-                auth.ConfigureBasicAuthentication( ac.LdapRoot, ac.Domain, SynapseServer.Config.WebApi.IsSecure );
+                auth.ConfigureBasicAuthentication( ac.LdapRoot, ac.Domain, ServerGlobal.Config.WebApi.IsSecure );
             }
 
-            if( !SynapseServer.Config.WebApi.AllowContentTypeXml )
+            if( !ServerGlobal.Config.WebApi.AllowContentTypeXml )
             {
                 var appXmlType = config.Formatters.XmlFormatter.SupportedMediaTypes.FirstOrDefault( t => SerializationContentType.IsApplicationXml( t.MediaType ) );
                 config.Formatters.XmlFormatter.SupportedMediaTypes.Remove( appXmlType );

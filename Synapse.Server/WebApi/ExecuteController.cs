@@ -31,14 +31,14 @@ namespace Synapse.Services
         {
             Exception ex = null;
 
-            if( !SynapseServer.Config.Service.IsRoleController )
+            if( !ServerGlobal.Config.Service.IsRoleController )
                 ex = new NotSupportedException( $"This instance of Synapse is not configured as a Controller.  Check the settings at {SynapseServerConfig.FileName}." );
-            else if( SynapseServer.Config.Controller == null )
+            else if( ServerGlobal.Config.Controller == null )
                 ex = new Exception( $"This instance of Synapse is missing required configuration to execute as a Controller.  Check the settings at {SynapseServerConfig.FileName}." );
 
             if( ex != null )
             {
-                SynapseServer.Logger.Fatal( ex.Message, ex );
+                ServerGlobal.Logger.Fatal( ex.Message, ex );
                 throw ex;
             }
         }
@@ -52,12 +52,12 @@ namespace Synapse.Services
             try
             {
                 if( log )
-                    SynapseServer.Logger.Debug( context );
+                    ServerGlobal.Logger.Debug( context );
                 return "Hello from SynapseController, World!";
             }
             catch( Exception ex )
             {
-                SynapseServer.Logger.Error(
+                ServerGlobal.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
@@ -71,12 +71,12 @@ namespace Synapse.Services
 
             try
             {
-                SynapseServer.Logger.Debug( context );
+                ServerGlobal.Logger.Debug( context );
                 return CurrentUserName;
             }
             catch( Exception ex )
             {
-                SynapseServer.Logger.Error(
+                ServerGlobal.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
@@ -92,12 +92,12 @@ namespace Synapse.Services
 
             try
             {
-                SynapseServer.Logger.Debug( context );
+                ServerGlobal.Logger.Debug( context );
                 return _server.GetPlan( planUniqueName );
             }
             catch( Exception ex )
             {
-                SynapseServer.Logger.Error(
+                ServerGlobal.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
@@ -113,13 +113,13 @@ namespace Synapse.Services
 
             try
             {
-                SynapseServer.Logger.Debug( context );
+                ServerGlobal.Logger.Debug( context );
                 Plan plan = _server.GetPlan( planUniqueName );
                 return plan.GetDynamicValues( simplify );
             }
             catch( Exception ex )
             {
-                SynapseServer.Logger.Error(
+                ServerGlobal.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
@@ -135,12 +135,12 @@ namespace Synapse.Services
 
             try
             {
-                SynapseServer.Logger.Debug( context );
+                ServerGlobal.Logger.Debug( context );
                 return _server.GetPlanList( filter, isRegexFilter );
             }
             catch( Exception ex )
             {
-                SynapseServer.Logger.Error(
+                ServerGlobal.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
@@ -156,12 +156,12 @@ namespace Synapse.Services
 
             try
             {
-                SynapseServer.Logger.Debug( context );
+                ServerGlobal.Logger.Debug( context );
                 return _server.GetPlanInstanceIdList( planUniqueName );
             }
             catch( Exception ex )
             {
-                SynapseServer.Logger.Error(
+                ServerGlobal.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
@@ -186,7 +186,7 @@ namespace Synapse.Services
             Impersonator runAsUser = null;
             try
             {
-                SynapseServer.Logger.Debug( context );
+                ServerGlobal.Logger.Debug( context );
 
                 Dictionary<string, string> dynamicParameters = uri.ParseQueryString();
                 if( dynamicParameters.ContainsKey( nameof( dryRun ) ) ) dynamicParameters.Remove( nameof( dryRun ) );
@@ -200,7 +200,7 @@ namespace Synapse.Services
                     else
                         runAsUser = new Impersonator( (WindowsIdentity)(CurrentUser?.Identity) );
 
-                    SynapseServer.Logger.Info( $"Impersonation Started.  Now Running As User [{Impersonator.WhoAmI().Name}]." );
+                    ServerGlobal.Logger.Info( $"Impersonation Started.  Now Running As User [{Impersonator.WhoAmI().Name}]." );
 
                     return WindowsIdentity.RunImpersonated( runAsUser.Identity.AccessToken, () =>
                     {
@@ -214,7 +214,7 @@ namespace Synapse.Services
             }
             catch( Exception ex )
             {
-                SynapseServer.Logger.Error(
+                ServerGlobal.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
@@ -223,7 +223,7 @@ namespace Synapse.Services
                 if( runAsUser != null )
                 {
                     runAsUser.Logoff();
-                    SynapseServer.Logger.Info( $"Impersonation Stopped.  Now Running As User [{Impersonator.WhoAmI().Name}]." );
+                    ServerGlobal.Logger.Info( $"Impersonation Stopped.  Now Running As User [{Impersonator.WhoAmI().Name}]." );
                 }
             }
         }
@@ -266,7 +266,7 @@ namespace Synapse.Services
             Impersonator runAsUser = null;
             try
             {
-                SynapseServer.Logger.Info( context );
+                ServerGlobal.Logger.Info( context );
 
                 if( failedToDeserialize )
                     throw new Exception( $"Failed to deserialize message body:\r\n{parms.ToString()}" );
@@ -280,7 +280,7 @@ namespace Synapse.Services
                     else
                         runAsUser = new Impersonator( (WindowsIdentity)(CurrentUser?.Identity) );
 
-                    SynapseServer.Logger.Info( $"Impersonation Started.  Now Running As User [{Impersonator.WhoAmI().Name}]." );
+                    ServerGlobal.Logger.Info( $"Impersonation Started.  Now Running As User [{Impersonator.WhoAmI().Name}]." );
 
                     return WindowsIdentity.RunImpersonated( runAsUser.Identity.AccessToken, () =>
                     {
@@ -294,7 +294,7 @@ namespace Synapse.Services
             }
             catch( Exception ex )
             {
-                SynapseServer.Logger.Error(
+                ServerGlobal.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
@@ -303,7 +303,7 @@ namespace Synapse.Services
                 if( runAsUser != null )
                 {
                     runAsUser.Logoff();
-                    SynapseServer.Logger.Info( $"Impersonation Stopped.  Now Running As User [{Impersonator.WhoAmI().Name}]." );
+                    ServerGlobal.Logger.Info( $"Impersonation Stopped.  Now Running As User [{Impersonator.WhoAmI().Name}]." );
                 }
             }
         }
@@ -361,7 +361,7 @@ namespace Synapse.Services
                 nameof( path ), path, nameof( serializationType ), serializationType, nameof( setContentType ), setContentType,
                 nameof( pollingIntervalSeconds ), pollingIntervalSeconds, nameof( timeoutSeconds ), timeoutSeconds,
                 nameof( nodeRootUrl ), nodeRootUrl, "QueryString", uri.Query );
-            SynapseServer.Logger.Debug( context );
+            ServerGlobal.Logger.Debug( context );
 
             long instanceId = StartPlan( planUniqueName, dryRun, requestNumber, nodeRootUrl );
 
@@ -383,7 +383,7 @@ namespace Synapse.Services
                 nameof( path ), path, nameof( serializationType ), serializationType, nameof( setContentType ), setContentType,
                 nameof( pollingIntervalSeconds ), pollingIntervalSeconds, nameof( timeoutSeconds ), timeoutSeconds,
                 nameof( nodeRootUrl ), nodeRootUrl );
-            SynapseServer.Logger.Debug( context );
+            ServerGlobal.Logger.Debug( context );
 
             long instanceId = StartPlan( planEnvelope, planUniqueName, dryRun, requestNumber, nodeRootUrl );
 
@@ -416,12 +416,12 @@ namespace Synapse.Services
 
             try
             {
-                SynapseServer.Logger.Debug( context );
+                ServerGlobal.Logger.Debug( context );
                 return _server.GetPlanStatus( planUniqueName, planInstanceId );
             }
             catch( Exception ex )
             {
-                SynapseServer.Logger.Error(
+                ServerGlobal.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
@@ -442,12 +442,12 @@ namespace Synapse.Services
 
             try
             {
-                SynapseServer.Logger.Debug( context );
+                ServerGlobal.Logger.Debug( context );
                 _server.UpdatePlanStatus( plan );
             }
             catch( Exception ex )
             {
-                SynapseServer.Logger.Error(
+                ServerGlobal.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
@@ -465,12 +465,12 @@ namespace Synapse.Services
 
             try
             {
-                SynapseServer.Logger.Debug( context );
+                ServerGlobal.Logger.Debug( context );
                 _server.UpdatePlanActionStatus( planUniqueName, planInstanceId, actionItem );
             }
             catch( Exception ex )
             {
-                SynapseServer.Logger.Error(
+                ServerGlobal.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
@@ -488,12 +488,12 @@ namespace Synapse.Services
 
             try
             {
-                SynapseServer.Logger.Debug( context );
+                ServerGlobal.Logger.Debug( context );
                 _server.CancelPlan( planInstanceId, nodeRootUrl, referrer: CurrentUrl.Request.RequestUri );
             }
             catch( Exception ex )
             {
-                SynapseServer.Logger.Error(
+                ServerGlobal.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
@@ -511,7 +511,7 @@ namespace Synapse.Services
 
             try
             {
-                SynapseServer.Logger.Debug( context );
+                ServerGlobal.Logger.Debug( context );
 
                 PlanElementParms pep = new PlanElementParms { Type = serializationType };
                 pep.ElementPaths.Add( elementPath );
@@ -525,7 +525,7 @@ namespace Synapse.Services
             }
             catch( Exception ex )
             {
-                SynapseServer.Logger.Error(
+                ServerGlobal.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
@@ -542,12 +542,12 @@ namespace Synapse.Services
 
             try
             {
-                SynapseServer.Logger.Debug( context );
+                ServerGlobal.Logger.Debug( context );
                 return _server.GetPlanElements( planUniqueName, planInstanceId, elementParms );
             }
             catch( Exception ex )
             {
-                SynapseServer.Logger.Error(
+                ServerGlobal.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
@@ -613,7 +613,7 @@ namespace Synapse.Services
         public object GetCustomAssemblyConfig(string name)
         {
             CustomAssemblyConfig customAssmConfig =
-                SynapseServer.Config.Controller.Assemblies.Find( ca => ca.Name.Equals( name, StringComparison.OrdinalIgnoreCase ) );
+                ServerGlobal.Config.Controller.Assemblies.Find( ca => ca.Name.Equals( name, StringComparison.OrdinalIgnoreCase ) );
 
             return customAssmConfig?.Config;
         }

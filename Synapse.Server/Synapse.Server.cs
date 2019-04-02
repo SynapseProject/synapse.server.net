@@ -22,8 +22,8 @@ namespace Synapse.Services
 {
     public partial class SynapseServer : ServiceBase
     {
-        public static ILog Logger = null;
-        public static SynapseServerConfig Config = null;
+        //public static ILog Logger = null;
+        //public static SynapseServerConfig Config = null;
 
         ServiceHost _serviceHost = null;
         private IDisposable _webapp;
@@ -33,7 +33,7 @@ namespace Synapse.Services
         {
             InitializeComponent();
 
-            this.ServiceName = Config.Service.Name;
+            this.ServiceName = ServerGlobal.Config.Service.Name;
         }
 
         public static void Main(string[] args)
@@ -74,16 +74,16 @@ namespace Synapse.Services
                     }
             }
 
-            Config = SynapseServerConfig.DeserializeOrNew( ServerRole.Server, configFile );
+            ServerGlobal.Config = SynapseServerConfig.DeserializeOrNew( ServerRole.Server, configFile );
         }
 
         public static void SetupLogger()
         {
-            log4net.GlobalContext.Properties["LogName"] = $"{Config.Service.Name}.{Environment.MachineName.ToLower()}";
-            Logger = LogManager.GetLogger( "SynapseServer" );
+            log4net.GlobalContext.Properties["LogName"] = $"{ServerGlobal.Config.Service.Name}.{Environment.MachineName.ToLower()}";
+            ServerGlobal.Logger = LogManager.GetLogger( "SynapseServer" );
 
             //can't log the Config path until after Logger is setup
-            Logger.Info( $"Using SynapseServerConfig from [{SynapseServerConfig.FileName}]" );
+            ServerGlobal.Logger.Info( $"Using SynapseServerConfig from [{SynapseServerConfig.FileName}]" );
         }
 
         /// <summary>
@@ -157,18 +157,18 @@ namespace Synapse.Services
             if( !Environment.UserInteractive )
             {
                 string msg = "This is a Debug build of SynapseServer and will not run as Service.";
-                Logger.Fatal( msg );
+                ServerGlobal.Logger.Fatal( msg );
                 new SynapseServer().WriteEventLog( msg );
 
                 Environment.Exit( 1 );
             }
 
-            if( Config == null )
+            if( ServerGlobal.Config == null )
                 DeserialzeConfig( args );
 
             ConsoleColor current = Console.ForegroundColor;
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine( $"Starting Synapse.Server as {Config?.Service.Role}: Press Ctrl-C/Ctrl-Break to stop." );
+            Console.WriteLine( $"Starting Synapse.Server as {ServerGlobal.Config?.Service.Role}: Press Ctrl-C/Ctrl-Break to stop." );
             Console.ForegroundColor = current;
 
             //can't setup the Logger until after deserializing Config
@@ -187,34 +187,34 @@ namespace Synapse.Services
         {
             try
             {
-                Logger.Info( ServiceStatus.Starting );
+                ServerGlobal.Logger.Info( ServiceStatus.Starting );
 
                 if( _serviceHost != null )
                     _serviceHost.Close();
 
-                if( !Config.Service.IsRoleController )
+                if( !ServerGlobal.Config.Service.IsRoleController )
                 {
                     NodeController.InitPlanScheduler();
                     NodeController.DrainstopCallback = () => StopCallback();
                 }
 
-                string url = Config.WebApi.ToUri( Environment.UserInteractive );
+                string url = ServerGlobal.Config.WebApi.ToUri( Environment.UserInteractive );
                 _webapp = WebApp.Start<WebServerConfig>( url );
-                Logger.Info( $"Listening on {url}" );
-                Logger.Info( $"Authentication Scheme = [{Config.WebApi.Authentication.Scheme}]" );
+                ServerGlobal.Logger.Info( $"Listening on {url}" );
+                ServerGlobal.Logger.Info( $"Authentication Scheme = [{ServerGlobal.Config.WebApi.Authentication.Scheme}]" );
 
-                _serviceHost = Config.Service.IsRoleController ?
+                _serviceHost = ServerGlobal.Config.Service.IsRoleController ?
                     new ServiceHost( typeof( ExecuteController ) ) : new ServiceHost( typeof( NodeController ) );
                 _serviceHost.Open();
 
-                Logger.Info( ServiceStatus.Running );
+                ServerGlobal.Logger.Info( ServiceStatus.Running );
             }
             catch( Exception ex )
             {
                 string msg = ex.Message;
 
                 //_log.Write( Synapse.Common.LogLevel.Fatal, msg );
-                Logger.Fatal( ex );
+                ServerGlobal.Logger.Fatal( ex );
                 WriteEventLog( ex.ToString() );
 
                 Stop();
@@ -230,7 +230,7 @@ namespace Synapse.Services
 
         protected override void OnStop()
         {
-            Logger.Info( ServiceStatus.Stopping );
+            ServerGlobal.Logger.Info( ServiceStatus.Stopping );
 
             try
             {
@@ -241,11 +241,11 @@ namespace Synapse.Services
             }
             catch( Exception ex )
             {
-                Logger.Fatal( ex.Message );
+                ServerGlobal.Logger.Fatal( ex.Message );
                 WriteEventLog( ex.Message );
             }
 
-            Logger.Info( ServiceStatus.Stopped );
+            ServerGlobal.Logger.Info( ServiceStatus.Stopped );
         }
 
 
@@ -253,9 +253,9 @@ namespace Synapse.Services
         {
             bool rc = true;
 
-            if( SynapseServer.Config.WebApi.UseImpersonation == false )
+            if( ServerGlobal.Config.WebApi.UseImpersonation == false )
                 rc = false;
-            else if( SynapseServer.Config.WebApi.Authentication.Scheme == System.Net.AuthenticationSchemes.Anonymous )
+            else if( ServerGlobal.Config.WebApi.Authentication.Scheme == System.Net.AuthenticationSchemes.Anonymous )
                 rc = false;
             else
             {
@@ -279,8 +279,8 @@ namespace Synapse.Services
 
             string msg = ((Exception)e.ExceptionObject).Message + ((Exception)e.ExceptionObject).InnerException.Message;
 
-            Logger.Error( ((Exception)e.ExceptionObject).Message );
-            Logger.Error( msg );
+            ServerGlobal.Logger.Error( ((Exception)e.ExceptionObject).Message );
+            ServerGlobal.Logger.Error( msg );
 
             try
             {

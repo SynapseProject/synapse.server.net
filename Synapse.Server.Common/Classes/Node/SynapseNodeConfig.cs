@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
 
+using YamlDotNet.Serialization;
 
 namespace Synapse.Services
 {
@@ -20,16 +20,19 @@ namespace Synapse.Services
 
         public int MaxServerThreads { get; set; } = 0;
         public string AuditLogRootPath { get; set; } = @".\Logs";
-        internal bool HasAuditLogRootPath { get { return !string.IsNullOrWhiteSpace( AuditLogRootPath ); } }
+        [YamlIgnore]
+        public bool HasAuditLogRootPath { get { return !string.IsNullOrWhiteSpace( AuditLogRootPath ); } }
 
         public string Log4NetConversionPattern { get; set; } = "%d{ISO8601}|%-5p|(%t)|%m%n";
-        internal bool HasLog4NetConversionPattern { get { return !string.IsNullOrWhiteSpace( Log4NetConversionPattern ); } }
+        [YamlIgnore]
+        public bool HasLog4NetConversionPattern { get { return !string.IsNullOrWhiteSpace( Log4NetConversionPattern ); } }
 
         public bool SerializeResultPlan { get; set; } = true;
         public bool ValidatePlanSignature { get; set; } = false;
         public string ControllerUrl { get; set; }
         public AuthenticationSchemes ControllerAuthenticationScheme { get; set; } = AuthenticationSchemes.None;
-        internal bool HasControllerUrl { get { return !string.IsNullOrWhiteSpace( ControllerUrl ); } }
+        [YamlIgnore]
+        public bool HasControllerUrl { get { return !string.IsNullOrWhiteSpace( ControllerUrl ); } }
 
 
         public string GetResolvedAuditLogRootPath()

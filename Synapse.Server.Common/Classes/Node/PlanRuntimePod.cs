@@ -26,17 +26,17 @@ namespace Synapse.Services
             _url = referrer != null ? $"{referrer.Scheme}://{referrer.Host}:{referrer.Port}/synapse/execute" : null;
 
             string referrerMsg = referrer == null ? "Referrer is [null]" : $"Referrer is [{referrer.AbsoluteUri}]";
-            SynapseServer.Logger.Info( referrerMsg );
+            ServerGlobal.Logger.Info( referrerMsg );
 
-            if( SynapseServer.Config.Node.HasControllerUrl )
-                _url = SynapseServer.Config.Node.ControllerUrl;
+            if( ServerGlobal.Config.Node.HasControllerUrl )
+                _url = ServerGlobal.Config.Node.ControllerUrl;
 
             if ( !string.IsNullOrWhiteSpace( _url ) )
             {
                 _controllerService = new ControllerServiceHttpApiClient( _url );
-                if ( SynapseServer.Config?.Controller?.NodeAuthenticationScheme != null )
+                if ( ServerGlobal.Config?.Controller?.NodeAuthenticationScheme != null )
                 {
-                    if ( SynapseServer.Config.Controller.NodeAuthenticationScheme == System.Net.AuthenticationSchemes.Basic )
+                    if ( ServerGlobal.Config.Controller.NodeAuthenticationScheme == System.Net.AuthenticationSchemes.Basic )
                         _controllerService.Options.Authentication = new BasicAuthentication( authHeader );
                 }
                 else if ( authHeader != null )
@@ -74,19 +74,19 @@ namespace Synapse.Services
             try
             {
                 string logFileName = $"{PlanInstanceId}_{Plan.Name}";
-                _logRootPath = Directory.CreateDirectory( SynapseServer.Config.Node.GetResolvedAuditLogRootPath() );
+                _logRootPath = Directory.CreateDirectory( ServerGlobal.Config.Node.GetResolvedAuditLogRootPath() );
                 logFilePath = $"{_logRootPath.FullName}\\{logFileName}.log";
-                _log.InitDynamicFileAppender( logFileName, logFileName, logFilePath, SynapseServer.Config.Node.Log4NetConversionPattern, "all" );
+                _log.InitDynamicFileAppender( logFileName, logFileName, logFilePath, ServerGlobal.Config.Node.Log4NetConversionPattern, "all" );
             }
             catch( Exception ex )
             {
-                throw new FileNotFoundException( $"Could not find/acceess log file: {logFilePath}, AuditLogRootPath: {SynapseServer.Config.Node.AuditLogRootPath}", ex );
+                throw new FileNotFoundException( $"Could not find/acceess log file: {logFilePath}, AuditLogRootPath: {ServerGlobal.Config.Node.AuditLogRootPath}", ex );
             }
         }
 
         public void Start(CancellationToken token, Action<IPlanRuntimeContainer> callback)
         {
-            SynapseServer.Logger.Info( $"Starting {PlanInstanceId}_{Plan.Name}, Responding to ControllerService: {_url}" );
+            ServerGlobal.Logger.Info( $"Starting {PlanInstanceId}_{Plan.Name}, Responding to ControllerService: {_url}" );
 
             token.Register( () => CancelPlanExecution() );
 
@@ -96,11 +96,11 @@ namespace Synapse.Services
             }
             catch( Exception ex )
             {
-                SynapseServer.Logger.Fatal( $"Exception in {PlanInstanceId}_{Plan.Name}.", ex );
+                ServerGlobal.Logger.Fatal( $"Exception in {PlanInstanceId}_{Plan.Name}.", ex );
             }
 
-            SynapseServer.Logger.Info( $"SerializeResultPlan: {SynapseServer.Config.Node.SerializeResultPlan}, {_logRootPath.FullName}\\{PlanInstanceId}_{Plan.Name}.result.yaml" );
-            if( SynapseServer.Config.Node.SerializeResultPlan )
+            ServerGlobal.Logger.Info( $"SerializeResultPlan: {ServerGlobal.Config.Node.SerializeResultPlan}, {_logRootPath.FullName}\\{PlanInstanceId}_{Plan.Name}.result.yaml" );
+            if( ServerGlobal.Config.Node.SerializeResultPlan )
                 File.WriteAllText( $"{_logRootPath.FullName}\\{PlanInstanceId}_{Plan.Name}.result.yaml", Plan.ResultPlan.ToYaml() );
 
             //send final message home

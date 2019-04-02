@@ -30,9 +30,9 @@ namespace Synapse.Services
 
         protected override bool IsAuthorized(HttpActionContext actionContext)
         {
-            bool? ok = SynapseServer.Config.WebApi.Authorization?.HasProviders;
+            bool? ok = ServerGlobal.Config.WebApi.Authorization?.HasProviders;
             if( ok.HasValue && ok.Value )
-                return SynapseServer.Config.WebApi.Authorization.IsAuthorized( actionContext.RequestContext.Principal?.Identity?.Name, ServerRole, Topic );
+                return ServerGlobal.Config.WebApi.Authorization.IsAuthorized( actionContext.RequestContext.Principal?.Identity?.Name, ServerRole, Topic );
             else
                 return true;
         }

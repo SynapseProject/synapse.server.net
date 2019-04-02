@@ -32,12 +32,12 @@ namespace Synapse.Services
             try
             {
                 if( log )
-                    SynapseServer.Logger.Debug( context );
+                    ServerGlobal.Logger.Debug( context );
                 return "Hello from AdminController, World!";
             }
             catch( Exception ex )
             {
-                SynapseServer.Logger.Error(
+                ServerGlobal.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
@@ -51,12 +51,12 @@ namespace Synapse.Services
 
             try
             {
-                SynapseServer.Logger.Debug( context );
+                ServerGlobal.Logger.Debug( context );
                 return CurrentUserName;
             }
             catch( Exception ex )
             {
-                SynapseServer.Logger.Error(
+                ServerGlobal.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
@@ -71,16 +71,16 @@ namespace Synapse.Services
 
             try
             {
-                SynapseServer.Logger.Debug( context );
+                ServerGlobal.Logger.Debug( context );
 
-                ServerAboutData about = new ServerAboutData() { Config = SynapseServer.Config };
+                ServerAboutData about = new ServerAboutData() { Config = ServerGlobal.Config };
                 about.GetFiles( asCsv );
 
                 return about;
             }
             catch( Exception ex )
             {
-                SynapseServer.Logger.Error(
+                ServerGlobal.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
@@ -93,20 +93,20 @@ namespace Synapse.Services
         [Authorize]
         public List<AutoUpdaterMessage> AutoUpdate(bool drainstopNode = true)
         {
-            string context = GetContext( nameof( AutoUpdate ), "Role", SynapseServer.Config.Service.Role, nameof( drainstopNode ), drainstopNode );
+            string context = GetContext( nameof( AutoUpdate ), "Role", ServerGlobal.Config.Service.Role, nameof( drainstopNode ), drainstopNode );
 
             try
             {
-                SynapseServer.Logger.Info( context );
+                ServerGlobal.Logger.Info( context );
 
-                if( SynapseServer.Config.Service.IsRoleNode && drainstopNode )
+                if( ServerGlobal.Config.Service.IsRoleNode && drainstopNode )
                     new NodeController().Drainstop();
 
                 return AutoUpdater.Update();
             }
             catch( Exception ex )
             {
-                SynapseServer.Logger.Error(
+                ServerGlobal.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
@@ -121,12 +121,12 @@ namespace Synapse.Services
 
             try
             {
-                SynapseServer.Logger.Debug( context );
+                ServerGlobal.Logger.Debug( context );
                 return AutoUpdater.FetchLogList();
             }
             catch( Exception ex )
             {
-                SynapseServer.Logger.Error(
+                ServerGlobal.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
@@ -141,12 +141,12 @@ namespace Synapse.Services
 
             try
             {
-                SynapseServer.Logger.Debug( context );
+                ServerGlobal.Logger.Debug( context );
                 return AutoUpdater.FetchLog( name );
             }
             catch( Exception ex )
             {
-                SynapseServer.Logger.Error(
+                ServerGlobal.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
@@ -164,12 +164,12 @@ namespace Synapse.Services
 
             try
             {
-                SynapseServer.Logger.Debug( context );
+                ServerGlobal.Logger.Debug( context );
                 return Log4netUtil.FetchLogList();
             }
             catch( Exception ex )
             {
-                SynapseServer.Logger.Error(
+                ServerGlobal.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
@@ -207,7 +207,7 @@ namespace Synapse.Services
             }
             catch( Exception ex )
             {
-                SynapseServer.Logger.Error(
+                ServerGlobal.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }

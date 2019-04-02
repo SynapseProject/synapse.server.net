@@ -12,7 +12,8 @@ namespace Synapse.Services
     public class AuthorizationProvider : IAuthorizationProviderConfig
     {
         public string Type { get; set; } = "Synapse.Authorization:UserIdProvider";
-        internal bool HasType { get { return !string.IsNullOrWhiteSpace( Type ); } }
+        [YamlIgnore]
+        public bool HasType { get { return !string.IsNullOrWhiteSpace( Type ); } }
 
         public AuthorizationProviderFilter AppliesTo { get; set; } = new AuthorizationProviderFilter();
 

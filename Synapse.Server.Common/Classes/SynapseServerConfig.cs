@@ -1,10 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Security.Cryptography;
+
 using Synapse.Core.Utilities;
 
+using YamlDotNet.Serialization;
 
 namespace Synapse.Services
 {
@@ -86,9 +87,12 @@ namespace Synapse.Services
         public string DisplayName { get; set; }
         public ServerRole Role { get; set; }
 
-        internal bool IsRoleController { get { return (Role & ServerRole.Controller) == ServerRole.Controller; } }
-        internal bool IsRoleNode { get { return (Role & ServerRole.Node) == ServerRole.Node; } }
-        internal bool IsRoleServer { get { return (Role & ServerRole.Server) == ServerRole.Server; } }
+        [YamlIgnore]
+        public bool IsRoleController { get { return (Role & ServerRole.Controller) == ServerRole.Controller; } }
+        [YamlIgnore]
+        public bool IsRoleNode { get { return (Role & ServerRole.Node) == ServerRole.Node; } }
+        [YamlIgnore]
+        public bool IsRoleServer { get { return (Role & ServerRole.Server) == ServerRole.Server; } }
     }
 
     public class WebApiConfig
@@ -100,6 +104,7 @@ namespace Synapse.Services
         public bool UseImpersonation { get; set; } = false;
         public bool AllowContentTypeXml { get; set; } = false;
         public CorsConfig Cors { get; set; }
+        [YamlIgnore]
         public bool HasCors { get { return Cors != null && Cors.IsEnabled; } }
 
         public AuthenticationConfig Authentication { get; set; } = new AuthenticationConfig();

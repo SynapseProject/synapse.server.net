@@ -3,15 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2026
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.Server", "Synapse.Server\Synapse.Server.csproj", "{6335FE8D-72F6-40E6-98B8-F921EAF9377D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.Server.netfrmk", "Synapse.Server\Synapse.Server.netfrmk.csproj", "{6335FE8D-72F6-40E6-98B8-F921EAF9377D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.Server.HttpClient", "Synapse.Server.HttpClient\Synapse.Server.HttpClient.csproj", "{059D8C9C-6397-422C-9AE1-9206A6C3D324}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.Controller.Common", "Synapse.Controller.Common\Synapse.Controller.Common.csproj", "{C2D081EF-8454-4D63-8D36-EA67BB9183EA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Synapse.Controller.Common", "Synapse.Controller.Common\Synapse.Controller.Common.csproj", "{C2D081EF-8454-4D63-8D36-EA67BB9183EA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.Server.Extensibility", "Synapse.Server.Extensibility\Synapse.Server.Extensibility.csproj", "{0D7ED137-55C0-4D6F-9E9B-F526F86DD2F8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Synapse.Server.Extensibility", "Synapse.Server.Extensibility\Synapse.Server.Extensibility.csproj", "{0D7ED137-55C0-4D6F-9E9B-F526F86DD2F8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.Authorization", "Synapse.Authorization\Synapse.Authorization.csproj", "{8A4BA837-FBE4-435A-A355-C4884419B412}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Synapse.Authorization", "Synapse.Authorization\Synapse.Authorization.csproj", "{8A4BA837-FBE4-435A-A355-C4884419B412}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{F6A95E4D-100D-41C6-BF5A-82F58FA455A5}"
 	ProjectSection(SolutionItems) = preProject
@@ -30,6 +30,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.Server.AutoUpdater", "Synapse.Server.AutoUpdater\Synapse.Server.AutoUpdater.csproj", "{82A36E34-D310-44D2-942E-15816B64F1A8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.Authentication", "Synapse.Authentication\Synapse.Authentication.csproj", "{FF7FFFEB-C3F3-46DF-A3DB-BA3D70B53EDE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.Server.netcore", "Synapse.Server.netcore\Synapse.Server.netcore.csproj", "{07513EDE-161B-4979-BD0A-DCE1368D09A1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synapse.Server.Common", "Synapse.Server.Common\Synapse.Server.Common.csproj", "{AA522BF9-4C63-43D6-9C4E-8347E207E337}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -81,6 +85,14 @@ Global
 		{FF7FFFEB-C3F3-46DF-A3DB-BA3D70B53EDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FF7FFFEB-C3F3-46DF-A3DB-BA3D70B53EDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FF7FFFEB-C3F3-46DF-A3DB-BA3D70B53EDE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07513EDE-161B-4979-BD0A-DCE1368D09A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07513EDE-161B-4979-BD0A-DCE1368D09A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07513EDE-161B-4979-BD0A-DCE1368D09A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07513EDE-161B-4979-BD0A-DCE1368D09A1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA522BF9-4C63-43D6-9C4E-8347E207E337}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA522BF9-4C63-43D6-9C4E-8347E207E337}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA522BF9-4C63-43D6-9C4E-8347E207E337}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA522BF9-4C63-43D6-9C4E-8347E207E337}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 
+using YamlDotNet.Serialization;
 
 namespace Synapse.Services
 {
@@ -18,7 +19,8 @@ namespace Synapse.Services
         public bool SignPlan { get; set; } = false;
 
         public List<CustomAssemblyConfig> Assemblies { get; set; }
-        internal bool HasAssemblies { get { return Assemblies != null && Assemblies.Count > 0; } }
+        [YamlIgnore]
+        public bool HasAssemblies { get { return Assemblies != null && Assemblies.Count > 0; } }
 
         public SynapseDalConfig Dal { get; set; } = new SynapseDalConfig();
 

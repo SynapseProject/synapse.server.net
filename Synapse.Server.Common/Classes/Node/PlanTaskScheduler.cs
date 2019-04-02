@@ -71,7 +71,7 @@ namespace Synapse.Services
                 WindowsIdentity user = WindowsIdentity.GetCurrent();
                 _tasks.Add( _tf.StartNew( () => 
                     {
-                        SynapseServer.Logger.Debug( $"Executing Plan [{planContainer.Plan.Name}] as User [{user.Name}]" );
+                        ServerGlobal.Logger.Debug( $"Executing Plan [{planContainer.Plan.Name}] as User [{user.Name}]" );
                         planContainer.Start( cts.Token, PlanComplete );
                     }
                     , cts.Token ) );

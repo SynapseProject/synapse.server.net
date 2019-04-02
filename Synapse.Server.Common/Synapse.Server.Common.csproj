@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
+    <Reference Include="System.Configuration.Install" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="log4net" Version="2.0.8" />
+    <PackageReference Include="Suplex.Security.Core" Version="1.0.19075" />
+    <PackageReference Include="Synapse.Common" Version="1.0.18350" />
+    <PackageReference Include="Synapse.Core.Signed" Version="1.0.18350" />
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="4.6.0-preview3.19128.7" />
+    <PackageReference Include="YamlDotNet.Signed" Version="6.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Synapse.Authorization\Synapse.Authorization.csproj" />
+    <ProjectReference Include="..\Synapse.Controller.Common\Synapse.Controller.Common.csproj" />
+    <ProjectReference Include="..\Synapse.Server.Extensibility\Synapse.Server.Extensibility.csproj" />
+    <ProjectReference Include="..\Synapse.Server.HttpClient\Synapse.Server.HttpClient.csproj" />
+  </ItemGroup>
+
+</Project>

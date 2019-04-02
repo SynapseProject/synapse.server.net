@@ -18,26 +18,26 @@ namespace Synapse.Services
 
         public PlanServer()
         {
-            if( SynapseServer.Config.Service.IsRoleController && _dal == null )
+            if( ServerGlobal.Config.Service.IsRoleController && _dal == null )
                 try
                 {
-                    SynapseServer.Logger.Debug( $"Loading Dal: {SynapseServer.Config.Controller.Dal.Type}." );
+                    ServerGlobal.Logger.Debug( $"Loading Dal: {ServerGlobal.Config.Controller.Dal.Type}." );
 
                     _dal = AssemblyLoader.Load<IControllerDal>(
-                        SynapseServer.Config.Controller.Dal.Type, SynapseServer.Config.Controller.Dal.DefaultType );
-                    Dictionary<string, string> props = _dal.Configure( SynapseServer.Config.Controller.Dal );
+                        ServerGlobal.Config.Controller.Dal.Type, ServerGlobal.Config.Controller.Dal.DefaultType );
+                    Dictionary<string, string> props = _dal.Configure( ServerGlobal.Config.Controller.Dal );
 
                     if( !_once )
                     {
                         if( props != null )
                             foreach( string key in props.Keys )
-                                SynapseServer.Logger.Info( $"{key}: {props[key]}" );
+                                ServerGlobal.Logger.Info( $"{key}: {props[key]}" );
                         _once = true;
                     }
                 }
                 catch( Exception ex )
                 {
-                    SynapseServer.Logger.Fatal( $"Failed to load Dal: {SynapseServer.Config.Controller.Dal.Type}.", ex );
+                    ServerGlobal.Logger.Fatal( $"Failed to load Dal: {ServerGlobal.Config.Controller.Dal.Type}.", ex );
                     throw;
                 }
         }
@@ -84,14 +84,14 @@ namespace Synapse.Services
             _dal.UpdatePlanStatus( initResultPlan );
 
             //sign the plan
-            if( SynapseServer.Config.Controller.SignPlan )
+            if( ServerGlobal.Config.Controller.SignPlan )
             {
-                SynapseServer.Logger.Debug( $"Signing Plan [{plan.Name}/{plan.InstanceId}]." );
+                ServerGlobal.Logger.Debug( $"Signing Plan [{plan.Name}/{plan.InstanceId}]." );
 
-                if( !File.Exists( SynapseServer.Config.Signature.KeyUri ) )
-                    throw new FileNotFoundException( SynapseServer.Config.Signature.KeyUri );
+                if( !File.Exists( ServerGlobal.Config.Signature.KeyUri ) )
+                    throw new FileNotFoundException( ServerGlobal.Config.Signature.KeyUri );
 
-                plan.Sign( SynapseServer.Config.Signature.KeyContainerName, SynapseServer.Config.Signature.KeyUri, SynapseServer.Config.Signature.CspProviderFlags );
+                plan.Sign( ServerGlobal.Config.Signature.KeyContainerName, ServerGlobal.Config.Signature.KeyUri, ServerGlobal.Config.Signature.CspProviderFlags );
                 //plan.Name += "foo";  //testing: intentionally crash the sig
             }
 
@@ -212,19 +212,19 @@ namespace Synapse.Services
         NodeServiceHttpApiClient GetNodeClientInstance(string nodeRootUrl, Uri referrer, AuthenticationHeaderValue authHeader)
         {
             if( string.IsNullOrWhiteSpace( nodeRootUrl ) )
-                nodeRootUrl = SynapseServer.Config.Controller.NodeUrl;
+                nodeRootUrl = ServerGlobal.Config.Controller.NodeUrl;
             else
                 nodeRootUrl = $"{nodeRootUrl}/synapse/node";
 
-            SynapseServer.Logger.Info( $"nodeClient.Headers.Referrer: {referrer?.AbsoluteUri}" );
+            ServerGlobal.Logger.Info( $"nodeClient.Headers.Referrer: {referrer?.AbsoluteUri}" );
 
             NodeServiceHttpApiClient nodeClient = new NodeServiceHttpApiClient( nodeRootUrl );
             nodeClient.Headers.Referrer = referrer;
             if( authHeader != null )
             {
-                if( SynapseServer.Config?.Node?.ControllerAuthenticationScheme != null )
+                if( ServerGlobal.Config?.Node?.ControllerAuthenticationScheme != null )
                 {
-                    if( SynapseServer.Config.Node.ControllerAuthenticationScheme == System.Net.AuthenticationSchemes.Basic )
+                    if( ServerGlobal.Config.Node.ControllerAuthenticationScheme == System.Net.AuthenticationSchemes.Basic )
                         nodeClient.Options.Authentication = new BasicAuthentication( authHeader );
                 }
                 else if( authHeader.Scheme.ToLower() == "basic" )

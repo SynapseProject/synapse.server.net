@@ -1,4 +1,6 @@
-﻿using System;
+﻿#if NET461
+
+using System;
 using System.Net.Http.Headers;
 using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
@@ -134,3 +136,5 @@ namespace Synapse.Common
         }
     }
 }
+
+#endif

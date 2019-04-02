@@ -28,14 +28,14 @@ namespace Synapse.Services
         {
             Exception ex = null;
 
-            if( !SynapseServer.Config.Service.IsRoleNode )
+            if( !ServerGlobal.Config.Service.IsRoleNode )
                 ex = new NotSupportedException( $"This instance of Synapse is not configured as a Node.  Check the settings at {SynapseServerConfig.FileName}." );
-            else if( SynapseServer.Config.Node == null )
+            else if( ServerGlobal.Config.Node == null )
                 ex = new Exception( $"This instance of Synapse is missing required configuration to execute as a Node.  Check the settings at {SynapseServerConfig.FileName}." );
 
             if( ex != null )
             {
-                SynapseServer.Logger.Fatal( ex.Message, ex );
+                ServerGlobal.Logger.Fatal( ex.Message, ex );
                 throw ex;
             }
         }
@@ -46,9 +46,9 @@ namespace Synapse.Services
         {
             if( _scheduler == null )
             {
-                _scheduler = new PlanTaskScheduler( SynapseServer.Config.Node.MaxServerThreads );
+                _scheduler = new PlanTaskScheduler( ServerGlobal.Config.Node.MaxServerThreads );
                 _scheduler.PlanCompleted += Scheduler_PlanCompleted;
-                SynapseServer.Logger.Info( $"Initialized PlanScheduler, MaxThreads: {SynapseServer.Config.Node.MaxServerThreads}" );
+                ServerGlobal.Logger.Info( $"Initialized PlanScheduler, MaxThreads: {ServerGlobal.Config.Node.MaxServerThreads}" );
             }
         }
 
@@ -63,12 +63,12 @@ namespace Synapse.Services
             try
             {
                 if( log )
-                    SynapseServer.Logger.Debug( context );
+                    ServerGlobal.Logger.Debug( context );
                 return "Hello from SynapseNode, World!";
             }
             catch( Exception ex )
             {
-                SynapseServer.Logger.Error(
+                ServerGlobal.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
@@ -82,12 +82,12 @@ namespace Synapse.Services
 
             try
             {
-                SynapseServer.Logger.Debug( context );
+                ServerGlobal.Logger.Debug( context );
                 return CurrentUser;
             }
             catch( Exception ex )
             {
-                SynapseServer.Logger.Error(
+                ServerGlobal.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
@@ -107,7 +107,7 @@ namespace Synapse.Services
             Impersonator runAsUser = null;
             try
             {
-                SynapseServer.Logger.Debug( context );
+                ServerGlobal.Logger.Debug( context );
                 plan.InstanceId = planInstanceId;
 
                 ValidatePlanSignature( plan );
@@ -123,7 +123,7 @@ namespace Synapse.Services
                     else
                         runAsUser = new Impersonator( (WindowsIdentity)User.Identity );
 
-                    SynapseServer.Logger.Info( $"Impersonation Started.  Now Running As User [{Impersonator.WhoAmI().Name}]." );
+                    ServerGlobal.Logger.Info( $"Impersonation Started.  Now Running As User [{Impersonator.WhoAmI().Name}]." );
 
                     WindowsIdentity.RunImpersonated( runAsUser.Identity.AccessToken, () =>
                     {
@@ -135,7 +135,7 @@ namespace Synapse.Services
             }
             catch( Exception ex )
             {
-                SynapseServer.Logger.Error(
+                ServerGlobal.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
@@ -144,7 +144,7 @@ namespace Synapse.Services
                 if( runAsUser != null )
                 {
                     runAsUser.Logoff();
-                    SynapseServer.Logger.Info( $"Impersonation Stopped.  Now Running As User [{Impersonator.WhoAmI().Name}]." );
+                    ServerGlobal.Logger.Info( $"Impersonation Stopped.  Now Running As User [{Impersonator.WhoAmI().Name}]." );
                 }
             }
         }
@@ -162,7 +162,7 @@ namespace Synapse.Services
             Impersonator runAsUser = null;
             try
             {
-                SynapseServer.Logger.Debug( context );
+                ServerGlobal.Logger.Debug( context );
                 plan.InstanceId = planInstanceId;
 
                 ValidatePlanSignature( plan );
@@ -176,7 +176,7 @@ namespace Synapse.Services
                     else
                         runAsUser = new Impersonator( (WindowsIdentity)User.Identity );
 
-                    SynapseServer.Logger.Info( $"Impersonation Started.  Now Running As User [{Impersonator.WhoAmI().Name}]." );
+                    ServerGlobal.Logger.Info( $"Impersonation Started.  Now Running As User [{Impersonator.WhoAmI().Name}]." );
 
                     WindowsIdentity.RunImpersonated( runAsUser.Identity.AccessToken, () =>
                     {
@@ -188,7 +188,7 @@ namespace Synapse.Services
             }
             catch( Exception ex )
             {
-                SynapseServer.Logger.Error(
+                ServerGlobal.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
@@ -197,30 +197,30 @@ namespace Synapse.Services
                 if( runAsUser != null )
                 {
                     runAsUser.Logoff();
-                    SynapseServer.Logger.Info( $"Impersonation Stopped.  Now Running As User [{Impersonator.WhoAmI().Name}]." );
+                    ServerGlobal.Logger.Info( $"Impersonation Stopped.  Now Running As User [{Impersonator.WhoAmI().Name}]." );
                 }
             }
         }
 
         void ValidatePlanSignature(Plan plan)
         {
-            if( SynapseServer.Config.Node.ValidatePlanSignature )
+            if( ServerGlobal.Config.Node.ValidatePlanSignature )
             {
-                SynapseServer.Logger.Debug( $"Checking Plan signature on {plan.Name}/{plan.InstanceId}." );
+                ServerGlobal.Logger.Debug( $"Checking Plan signature on {plan.Name}/{plan.InstanceId}." );
 
-                if( !File.Exists( SynapseServer.Config.Signature.KeyUri ) )
-                    throw new FileNotFoundException( SynapseServer.Config.Signature.KeyUri );
+                if( !File.Exists( ServerGlobal.Config.Signature.KeyUri ) )
+                    throw new FileNotFoundException( ServerGlobal.Config.Signature.KeyUri );
 
-                if( !plan.VerifySignature( SynapseServer.Config.Signature.KeyContainerName, SynapseServer.Config.Signature.KeyUri, SynapseServer.Config.Signature.CspProviderFlags ) )
+                if( !plan.VerifySignature( ServerGlobal.Config.Signature.KeyContainerName, ServerGlobal.Config.Signature.KeyUri, ServerGlobal.Config.Signature.CspProviderFlags ) )
                     throw new System.Security.SecurityException( $"Plan signature validation failed on {plan.Name}/{plan.InstanceId}." );
                 else
-                    SynapseServer.Logger.Debug( $"Plan signature validation succeeded on {plan.Name}/{plan.InstanceId}." );
+                    ServerGlobal.Logger.Debug( $"Plan signature validation succeeded on {plan.Name}/{plan.InstanceId}." );
             }
         }
 
         private static void Scheduler_PlanCompleted(object sender, PlanCompletedEventArgs e)
         {
-            SynapseServer.Logger.Info( $"Plan Completed: InstanceId: {e.PlanContainer.PlanInstanceId}, Name: {e.PlanContainer.Plan.Name}" );  //, At: {e.TimeCompleted}
+            ServerGlobal.Logger.Info( $"Plan Completed: InstanceId: {e.PlanContainer.PlanInstanceId}, Name: {e.PlanContainer.Plan.Name}" );  //, At: {e.TimeCompleted}
         }
 
         [Route( "{planInstanceId}/" )]
@@ -231,16 +231,16 @@ namespace Synapse.Services
 
             try
             {
-                SynapseServer.Logger.Debug( context );
+                ServerGlobal.Logger.Debug( context );
                 bool found = _scheduler.CancelPlan( planInstanceId );
                 string foundMsg = found ?
                     "Found executing Plan and signaled Cancel request." :
                     "Could not find executing Plan; Plan may have already completed execution.";
-                SynapseServer.Logger.Info( $"CancelPlan {planInstanceId}: {foundMsg}" );
+                ServerGlobal.Logger.Info( $"CancelPlan {planInstanceId}: {foundMsg}" );
             }
             catch( Exception ex )
             {
-                SynapseServer.Logger.Error(
+                ServerGlobal.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
@@ -257,19 +257,19 @@ namespace Synapse.Services
 
             try
             {
-                SynapseServer.Logger.Debug( context );
-                SynapseServer.Logger.Info( $"Drainstop starting, CurrentQueueDepth: {_scheduler.CurrentQueueDepth}.  Shutdown when complete: {shutdown}." );
+                ServerGlobal.Logger.Debug( context );
+                ServerGlobal.Logger.Info( $"Drainstop starting, CurrentQueueDepth: {_scheduler.CurrentQueueDepth}.  Shutdown when complete: {shutdown}." );
                 _scheduler.Drainstop();
-                SynapseServer.Logger.Info( $"Drainstop complete, CurrentQueueDepth: {_scheduler.CurrentQueueDepth}" );
+                ServerGlobal.Logger.Info( $"Drainstop complete, CurrentQueueDepth: {_scheduler.CurrentQueueDepth}" );
                 if( shutdown && _scheduler.IsDrainstopped )
                 {
-                    SynapseServer.Logger.Info( $"Drainstop complete, initiating Shutdown." );
+                    ServerGlobal.Logger.Info( $"Drainstop complete, initiating Shutdown." );
                     DrainstopCallback?.Invoke();
                 }
             }
             catch( Exception ex )
             {
-                SynapseServer.Logger.Error(
+                ServerGlobal.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
@@ -284,14 +284,14 @@ namespace Synapse.Services
 
             try
             {
-                SynapseServer.Logger.Debug( context );
-                SynapseServer.Logger.Info( $"Undrainstop starting, CurrentQueueDepth: {_scheduler.CurrentQueueDepth}" );
+                ServerGlobal.Logger.Debug( context );
+                ServerGlobal.Logger.Info( $"Undrainstop starting, CurrentQueueDepth: {_scheduler.CurrentQueueDepth}" );
                 _scheduler.CancelDrainstop();
-                SynapseServer.Logger.Info( $"Undrainstop complete, CurrentQueueDepth: {_scheduler.CurrentQueueDepth}" );
+                ServerGlobal.Logger.Info( $"Undrainstop complete, CurrentQueueDepth: {_scheduler.CurrentQueueDepth}" );
             }
             catch( Exception ex )
             {
-                SynapseServer.Logger.Error(
+                ServerGlobal.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
@@ -306,12 +306,12 @@ namespace Synapse.Services
 
             try
             {
-                SynapseServer.Logger.Debug( context );
+                ServerGlobal.Logger.Debug( context );
                 return _scheduler.IsDrainstopComplete;
             }
             catch( Exception ex )
             {
-                SynapseServer.Logger.Error(
+                ServerGlobal.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
@@ -326,12 +326,12 @@ namespace Synapse.Services
 
             try
             {
-                SynapseServer.Logger.Debug( context );
+                ServerGlobal.Logger.Debug( context );
                 return _scheduler.CurrentQueueDepth;
             }
             catch( Exception ex )
             {
-                SynapseServer.Logger.Error(
+                ServerGlobal.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }
@@ -346,12 +346,12 @@ namespace Synapse.Services
 
             try
             {
-                SynapseServer.Logger.Debug( context );
+                ServerGlobal.Logger.Debug( context );
                 return _scheduler.CurrentQueue;
             }
             catch( Exception ex )
             {
-                SynapseServer.Logger.Error(
+                ServerGlobal.Logger.Error(
                     Utilities.UnwindException( context, ex, asSingleLine: true ) );
                 throw;
             }

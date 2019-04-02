@@ -13,19 +13,19 @@ namespace Synapse.Services
         {
             string prefix = base.GetRoutePrefix( controllerDescriptor );
 
-            if( SynapseServer.Config.Service.IsRoleController && SynapseServer.Config.Controller.HasAssemblies )
+            if( ServerGlobal.Config.Service.IsRoleController && ServerGlobal.Config.Controller.HasAssemblies )
             {
                 if( CustomRoutePrefix == null )
                 {
                     // Load Custom Route Prefixes From Config
                     CustomRoutePrefix = new Dictionary<string, string>();
-                    foreach( CustomAssemblyConfig assConfig in SynapseServer.Config.Controller.Assemblies )
+                    foreach( CustomAssemblyConfig assConfig in ServerGlobal.Config.Controller.Assemblies )
                     {
                         if( !CustomRoutePrefix.ContainsKey( assConfig.Name ) )
                         {
                             CustomRoutePrefix.Add( assConfig.Name, assConfig.RoutePrefix );
                             if( !String.IsNullOrWhiteSpace( assConfig.RoutePrefix ) )
-                                SynapseServer.Logger.Debug( $"Custom Route Prefix [{assConfig.RoutePrefix}] Added For [{assConfig.Name}]." );
+                                ServerGlobal.Logger.Debug( $"Custom Route Prefix [{assConfig.RoutePrefix}] Added For [{assConfig.Name}]." );
                         }
                     }
                 }

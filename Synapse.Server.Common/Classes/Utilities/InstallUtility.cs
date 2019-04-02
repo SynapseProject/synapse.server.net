@@ -1,4 +1,6 @@
-﻿using System;
+﻿#if NET461
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -167,3 +169,5 @@ namespace Synapse.Services
         }
     }
 }
+
+#endif
