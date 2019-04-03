@@ -32,10 +32,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Suplex.Security.FileSystemDal" Version="1.0.19001" />
+    <PackageReference Include="Suplex.Security.FileSystemDal" Version="1.0.19063" />
     <PackageReference Include="Suplex.Security.Utilities.ActiveDirectory" Version="1.0.19009" />
-    <PackageReference Include="Suplex.Security.WebApi.HttpClient" Version="1.0.19001" />
-    <PackageReference Include="Synapse.Core.Signed" Version="1.0.18350" />
+    <PackageReference Include="Suplex.Security.WebApi.HttpClient" Version="1.0.19064" />
+    <PackageReference Include="Synapse.Core.Signed" Version="1.0.19092" />
   </ItemGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">

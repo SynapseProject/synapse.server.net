@@ -12,10 +12,10 @@
   <ItemGroup>
     <PackageReference Include="log4net" Version="2.0.8" />
     <PackageReference Include="Suplex.Security.Core" Version="1.0.19075" />
-    <PackageReference Include="Synapse.Common" Version="1.0.18350" />
-    <PackageReference Include="Synapse.Core.Signed" Version="1.0.18350" />
+    <PackageReference Include="Synapse.Common" Version="1.0.19092" />
+    <PackageReference Include="Synapse.Core.Signed" Version="1.0.19092" />
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="4.6.0-preview3.19128.7" />
-    <PackageReference Include="YamlDotNet.Signed" Version="6.0.0" />
+    <PackageReference Include="YamlDotNet" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
