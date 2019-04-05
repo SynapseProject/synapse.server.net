@@ -53,12 +53,12 @@ function Unzip( $source, $destination )
     [io.compression.zipfile]::ExtractToDirectory( $source, $destination )
 }
 
-function DownloadRelease( $repo, $destination, $headers, $cleanFolder = $true)
+function DownloadRelease( $repo, $destination, $headers, $cleanFolder = $true, $project = 'synapseproject')
 {
 	#apparently github upgraded TLS versions
 	[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     Write-Host ("Downloading: " + $repo)
-    $uri = ('https://api.github.com/repos/synapseproject/' + $repo + '/releases')
+    $uri = ('https://api.github.com/repos/' + $project + '/' + $repo + '/releases')
     $rel = Invoke-WebRequest -Headers $headers -Uri $uri | ConvertFrom-Json
 
     foreach ($asset in $rel[0].assets) 
@@ -210,14 +210,20 @@ function MakeServerRelease( $userName, $passwordOrToken )
     #dal folder
     Write-Host "Creating DAL folders, copying DAL release files."
     $dal = ($fr + '\Dal')
+    New-Item ($release + '\Dal') -Type directory | Out-Null
     DownloadRelease 'Synapse.Controller.Dal.AwsS3' $dal $headers
     CopyFolder '\Synapse.Controller.Dal.FileSystem\bin\Release\*' ($release + '\Dal')
     CopyFolder '\Synapse.Controller.Dal.Componentized\bin\Release\*' ($release + '\Dal')
     New-Item ($release + '\Dal\History') -Type directory | Out-Null
     New-Item ($release + '\Dal\Plans') -Type directory | Out-Null
+	#suplex
     New-Item ($release + '\Dal\Security') -Type directory | Out-Null
+    New-Item ($release + '\Dal\Security\Suplex.UI.Wpf') -Type directory | Out-Null
     Write-Host "Unzipping Suplex."
-    Unzip ($dir + '\_Suplex.zip') ($fr + '\Dal\Security')
+	$splx = $fr + '\Dal\Security\Suplex.UI.Wpf'
+    DownloadRelease 'Suplex.UI.Wpf' $splx $headers $false 'SuplexProject'
+    New-Item ($release + '\Dal\Security\SuplexLegacy') -Type directory | Out-Null
+    Unzip ($dir + '\_SuplexAdmin.zip') ($fr + '\Dal\Security\SuplexLegacy')
 
 
     #AutoUpdater folder
