@@ -150,7 +150,7 @@ namespace Synapse.Services
 
             List<object> results = new List<object>();
             if( result is List<object> )
-                result = (List<object>)result;
+                results = (List<object>)result;
             else
                 results.Add( result );
 
