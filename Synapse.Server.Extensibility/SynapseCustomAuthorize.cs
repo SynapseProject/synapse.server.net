@@ -16,7 +16,7 @@ namespace Synapse.Services
 
         protected override bool IsAuthorized(HttpActionContext actionContext)
         {
-            Assembly a = Assembly.Load( "Synapse.Server" );
+            Assembly a = Assembly.Load( "Synapse.Server.Common" );
             Type t = a.GetType( "Synapse.Services.SynapseAuthorize", true );
             AuthorizeAttribute aatt = Activator.CreateInstance( t, "Custom", _topic ) as AuthorizeAttribute;
             MethodInfo isAuthed = t.GetMethod( "IsAuthorizedWrapper", new Type[] { typeof( HttpActionContext ) } );
