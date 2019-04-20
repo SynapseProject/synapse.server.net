@@ -88,7 +88,7 @@ namespace Synapse.Services
         {
             InitPlanServer();
 
-            string context = GetContext( nameof( GetPlanList ), nameof( planUniqueName ), planUniqueName );
+            string context = GetContext( nameof( GetPlan ), nameof( planUniqueName ), planUniqueName );
 
             try
             {
@@ -109,7 +109,7 @@ namespace Synapse.Services
         {
             InitPlanServer();
 
-            string context = GetContext( nameof( GetPlanList ), nameof( planUniqueName ), planUniqueName, nameof( simplify ), simplify );
+            string context = GetContext( nameof( GetPlanDynamicValues ), nameof( planUniqueName ), planUniqueName, nameof( simplify ), simplify );
 
             try
             {
@@ -482,7 +482,7 @@ namespace Synapse.Services
         {
             InitPlanServer();
 
-            string context = GetContext( nameof( GetPlanStatus ),
+            string context = GetContext( nameof( CancelPlan ),
                 nameof( planUniqueName ), planUniqueName, nameof( planInstanceId ), planInstanceId,
                 nameof( nodeRootUrl ), nodeRootUrl );
 
@@ -505,7 +505,7 @@ namespace Synapse.Services
         {
             InitPlanServer();
 
-            string context = GetContext( nameof( GetPlanStatus ),
+            string context = GetContext( nameof( GetPlanElements ),
                 nameof( planUniqueName ), planUniqueName, nameof( planInstanceId ), planInstanceId,
                 nameof( elementPath ), elementPath, nameof( serializationType ), serializationType );
 
@@ -537,7 +537,7 @@ namespace Synapse.Services
         {
             InitPlanServer();
 
-            string context = GetContext( nameof( GetPlanStatus ),
+            string context = GetContext( nameof( GetPlanElements ),
                 nameof( planUniqueName ), planUniqueName, nameof( planInstanceId ), planInstanceId );
 
             try
